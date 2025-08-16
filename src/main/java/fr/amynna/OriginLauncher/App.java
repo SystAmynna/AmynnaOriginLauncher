@@ -1,5 +1,6 @@
 package fr.amynna.OriginLauncher;
 
+import fr.amynna.OriginLauncher.tools.Printer;
 import fr.amynna.OriginLauncher.tools.Setup;
 
 public class App {
@@ -10,6 +11,9 @@ public class App {
 
         Auth auth = new Auth();
         auth.process();
+
+
+        Printer.println(Proprieties.getOS().toString());
 
     }
 

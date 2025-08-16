@@ -31,5 +31,33 @@ public class Proprieties {
      */
     public static final String MC_PATH = ROOT_PATH + "/.minecraft";
 
+    /**
+     * Enumération représentant les systèmes d'exploitation supportés par l'application.
+     */
+    public static enum OS {
+        WINDOWS,
+        LINUX,
+        MACOS,
+        UNKNOWN
+    }
+    /**
+     * Méthode pour obtenir le système d'exploitation actuel.
+     *
+     * @return Le système d'exploitation actuel.
+     */
+    public static OS getOS() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.contains("win")) {
+            return OS.WINDOWS;
+        } else if (osName.contains("nix") || osName.contains("nux")) {
+            return OS.LINUX;
+        } else if (osName.contains("mac")) {
+            return OS.MACOS;
+        } else {
+            return OS.UNKNOWN;
+        }
+    }
+
+
 
 }
