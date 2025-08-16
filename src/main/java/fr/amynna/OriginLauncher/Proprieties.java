@@ -8,7 +8,7 @@ public class Proprieties {
     /**
      * Nom de l'application.
      */
-    public static final String NAME = "Origin";
+    public static final String NAME = "OriginRP";
     /**
      * Version de l'application.
      */
@@ -21,4 +21,19 @@ public class Proprieties {
      * Version de minecraft supportée par l'application.
      */
     public static final String MINECRAFT_VERSION = "1.20.1";
+
+    /**
+     * Chemin vers la racine de l'application.
+     */
+    public static final String ROOT_PATH = System.getProperty("user.home") + "/." + NAME;
+    /**
+     * Chemin vers le .minecraft de l'application.
+     */
+    public static final String MC_PATH = ROOT_PATH + "/.minecraft";
+    /**
+     * Chemin vers le repertoire du launcher.
+     */
+    public static final String LAUNCHER_PATH = ROOT_PATH + "/launcher";
+
+
 }
