@@ -30,10 +30,6 @@ public class Proprieties {
      * Chemin vers le .minecraft de l'application.
      */
     public static final String MC_PATH = ROOT_PATH + "/.minecraft";
-    /**
-     * Chemin vers le repertoire du launcher.
-     */
-    public static final String LAUNCHER_PATH = ROOT_PATH + "/launcher";
 
 
 }

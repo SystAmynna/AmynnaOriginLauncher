@@ -1,6 +1,7 @@
 package fr.amynna.OriginLauncher.tools;
 
 import fr.amynna.OriginLauncher.Proprieties;
+import org.json.JSONObject;
 
 import java.io.File;
 
@@ -11,19 +12,27 @@ import java.io.File;
  */
 public final class Setup {
 
+    public static void process() {
+        // Création des répertoires nécessaires
+        createDirectories();
+
+        // ...
+    }
+
+
     /**
      * Méthode principale qui initialise l'application.
      */
     private static void createDirectories() {
-        // verifier si le répertoire racine existe, sinon le créer
+        // repertoires de l'application
         File rootDir = new File(Proprieties.ROOT_PATH);
-        File launcherDir = new File(Proprieties.LAUNCHER_PATH);
         File minecraftDir = new File(Proprieties.MC_PATH);
+        // Création des répertoires nécessaires
         try {
             if (!rootDir.exists()) {
-                if (rootDir.mkdirs() && launcherDir.mkdirs() && minecraftDir.mkdirs()) {
+                // Si le répertoire racine n'existe pas, on le crée ainsi que les sous-répertoires
+                if (rootDir.mkdirs()  && minecraftDir.mkdirs()) {
                     Printer.printInfo("Répertoire racine créé : " + Proprieties.ROOT_PATH);
-                    Printer.printInfo("Répertoire launcher créé : " + Proprieties.ROOT_PATH);
                     Printer.printInfo("Répertoire minecraft créé : " + Proprieties.ROOT_PATH);
                     return;
                 } else {
@@ -31,13 +40,8 @@ public final class Setup {
                 }
             }
 
-            if (!launcherDir.exists()) {
-                if (launcherDir.mkdirs()) {
-                    Printer.printInfo("Répertoire launcher créé : " + Proprieties.LAUNCHER_PATH);
-                } else {
-                    Printer.fatalError("Impossible de créer le répertoire launcher : " + Proprieties.LAUNCHER_PATH);
-                }
-            }
+            // Si le répertoire racine existe, on vérifie les sous-répertoires
+
 
             if (!minecraftDir.exists()) {
                 if (minecraftDir.mkdirs()) {
@@ -45,8 +49,6 @@ public final class Setup {
                 } else {
                     Printer.fatalError("Impossible de créer le répertoire minecraft : " + Proprieties.MC_PATH);
                 }
-            } else {
-                Printer.printInfo("Répertoire minecraft déjà existant : " + Proprieties.MC_PATH);
             }
 
         } catch (SecurityException se) {
@@ -54,8 +56,6 @@ public final class Setup {
         }
     }
 
-    private static void downloadMojangManifest() {
-        //
-    }
+
 
 }

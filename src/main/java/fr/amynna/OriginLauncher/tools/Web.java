@@ -7,11 +7,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Web {
 
-    public static boolean downloadFile(String urlString, Path destination) {
+    public static boolean downloadFile(String urlString, String destination_string) {
         try {
+            Path destination = Paths.get(destination_string);
             URL url = new URL(urlString);
             URLConnection connection = url.openConnection();
 
