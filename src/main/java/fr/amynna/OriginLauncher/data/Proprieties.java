@@ -1,4 +1,4 @@
-package fr.amynna.OriginLauncher;
+package fr.amynna.OriginLauncher.data;
 
 /**
  * Classe {@code Proprieties} qui contient les propriétés de l'application.

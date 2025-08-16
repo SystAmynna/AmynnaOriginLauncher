@@ -1,9 +1,7 @@
-package fr.amynna.OriginLauncher;
+package fr.amynna.OriginLauncher.work;
 
-import fr.amynna.OriginLauncher.tools.Asker;
-import fr.amynna.OriginLauncher.tools.Config;
-import fr.amynna.OriginLauncher.tools.FileManager;
-import fr.amynna.OriginLauncher.tools.Printer;
+import fr.amynna.OriginLauncher.data.Proprieties;
+import fr.amynna.OriginLauncher.tools.*;
 import fr.amynna.OriginLauncher.tools.secureOS.SecureOS;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticationException;
@@ -78,12 +76,13 @@ public class Auth {
     private boolean haveSavedToken() {
         try {
             token = FileManager.loadBinary(tokenPath);
-
-
-            // décrypte le jeton de rafraîchissement
-            if (Config.isTokenSecure()) {
-                token = SecureOS.unSecure(token);
+            if (token == null || token.isEmpty()) {
+                return false; // Aucun jeton trouvé
             }
+
+            String key = System.getProperty("os.name").toLowerCase() + System.getProperty("os.arch") + System.getProperty("os.version");
+
+            token = Encrypt.decrypt(token, key);
 
 
         } catch (IOException e) {
@@ -101,15 +100,10 @@ public class Auth {
     private void saveToken(String token) {
         try {
 
-            if (Config.isTokenSecure()) {
-                token = SecureOS.secure(token);
-                if (token == null) {
-                        if (Proprieties.getOS() != Proprieties.OS.LINUX || Proprieties.getOS() != Proprieties.OS.MACOS) {
-                        Printer.printError("Échec de la sécurisation du jeton de rafraîchissement (si vous souhaitez tout de même rester authentifier, désactivez la sécurité d'Authentification Microsoft dans les paramètres du launcher).");
-                    }
-                    return;
-                }
-            }
+            String key = System.getProperty("os.name").toLowerCase() + System.getProperty("os.arch") + System.getProperty("os.version");
+
+            token = Encrypt.encrypt(token, key);
+
             FileManager.saveBinary(token, tokenPath);
         } catch (IOException e) {
             Printer.printError("Erreur lors de la sauvegarde du jeton de rafraîchissement : " + e.getMessage());

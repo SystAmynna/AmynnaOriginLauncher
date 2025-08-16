@@ -1,7 +1,7 @@
-package fr.amynna.OriginLauncher.tools;
+package fr.amynna.OriginLauncher.work;
 
-import fr.amynna.OriginLauncher.Proprieties;
-import org.json.JSONObject;
+import fr.amynna.OriginLauncher.data.Proprieties;
+import fr.amynna.OriginLauncher.tools.Printer;
 
 import java.io.File;
 
