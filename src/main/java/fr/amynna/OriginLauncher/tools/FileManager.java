@@ -1,5 +1,7 @@
 package fr.amynna.OriginLauncher.tools;
 
+import org.json.JSONObject;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -65,8 +67,6 @@ public class FileManager {
     /**
      * Calcule et vérifie le hachage SHA-1 d'un fichier.
      *
-     * @param filePath Le chemin du fichier à vérifier
-     * @param expectedSha1 Le hachage SHA-1 attendu (peut être null pour simplement calculer le hachage)
      * @return Le hachage SHA-1 calculé ou null en cas d'erreur
      * @throws IOException En cas d'erreur de lecture
      */
@@ -126,6 +126,8 @@ public class FileManager {
             return false; // Erreur lors du calcul du hachage
         }
     }
+
+
 
 
 }

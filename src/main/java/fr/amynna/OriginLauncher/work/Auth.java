@@ -109,4 +109,9 @@ public class Auth {
         }
     }
 
+
+    public MicrosoftAuthResult getMsAuthResult() {
+        return msAuthResult;
+    }
+
 }

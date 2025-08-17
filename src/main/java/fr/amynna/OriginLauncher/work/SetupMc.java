@@ -1,24 +1,30 @@
 package fr.amynna.OriginLauncher.work;
 
+import fr.amynna.OriginLauncher.data.Config;
 import fr.amynna.OriginLauncher.data.Proprieties;
 import fr.amynna.OriginLauncher.tools.FileManager;
 import fr.amynna.OriginLauncher.tools.Printer;
 import fr.amynna.OriginLauncher.tools.Web;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
 
 public class SetupMc {
 
     private static final String MOJANG_MANIFEST = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+
+    private static JSONObject versionManifest = null;
+    private static JSONObject assetIndex = null;
 
     public static void process() {
 
@@ -31,32 +37,28 @@ public class SetupMc {
 
         install();
 
+        Config.updateBooleanConfig("mcInstalled", true);
+
     }
 
     private static boolean checkInstallation() {
-        return false;
+        return Config.getBooleanConfig("mcInstalled");
     }
 
 
     private static void install() {
 
         JSONObject mojangManifest = downloadMojangManifest();
-        JSONObject versionManifest = downloadVersionManifest(mojangManifest);
+        versionManifest = downloadVersionManifest(mojangManifest);
 
         downloadClientJar(versionManifest);
 
         downloadLibraries(versionManifest);
 
+        downloadAssets(versionManifest);
 
 
-
-
-
-
-
-
-
-
+        Printer.printInfo("Installation de Minecraft " + Proprieties.MINECRAFT_VERSION + " terminée.");
     }
 
     private static JSONObject downloadMojangManifest() {
@@ -140,13 +142,54 @@ public class SetupMc {
 
     private static void downloadLibraries(JSONObject versionManifest) {
         // Implémentation pour télécharger les bibliothèques nécessaires
-        Printer.printInfo("Downloading libraries...");
+        Printer.printInfo("Téléchargement des bibliothèques...");
 
+        JSONArray libraries = versionManifest.getJSONArray("libraries");
 
+        for (int i = 0; i < libraries.length(); i++) {
+            JSONObject lib = libraries.getJSONObject(i);
+            if (!lib.has("downloads")) continue;
+
+            JSONObject artifact = lib.getJSONObject("downloads").optJSONObject("artifact");
+            if (artifact == null) continue;
+
+            String url = artifact.getString("url");
+            String path = artifact.getString("path");
+            String sha1 = artifact.getString("sha1");
+
+            Path libFile = Paths.get(Proprieties.MC_PATH, "libraries", path);
+            FileManager.downloadAndVerifyFile(url, libFile.toString(), sha1);
+        }
 
     }
 
+    private static void downloadAssets(JSONObject versionManifest) {
+        Printer.printInfo("Téléchargement des assets...");
 
+        assetIndex = versionManifest.getJSONObject("assetIndex");
+        String assetUrl = assetIndex.getString("url");
 
+        JSONObject assetsJson = null;
+        try {
+            assetsJson = new JSONObject(
+                    new String(new URL(assetUrl).openStream().readAllBytes(), StandardCharsets.UTF_8)
+            );
+        } catch (IOException e) {
+            Printer.fatalError("Erreur lors du téléchargement du fichier d'assets : " + e.getMessage());
+            return;
+        }
+
+        JSONObject objects = assetsJson.getJSONObject("objects");
+        for (String key : objects.keySet()) {
+            JSONObject asset = objects.getJSONObject(key);
+            String hash = asset.getString("hash");
+            String subDir = hash.substring(0, 2);
+            String url = "https://resources.download.minecraft.net/" + subDir + "/" + hash;
+
+            Path assetFile = Paths.get(Proprieties.MC_PATH, "assets", "objects", subDir, hash);
+            FileManager.downloadAndVerifyFile(url, assetFile.toString(), hash); // vérifie SHA1
+        }
+
+    }
 
 }
