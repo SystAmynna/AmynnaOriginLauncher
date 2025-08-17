@@ -63,7 +63,7 @@ public class Auth {
             return;
         }
 
-        Printer.printInfo("Connecté en tant que " + msAuthResult.getProfile().getName() + " (UUID : " + msAuthResult.getProfile().getId() + ")");
+        Printer.info("Connecté en tant que " + msAuthResult.getProfile().getName() + " (UUID : " + msAuthResult.getProfile().getId() + ")");
 
     }
 
@@ -85,7 +85,7 @@ public class Auth {
 
 
         } catch (IOException e) {
-            Printer.printError("Erreur lors du chargement du jeton de rafraîchissement : " + e.getMessage());
+            Printer.error("Erreur lors du chargement du jeton de rafraîchissement : " + e.getMessage());
             return false;
         }
         return token != null && !token.isEmpty();
@@ -105,11 +105,15 @@ public class Auth {
 
             FileManager.saveBinary(token, tokenPath);
         } catch (IOException e) {
-            Printer.printError("Erreur lors de la sauvegarde du jeton de rafraîchissement : " + e.getMessage());
+            Printer.error("Erreur lors de la sauvegarde du jeton de rafraîchissement : " + e.getMessage());
         }
     }
 
-
+    /**
+     * Obtient le résultat de l'authentification avec Microsoft.
+     *
+     * @return Le résultat de l'authentification.
+     */
     public MicrosoftAuthResult getMsAuthResult() {
         return msAuthResult;
     }

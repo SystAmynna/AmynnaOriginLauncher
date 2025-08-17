@@ -1,14 +1,22 @@
 package fr.amynna.OriginLauncher.tools;
 
-import org.json.JSONObject;
-
 import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 
+/**
+ * Classe {@code FileManager} fournit des méthodes pour gérer les fichiers,
+ * y compris la sauvegarde et le chargement de chaînes de caractères en format binaire,
+ * ainsi que le calcul du hachage SHA-1 et le téléchargement de fichiers avec vérification.
+ */
 public class FileManager {
 
     /**
@@ -106,8 +114,69 @@ public class FileManager {
         }
     }
 
+
+    /**
+     * Télécharge un fichier depuis une URL vers un chemin local
+     *
+     * @param urlString URL du fichier à télécharger
+     * @param destinationPath Chemin local où enregistrer le fichier
+     * @return Le fichier téléchargé ou null en cas d'erreur
+     */
+    public static File downloadFile(String urlString, String destinationPath) {
+        try {
+            // Créer le client HTTP
+            HttpClient httpClient = HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .connectTimeout(Duration.ofSeconds(30))
+                    .build();
+
+            // Préparer la requête
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(urlString))
+                    .GET()
+                    .build();
+
+            // Créer le fichier de destination
+            File outputFile;
+            if (destinationPath.endsWith(File.separator)) {
+                // Si le chemin se termine par un séparateur, on utilise le nom du fichier de l'URL
+                String fileName = urlString.substring(urlString.lastIndexOf('/') + 1);
+                outputFile = new File(destinationPath + fileName);
+            } else {
+                outputFile = new File(destinationPath);
+            }
+
+            // Créer les répertoires parents si nécessaires
+            if (!outputFile.getParentFile().exists()) {
+                outputFile.getParentFile().mkdirs();
+            }
+
+            // Télécharger le fichier
+            HttpResponse<Path> response = httpClient.send(request,
+                    HttpResponse.BodyHandlers.ofFile(outputFile.toPath()));
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return outputFile;
+            } else {
+                Printer.error("Échec du téléchargement: code " + response.statusCode());
+                return null;
+            }
+        } catch (IOException | InterruptedException e) {
+            Printer.error("Erreur lors du téléchargement: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Télécharge un fichier depuis une URL et vérifie son hachage SHA-1.
+     *
+     * @param url URL du fichier à télécharger
+     * @param destinationPath Chemin local où enregistrer le fichier
+     * @param expectedSha1 Hachage SHA-1 attendu pour le fichier
+     * @return true si le téléchargement et la vérification réussissent, false sinon
+     */
     public static boolean downloadAndVerifyFile(String url, String destinationPath, String expectedSha1) {
-        File downloadedFile = Web.downloadFile(url, destinationPath);
+        File downloadedFile = downloadFile(url, destinationPath);
         if (downloadedFile == null) {
             return false; // Échec du téléchargement
         }

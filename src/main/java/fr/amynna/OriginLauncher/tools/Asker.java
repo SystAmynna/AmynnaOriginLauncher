@@ -3,8 +3,16 @@ package fr.amynna.OriginLauncher.tools;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Classe {@code Asker} afficher des boites de dialogue pour demander des informations à l'utilisateur.
+ */
 public class Asker {
 
+    /**
+     * Affiche une boîte de dialogue pour demander l'authentification de l'utilisateur.
+     *
+     * @return un tableau de chaînes contenant l'email et le mot de passe, ou null si l'utilisateur annule.
+     */
     public static String[] askAuthentication() {
         String titre = "Authentification Launcher Origin";
         String message = "Veuillez entrer vos identifiants Microsoft pour vous connecter.";

@@ -1,6 +1,5 @@
 package fr.amynna.OriginLauncher.work;
 
-import fr.amynna.OriginLauncher.data.Config;
 import fr.amynna.OriginLauncher.data.Proprieties;
 import fr.amynna.OriginLauncher.tools.Printer;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
@@ -32,9 +31,9 @@ public class StarterMc {
         try {
             String content = Files.readString(Path.of(Proprieties.ROOT_PATH, "/version.json"));
             versionManifest = new JSONObject(content);
-            Printer.printInfo("Configuration chargée avec succès.");
+            Printer.info("Configuration chargée avec succès.");
         } catch (IOException e) {
-            Printer.printError("Erreur lors du chargement du manifest de version : " + e.getMessage());
+            Printer.error("Erreur lors du chargement du manifest de version : " + e.getMessage());
         }
         if (versionManifest == null) {
             Printer.fatalError("Le manifest de version n'a pas pu être chargé. Assurez-vous que Minecraft est installé.");

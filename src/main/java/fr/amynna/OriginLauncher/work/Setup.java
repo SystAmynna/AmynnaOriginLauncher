@@ -12,6 +12,9 @@ import java.io.File;
  */
 public final class Setup {
 
+    /**
+     * Fil d'exécution pour la mise en place des fichiers et des répertoires.
+     */
     public static void process() {
         // Création des répertoires nécessaires
         createDirectories();
@@ -32,8 +35,8 @@ public final class Setup {
             if (!rootDir.exists()) {
                 // Si le répertoire racine n'existe pas, on le crée ainsi que les sous-répertoires
                 if (rootDir.mkdirs()  && minecraftDir.mkdirs()) {
-                    Printer.printInfo("Répertoire racine créé : " + Proprieties.ROOT_PATH);
-                    Printer.printInfo("Répertoire minecraft créé : " + Proprieties.ROOT_PATH);
+                    Printer.info("Répertoire racine créé : " + Proprieties.ROOT_PATH);
+                    Printer.info("Répertoire minecraft créé : " + Proprieties.ROOT_PATH);
                     return;
                 } else {
                     Printer.fatalError("Impossible de créer le répertoire racine : " + Proprieties.ROOT_PATH);
@@ -45,7 +48,7 @@ public final class Setup {
 
             if (!minecraftDir.exists()) {
                 if (minecraftDir.mkdirs()) {
-                    Printer.printInfo("Répertoire minecraft créé : " + Proprieties.MC_PATH);
+                    Printer.info("Répertoire minecraft créé : " + Proprieties.MC_PATH);
                 } else {
                     Printer.fatalError("Impossible de créer le répertoire minecraft : " + Proprieties.MC_PATH);
                 }

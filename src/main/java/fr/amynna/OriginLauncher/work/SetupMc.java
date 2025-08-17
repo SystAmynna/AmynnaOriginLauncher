@@ -4,7 +4,6 @@ import fr.amynna.OriginLauncher.data.Config;
 import fr.amynna.OriginLauncher.data.Proprieties;
 import fr.amynna.OriginLauncher.tools.FileManager;
 import fr.amynna.OriginLauncher.tools.Printer;
-import fr.amynna.OriginLauncher.tools.Web;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -19,21 +18,42 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Classe {@code SetupMc} gère l'installation de Minecraft en téléchargeant les fichiers nécessaires
+ * à partir des manifestes de Mojang et en les organisant dans la structure de répertoires appropriée.
+ */
 public class SetupMc {
 
+    /**
+     * URL du manifeste des versions de Minecraft de Mojang.
+     * Utilisé pour récupérer les informations sur les versions disponibles.
+     */
     private static final String MOJANG_MANIFEST = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
 
-    private static JSONObject versionManifest = null;
-    private static JSONObject assetIndex = null;
+    /**
+     * Chemin du fichier manifeste de Mojang local.
+     * Utilisé pour stocker le manifeste téléchargé.
+     */
+    public static final String MOJANG_MANIFEST_PATH = Proprieties.ROOT_PATH + File.separator + "mojang_manifest.json";
+    /**
+     * Chemin du fichier manifeste de la version spécifique de Minecraft.
+     * Utilisé pour stocker le manifeste de la version téléchargé.
+     */
+    public static final String VERSION_MANIFEST_PATH = Proprieties.ROOT_PATH + File.separator + "version.json";
 
+
+    /**
+     * Méthode principale pour lancer le processus d'installation de Minecraft.
+     * Vérifie d'abord si Minecraft est déjà installé, puis procède à l'installation si ce n'est pas le cas.
+     */
     public static void process() {
 
         if (checkInstallation()) {
-            Printer.printInfo("Minecraft est déjà installé.");
+            Printer.info("Minecraft est déjà installé.");
             return;
         }
 
-        Printer.printInfo("Installation de Minecraft " + Proprieties.MINECRAFT_VERSION + "...");
+        Printer.info("Installation de Minecraft " + Proprieties.MINECRAFT_VERSION + "...");
 
         install();
 
@@ -41,31 +61,43 @@ public class SetupMc {
 
     }
 
+    /**
+     * Vérifie si Minecraft est déjà installé en consultant la configuration.
+     *
+     * @return true si Minecraft est installé, false sinon
+     */
     private static boolean checkInstallation() {
         return Config.getBooleanConfig("mcInstalled");
     }
 
-
+    /**
+     * Procède à l'installation de Minecraft en téléchargeant les manifestes, les fichiers nécessaires,
+     * et en organisant la structure de répertoires.
+     */
     private static void install() {
 
+        Printer.info("Installation de Minecraft " + Proprieties.MINECRAFT_VERSION + " en cours...");
+
         JSONObject mojangManifest = downloadMojangManifest();
-        versionManifest = downloadVersionManifest(mojangManifest);
+        JSONObject versionManifest = downloadVersionManifest(mojangManifest);
 
         downloadClientJar(versionManifest);
-
         downloadLibraries(versionManifest);
-
         downloadAssets(versionManifest);
 
-
-        Printer.printInfo("Installation de Minecraft " + Proprieties.MINECRAFT_VERSION + " terminée.");
+        Printer.info("Installation de Minecraft " + Proprieties.MINECRAFT_VERSION + " terminée.");
     }
 
+    /**
+     * Télécharge le manifeste des versions de Minecraft depuis Mojang.
+     *
+     * @return un objet JSON représentant le manifeste des versions
+     */
     private static JSONObject downloadMojangManifest() {
 
-        Printer.printInfo("Téléchargement du manifest des versions de Minecraft...");
+        Printer.info("Téléchargement du manifest des versions de Minecraft...");
 
-        File manifestFile = Web.downloadFile(MOJANG_MANIFEST, Proprieties.ROOT_PATH + File.separator + "mojang_manifest.json");
+        File manifestFile = FileManager.downloadFile(MOJANG_MANIFEST, MOJANG_MANIFEST_PATH);
 
         if (manifestFile == null) {
             Printer.fatalError("Manifest des versions de Minecraft introuvable. Veuillez vérifier votre connexion internet.");
@@ -79,9 +111,15 @@ public class SetupMc {
         }
     }
 
+    /**
+     * Télécharge le manifeste de la version spécifique de Minecraft.
+     *
+     * @param manifest l'objet JSON du manifeste des versions
+     * @return un objet JSON représentant le manifeste de la version spécifique
+     */
     private static JSONObject downloadVersionManifest(JSONObject manifest) {
 
-        Printer.printInfo("Téléchargement du manifest de la version de Minecraft...");
+        Printer.info("Téléchargement du manifest de la version de Minecraft...");
 
         String versionUrl = null;
         var versionsArray = manifest.getJSONArray("versions");
@@ -89,7 +127,7 @@ public class SetupMc {
         for (int i = 0; i < versionsArray.length(); i++) {
             JSONObject versionObj = versionsArray.getJSONObject(i);
             if (versionObj.getString("id").equals(Proprieties.MINECRAFT_VERSION)) {
-                Printer.printInfo("Version trouvée : " + versionObj.getString("id"));
+                Printer.info("Version trouvée : " + versionObj.getString("id"));
                 versionUrl = versionObj.getString("url");
                 break;
             }
@@ -99,7 +137,7 @@ public class SetupMc {
             Printer.fatalError("Version de Minecraft " + Proprieties.MINECRAFT_VERSION + " introuvable dans le manifeste.");
         }
 
-        File versionFile = Web.downloadFile(versionUrl, Proprieties.ROOT_PATH + File.separator + "version.json");
+        File versionFile = FileManager.downloadFile(versionUrl, VERSION_MANIFEST_PATH);
 
         try {
             return new JSONObject(new JSONTokener(new FileInputStream(versionFile)));
@@ -109,9 +147,14 @@ public class SetupMc {
         }
     }
 
+    /**
+     * Télécharge le fichier client.jar de Minecraft et le place dans le répertoire approprié.
+     *
+     * @param versionManifest l'objet JSON du manifeste de la version de Minecraft
+     */
     private static void downloadClientJar(JSONObject versionManifest) {
 
-        Printer.printInfo("Téléchargement du client.jar...");
+        Printer.info("Téléchargement du client.jar...");
 
         JSONObject downloads = versionManifest.getJSONObject("downloads");
         JSONObject client = downloads.getJSONObject("client");
@@ -130,7 +173,7 @@ public class SetupMc {
                 success = Files.exists(clientJarPath) && Files.isRegularFile(clientJarPath) && Files.size(clientJarPath) > 0;
                 if (success) break;
             } catch (Exception e) {
-                Printer.printWarning("Échec du téléchargement client.jar, tentative " + (i + 1) + "/" + maxRetries + "...");
+                Printer.warning("Échec du téléchargement client.jar, tentative " + (i + 1) + "/" + maxRetries + "...");
             }
         }
         if (!success) {
@@ -140,9 +183,14 @@ public class SetupMc {
 
     }
 
+    /**
+     * Télécharge les bibliothèques nécessaires pour Minecraft et les place dans le répertoire approprié.
+     *
+     * @param versionManifest l'objet JSON du manifeste de la version de Minecraft
+     */
     private static void downloadLibraries(JSONObject versionManifest) {
         // Implémentation pour télécharger les bibliothèques nécessaires
-        Printer.printInfo("Téléchargement des bibliothèques...");
+        Printer.info("Téléchargement des bibliothèques...");
 
         JSONArray libraries = versionManifest.getJSONArray("libraries");
 
@@ -163,10 +211,15 @@ public class SetupMc {
 
     }
 
+    /**
+     * Télécharge les assets de Minecraft et les place dans le répertoire approprié.
+     *
+     * @param versionManifest l'objet JSON du manifeste de la version de Minecraft
+     */
     private static void downloadAssets(JSONObject versionManifest) {
-        Printer.printInfo("Téléchargement des assets...");
+        Printer.info("Téléchargement des assets...");
 
-        assetIndex = versionManifest.getJSONObject("assetIndex");
+        JSONObject assetIndex = versionManifest.getJSONObject("assetIndex");
         String assetUrl = assetIndex.getString("url");
 
         JSONObject assetsJson = null;
