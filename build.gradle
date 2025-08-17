@@ -5,6 +5,9 @@ plugins {
 group = 'fr.amynna'
 version = '1.0-SNAPSHOT'
 
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
 repositories {
     mavenCentral()
     maven {
@@ -26,4 +29,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.release = 17
 }

@@ -2,7 +2,6 @@ package fr.amynna.OriginLauncher.work;
 
 import fr.amynna.OriginLauncher.data.Proprieties;
 import fr.amynna.OriginLauncher.tools.*;
-import fr.amynna.OriginLauncher.tools.secureOS.SecureOS;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticationException;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;

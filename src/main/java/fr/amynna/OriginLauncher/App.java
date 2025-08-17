@@ -2,6 +2,7 @@ package fr.amynna.OriginLauncher;
 
 import fr.amynna.OriginLauncher.work.Auth;
 import fr.amynna.OriginLauncher.work.Setup;
+import fr.amynna.OriginLauncher.work.SetupMc;
 
 public class App {
 
@@ -12,6 +13,7 @@ public class App {
         Auth auth = new Auth();
         auth.process();
 
+        SetupMc.process();
 
 
     }
