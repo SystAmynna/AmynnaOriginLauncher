@@ -58,6 +58,15 @@ public class Proprieties {
         }
     }
 
+    public static String getOsKey() {
+        return switch (getOS()) {
+            case WINDOWS -> "windows";
+            case LINUX -> "linux";
+            case MACOS -> "osx";
+            default -> "unknown";
+        };
+    }
+
 
 
 }

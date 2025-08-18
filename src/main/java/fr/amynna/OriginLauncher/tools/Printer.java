@@ -54,7 +54,7 @@ public final class Printer {
      *
      * @param message Le message de débogage à afficher
      */
-    public static void printDebug(String message) {
+    public static void debug(String message) {
         println(BOLD + YELLOW + "[ " + BLUE + "DEBUG" + YELLOW + " ] " + RESET + YELLOW + message);
     }
 

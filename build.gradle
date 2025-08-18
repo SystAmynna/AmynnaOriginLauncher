@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'fr.amynna'
@@ -34,3 +35,14 @@ test {
 tasks.withType(JavaCompile) {
     options.release = 17
 }
+
+shadowJar {
+    archiveBaseName.set('archive')
+    archiveClassifier.set('')
+    archiveVersion.set(version)
+    manifest {
+        attributes 'Main-Class': 'fr.amynna.OriginLauncher.App'
+    }
+}
+
+build.dependsOn shadowJar

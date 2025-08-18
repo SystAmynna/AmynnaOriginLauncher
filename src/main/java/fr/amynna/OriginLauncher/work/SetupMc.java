@@ -184,12 +184,12 @@ public class SetupMc {
     }
 
     /**
-     * Télécharge les bibliothèques nécessaires pour Minecraft et les place dans le répertoire approprié.
+     * Télécharge les bibliothèques nécessaires (artifacts + natives) pour Minecraft
+     * et les place dans le répertoire approprié.
      *
      * @param versionManifest l'objet JSON du manifeste de la version de Minecraft
      */
     private static void downloadLibraries(JSONObject versionManifest) {
-        // Implémentation pour télécharger les bibliothèques nécessaires
         Printer.info("Téléchargement des bibliothèques...");
 
         JSONArray libraries = versionManifest.getJSONArray("libraries");
@@ -198,17 +198,42 @@ public class SetupMc {
             JSONObject lib = libraries.getJSONObject(i);
             if (!lib.has("downloads")) continue;
 
-            JSONObject artifact = lib.getJSONObject("downloads").optJSONObject("artifact");
-            if (artifact == null) continue;
+            JSONObject downloads = lib.getJSONObject("downloads");
 
-            String url = artifact.getString("url");
-            String path = artifact.getString("path");
-            String sha1 = artifact.getString("sha1");
+            // === Partie artifact classique ===
+            JSONObject artifact = downloads.optJSONObject("artifact");
+            if (artifact != null) {
+                String url = artifact.getString("url");
+                String path = artifact.getString("path");
+                String sha1 = artifact.getString("sha1");
 
-            Path libFile = Paths.get(Proprieties.MC_PATH, "libraries", path);
-            FileManager.downloadAndVerifyFile(url, libFile.toString(), sha1);
+                Path libFile = Paths.get(Proprieties.MC_PATH, "libraries", path);
+                FileManager.downloadAndVerifyFile(url, libFile.toString(), sha1);
+            }
+
+            // === Partie natives ===
+            if (downloads.has("classifiers")) {
+                String osKey = Proprieties.getOsKey();
+                JSONObject classifier = downloads.getJSONObject("classifiers").optJSONObject(osKey);
+                if (classifier != null) {
+                    String url = classifier.getString("url");
+                    String path = classifier.getString("path");
+                    String sha1 = classifier.getString("sha1");
+
+                    Path nativeJar = Paths.get(Proprieties.MC_PATH, "libraries", path);
+                    FileManager.downloadAndVerifyFile(url, nativeJar.toString(), sha1);
+
+                    // Extraire le JAR de natives dans le dossier "natives"
+                    Path nativesDir = Paths.get(Proprieties.MC_PATH, "natives");
+                    try {
+                        Files.createDirectories(nativesDir);
+                        FileManager.unzip(nativeJar.toFile(), nativesDir.toFile());
+                    } catch (IOException e) {
+                        Printer.warning("Impossible d’extraire les natives de " + nativeJar + " : " + e.getMessage());
+                    }
+                }
+            }
         }
-
     }
 
     /**
@@ -221,8 +246,9 @@ public class SetupMc {
 
         JSONObject assetIndex = versionManifest.getJSONObject("assetIndex");
         String assetUrl = assetIndex.getString("url");
+        String assetId = assetIndex.getString("id");
 
-        JSONObject assetsJson = null;
+        JSONObject assetsJson;
         try {
             assetsJson = new JSONObject(
                     new String(new URL(assetUrl).openStream().readAllBytes(), StandardCharsets.UTF_8)
@@ -232,6 +258,16 @@ public class SetupMc {
             return;
         }
 
+        // ✅ Sauvegarder le fichier d’index dans assets/indexes/<id>.json
+        Path indexPath = Paths.get(Proprieties.MC_PATH, "assets", "indexes", assetId + ".json");
+        try {
+            Files.createDirectories(indexPath.getParent());
+            Files.writeString(indexPath, assetsJson.toString(2), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            Printer.warning("Impossible de sauvegarder l’asset index : " + e.getMessage());
+        }
+
+        // ✅ Télécharger chaque asset (hash = sha1)
         JSONObject objects = assetsJson.getJSONObject("objects");
         for (String key : objects.keySet()) {
             JSONObject asset = objects.getJSONObject(key);
@@ -242,7 +278,6 @@ public class SetupMc {
             Path assetFile = Paths.get(Proprieties.MC_PATH, "assets", "objects", subDir, hash);
             FileManager.downloadAndVerifyFile(url, assetFile.toString(), hash); // vérifie SHA1
         }
-
     }
 
 }

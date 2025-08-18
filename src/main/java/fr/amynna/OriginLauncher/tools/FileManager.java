@@ -6,11 +6,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Classe {@code FileManager} fournit des méthodes pour gérer les fichiers,
@@ -196,7 +200,47 @@ public class FileManager {
         }
     }
 
+    // ... tes autres méthodes (downloadFile, downloadAndVerifyFile, etc.)
 
+    /**
+     * Décompresse un fichier ZIP (ou JAR) dans le dossier de destination.
+     *
+     * @param zipFile  fichier .zip/.jar à extraire
+     * @param destDir  répertoire de destination
+     * @throws IOException si une erreur d’E/S survient
+     */
+    public static void unzip(File zipFile, File destDir) throws IOException {
+        if (!destDir.exists()) {
+            Files.createDirectories(destDir.toPath());
+        }
+
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry;
+            byte[] buffer = new byte[8192];
+
+            while ((entry = zis.getNextEntry()) != null) {
+                Path newFilePath = destDir.toPath().resolve(entry.getName()).normalize();
+
+                // ⚠️ Sécurité : empêcher les chemins malicieux (ZIP Slip)
+                if (!newFilePath.startsWith(destDir.toPath())) {
+                    throw new IOException("Entrée ZIP invalide : " + entry.getName());
+                }
+
+                if (entry.isDirectory()) {
+                    Files.createDirectories(newFilePath);
+                } else {
+                    Files.createDirectories(newFilePath.getParent());
+                    try (OutputStream fos = Files.newOutputStream(newFilePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
+                }
+                zis.closeEntry();
+            }
+        }
+    }
 
 
 }

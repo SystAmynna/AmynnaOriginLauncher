@@ -23,11 +23,17 @@ public class App {
         // TODO UI
 
 
-        Printer.printDebug("RAM " + Config.getIntConfig("minRAM") + "G " + Config.getIntConfig("maxRAM") + "G");
+        Printer.debug("RAM " + Config.getIntConfig("minRAM") + "G " + Config.getIntConfig("maxRAM") + "G");
+
 
         // Lancement de Minecraft
         StarterMc starterMc = new StarterMc(auth.getMsAuthResult());
         starterMc.genCmd();
+
+
+
+
+
         starterMc.start();
 
 

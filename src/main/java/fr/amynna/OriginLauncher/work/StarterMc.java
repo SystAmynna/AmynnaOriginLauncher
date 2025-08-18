@@ -14,7 +14,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Classe pour démarrer Minecraft avec les paramètres appropriés.
+ * Elle génère la commande nécessaire et lance le processus.
+ */
 public class StarterMc {
+
 
     List<String> command = new LinkedList<>();
 
@@ -43,12 +48,25 @@ public class StarterMc {
 
     }
 
+    /**
+     * Recherche l'exécutable Java dans les répertoires définis dans la variable PATH.
+     * @return Le chemin vers l'exécutable Java ou null si non trouvé
+     */
+    private String foundJava() {
+        String javaHome = System.getProperty("java.home");
+        String javaExecutable = Proprieties.getOS() == Proprieties.OS.WINDOWS ? "java.exe" : "java";
+        return Paths.get(javaHome, "bin", javaExecutable).toString();
+    }
+
 
     public void genCmd() {
         List<String> classpath = new ArrayList<>();
-        classpath.add(Proprieties.MC_PATH + "/versions/" + Proprieties.MINECRAFT_VERSION + "/" + Proprieties.MINECRAFT_VERSION + ".jar");
 
-        // ajouter toutes les libs
+        // 1) JAR de la version
+        classpath.add(Paths.get(Proprieties.MC_PATH, "versions", Proprieties.MINECRAFT_VERSION,
+                Proprieties.MINECRAFT_VERSION + ".jar").toString());
+
+        // 2) Toutes les libs
         try {
             Files.walk(Paths.get(Proprieties.MC_PATH, "libraries"))
                     .filter(p -> p.toString().endsWith(".jar"))
@@ -60,41 +78,63 @@ public class StarterMc {
 
         String cp = String.join(File.pathSeparator, classpath);
 
+        // 3) Auth infos
         String playerName = authResult.getProfile().getName();
         String playerUUID = authResult.getProfile().getId();
         String accessToken = authResult.getAccessToken();
 
-        String javaHome = System.getenv("JAVA_HOME");
-        if (javaHome == null) {
-            throw new IllegalStateException("JAVA_HOME n'est pas défini !");
-        }
 
-        Path javaBin = Paths.get(javaHome, "bin", "java");
+        command.clear();
 
-        command.add(javaBin.toString());
-        // command.add("-Xms" + Config.getIntConfig("minRAM") + "G");
-        // command.add("-Xmx" + Config.getIntConfig("maxRAM") + "G");
-        // TODO PATCH call ram from config
+
+
+        command.add(foundJava());
+
+        // === Options JVM ===
         command.add("-Xms4G");
         command.add("-Xmx6G");
+
+        // natives
+        command.add("-Djava.library.path=" + Paths.get(Proprieties.MC_PATH, "natives").toString());
+
+        // === Classpath ===
         command.add("-cp");
         command.add(cp);
+
+        // === Main class ===
         command.add(versionManifest.getString("mainClass"));
+
+        // === Arguments du jeu ===
         command.add("--username");
         command.add(playerName);
+
         command.add("--uuid");
         command.add(playerUUID);
+
         command.add("--accessToken");
         command.add(accessToken);
+
         command.add("--version");
-        command.add("1.20.1");
+        command.add(Proprieties.MINECRAFT_VERSION);
+
         command.add("--gameDir");
         command.add(Proprieties.MC_PATH);
+
         command.add("--assetsDir");
         command.add(Paths.get(Proprieties.MC_PATH, "assets").toString());
+
         command.add("--assetIndex");
         command.add(assetIndex.getString("id"));
+
+        // arguments supplémentaires requis par Mojang
+        command.add("--userType");
+        command.add("msa"); // Microsoft account auth
+
+        command.add("--versionType");
+        command.add("release");
     }
+
+
 
 
     public void start() {
@@ -111,6 +151,8 @@ public class StarterMc {
             Printer.fatalError("Erreur lors du démarrage de Minecraft : " + e.getMessage());
         }
     }
+
+
 
 
 }
