@@ -20,7 +20,9 @@ import java.util.List;
  */
 public class StarterMc {
 
-
+    /**
+     * Liste des arguments de la commande pour démarrer Minecraft.
+     */
     List<String> command = new LinkedList<>();
 
     JSONObject versionManifest;
@@ -46,16 +48,6 @@ public class StarterMc {
         }
         assetIndex = versionManifest.getJSONObject("assetIndex");
 
-    }
-
-    /**
-     * Recherche l'exécutable Java dans les répertoires définis dans la variable PATH.
-     * @return Le chemin vers l'exécutable Java ou null si non trouvé
-     */
-    private String foundJava() {
-        String javaHome = System.getProperty("java.home");
-        String javaExecutable = Proprieties.getOS() == Proprieties.OS.WINDOWS ? "java.exe" : "java";
-        return Paths.get(javaHome, "bin", javaExecutable).toString();
     }
 
 
@@ -88,7 +80,7 @@ public class StarterMc {
 
 
 
-        command.add(foundJava());
+        command.add(Proprieties.foundJava());
 
         // === Options JVM ===
         command.add("-Xms4G");

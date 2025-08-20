@@ -1,14 +1,9 @@
-package fr.amynna.OriginLauncher.work;
+package fr.amynna.OriginLauncher.install;
 
 import fr.amynna.OriginLauncher.data.Proprieties;
-import fr.amynna.OriginLauncher.tools.FileManager;
 import fr.amynna.OriginLauncher.tools.Printer;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Classe {@code Setup} qui gère la configuration initiale de l'application.

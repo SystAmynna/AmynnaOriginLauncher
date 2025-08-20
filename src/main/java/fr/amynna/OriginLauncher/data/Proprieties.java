@@ -1,5 +1,7 @@
 package fr.amynna.OriginLauncher.data;
 
+import java.nio.file.Paths;
+
 /**
  * Classe {@code Proprieties} qui contient les propriétés de l'application.
  */
@@ -65,6 +67,16 @@ public class Proprieties {
             case MACOS -> "osx";
             default -> "unknown";
         };
+    }
+
+    /**
+     * Recherche l'exécutable Java dans les répertoires définis dans la variable PATH.
+     * @return Le chemin vers l'exécutable Java ou null si non trouvé
+     */
+    public static String foundJava() {
+        String javaHome = System.getProperty("java.home");
+        String javaExecutable = Proprieties.getOS() == Proprieties.OS.WINDOWS ? "java.exe" : "java";
+        return Paths.get(javaHome, "bin", javaExecutable).toString();
     }
 
 

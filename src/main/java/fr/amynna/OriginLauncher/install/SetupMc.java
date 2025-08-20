@@ -1,4 +1,4 @@
-package fr.amynna.OriginLauncher.work;
+package fr.amynna.OriginLauncher.install;
 
 import fr.amynna.OriginLauncher.data.Config;
 import fr.amynna.OriginLauncher.data.Proprieties;
