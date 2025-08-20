@@ -10,13 +10,15 @@ import fr.amynna.OriginLauncher.work.StarterMc;
 
 public class App {
 
+    private static Auth auth = null;
+
     private static void run() {
 
         Setup.process();
 
         Config.loadConfig();
 
-        Auth auth = new Auth();
+        auth = new Auth();
         auth.process();
 
         SetupMc.process();
@@ -24,21 +26,16 @@ public class App {
 
         // TODO UI
 
+        // TODO : temporary call
+        startMinecraft();
 
-        Printer.debug("RAM " + Config.getIntConfig("minRAM") + "G " + Config.getIntConfig("maxRAM") + "G");
+    }
 
-
+    public static void startMinecraft() {
         // Lancement de Minecraft
         StarterMc starterMc = new StarterMc(auth.getMsAuthResult());
         starterMc.genCmd();
-
-
-
-
-
         starterMc.start();
-
-
     }
 
     public static void main(String[] args) {

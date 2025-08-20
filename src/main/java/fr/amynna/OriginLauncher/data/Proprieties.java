@@ -59,7 +59,11 @@ public class Proprieties {
             return OS.UNKNOWN;
         }
     }
-
+    /**
+     * Méthode pour obtenir la clé du système d'exploitation actuel.
+     *
+     * @return La clé du système d'exploitation actuel.
+     */
     public static String getOsKey() {
         return switch (getOS()) {
             case WINDOWS -> "windows";

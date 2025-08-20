@@ -1,5 +1,7 @@
 package fr.amynna.OriginLauncher.tools;
 
+import org.json.JSONObject;
+
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -200,8 +202,6 @@ public class FileManager {
         }
     }
 
-    // ... tes autres méthodes (downloadFile, downloadAndVerifyFile, etc.)
-
     /**
      * Décompresse un fichier ZIP (ou JAR) dans le dossier de destination.
      *
@@ -242,5 +242,40 @@ public class FileManager {
         }
     }
 
+    /**
+     * Ouvre un fichier JSON et le charge dans un objet JSONObject.
+     *
+     * @param filePath Chemin du fichier JSON à ouvrir
+     * @return Un objet JSONObject contenant les données du fichier, ou null en cas d'erreur
+     */
+    public static JSONObject openJsonFile(String filePath) {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            Printer.error("Le fichier JSON n'existe pas : " + filePath);
+            return null;
+        }
+
+        try {
+            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+            return new JSONObject(content);
+        } catch (IOException e) {
+            Printer.error("Erreur lors de la lecture du fichier JSON : " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Sauvegarde un objet JSONObject dans un fichier JSON.
+     *
+     * @param jsonObject L'objet JSONObject à sauvegarder
+     * @param filePath Le chemin du fichier où sauvegarder l'objet
+     */
+    public static void saveJsonFile(JSONObject jsonObject, String filePath) {
+        try {
+            Files.writeString(Paths.get(filePath), jsonObject.toString(4), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            Printer.error("Erreur lors de la sauvegarde du fichier JSON : " + e.getMessage());
+        }
+    }
 
 }

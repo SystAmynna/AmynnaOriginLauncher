@@ -1,5 +1,6 @@
 package fr.amynna.OriginLauncher.data;
 
+import fr.amynna.OriginLauncher.tools.FileManager;
 import fr.amynna.OriginLauncher.tools.Printer;
 import org.json.JSONObject;
 
@@ -37,20 +38,12 @@ public class Config {
 
         File file = new File(CONFIG_PATH);
         if (!file.exists()) {
+            Printer.info("Configuration non trouvée, création d'une nouvelle configuration par défaut.");
             resetConfig();
             return;
         }
 
-
-        // TODO méthodes IO JSON
-        try {
-            String content = Files.readString(Path.of(CONFIG_PATH));
-            config = new JSONObject(content);
-            Printer.info("Configuration chargée avec succès.");
-        } catch (IOException e) {
-            Printer.error("Erreur lors du chargement de la configuration: " + e.getMessage());
-            resetConfig();
-        }
+        config = FileManager.openJsonFile(CONFIG_PATH);
     }
 
     /**
@@ -63,14 +56,7 @@ public class Config {
             return;
         }
 
-        try {
-            // Save the config to the file
-            Files.write(Paths.get(CONFIG_PATH), config.toString(4).getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            System.err.println("Error saving configuration: " + e.getMessage());
-        }
-
-        Printer.info("Config sauvegardée avec succès.");
+        FileManager.saveJsonFile(config, CONFIG_PATH);
     }
 
     /**
@@ -80,6 +66,7 @@ public class Config {
     public static void resetConfig() {
         JSONObject config = new JSONObject();
 
+        // TODO : Créer une vrai méthode de verification de la configuration
         config.put("mcInstalled", false);
 
         // RAM
@@ -89,9 +76,7 @@ public class Config {
 
 
         Config.config = config;
-        Printer.info("Configuration réinitialisée avec succès.");
         saveConfig();
-
     }
 
     /**

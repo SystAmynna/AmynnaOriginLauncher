@@ -57,6 +57,7 @@ public class SetupMc {
 
         install();
 
+        // TODO : Créer une vrai méthode de verification de l'installation
         Config.updateBooleanConfig("mcInstalled", true);
 
     }
@@ -67,6 +68,7 @@ public class SetupMc {
      * @return true si Minecraft est installé, false sinon
      */
     private static boolean checkInstallation() {
+        // TODO : Méthode temporaire pour vérifier l'installation de Minecraft
         return Config.getBooleanConfig("mcInstalled");
     }
 
@@ -79,7 +81,9 @@ public class SetupMc {
         Printer.info("Installation de Minecraft " + Proprieties.MINECRAFT_VERSION + " en cours...");
 
         JSONObject mojangManifest = downloadMojangManifest();
+        assert mojangManifest != null;
         JSONObject versionManifest = downloadVersionManifest(mojangManifest);
+        assert versionManifest != null;
 
         downloadClientJar(versionManifest);
         downloadLibraries(versionManifest);
@@ -138,6 +142,7 @@ public class SetupMc {
         }
 
         File versionFile = FileManager.downloadFile(versionUrl, VERSION_MANIFEST_PATH);
+        assert versionFile != null;
 
         try {
             return new JSONObject(new JSONTokener(new FileInputStream(versionFile)));
@@ -167,7 +172,7 @@ public class SetupMc {
         boolean success = false;
         int maxRetries = 3;
 
-        for (int i = 0; i < maxRetries && !success; i++) {
+        for (int i = 0; i < maxRetries; i++) {
             try {
                 FileManager.downloadAndVerifyFile(clientUrl, clientJarPath.toString(), clientSha1);
                 success = Files.exists(clientJarPath) && Files.isRegularFile(clientJarPath) && Files.size(clientJarPath) > 0;

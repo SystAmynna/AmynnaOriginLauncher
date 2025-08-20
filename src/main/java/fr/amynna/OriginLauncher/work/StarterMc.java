@@ -1,6 +1,9 @@
 package fr.amynna.OriginLauncher.work;
 
+import fr.amynna.OriginLauncher.data.Config;
 import fr.amynna.OriginLauncher.data.Proprieties;
+import fr.amynna.OriginLauncher.install.SetupMc;
+import fr.amynna.OriginLauncher.tools.FileManager;
 import fr.amynna.OriginLauncher.tools.Printer;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import org.json.JSONObject;
@@ -25,23 +28,33 @@ public class StarterMc {
      */
     List<String> command = new LinkedList<>();
 
+    /**
+     * Manifest de version Minecraft.
+     * Contient les informations nécessaires pour démarrer Minecraft.
+     */
     JSONObject versionManifest;
+    /**
+     * Index des ressources Minecraft.
+     * Utilisé pour récupérer les ressources nécessaires au démarrage.
+     */
     JSONObject assetIndex;
+    /**
+     * Résultat de l'authentification Microsoft.
+     * Contient les informations d'authentification nécessaires pour démarrer Minecraft.
+     */
     MicrosoftAuthResult authResult;
 
-
+    /**
+     * Constructeur de la classe StarterMc.
+     * Charge le manifest de version et l'index des ressources.
+     *
+     * @param authResult Le résultat de l'authentification Microsoft.
+     */
     public StarterMc(MicrosoftAuthResult authResult) {
         this.authResult = authResult;
 
+        versionManifest = FileManager.openJsonFile(SetupMc.VERSION_MANIFEST_PATH);
 
-        // TODO méthodes IO JSON
-        try {
-            String content = Files.readString(Path.of(Proprieties.ROOT_PATH, "/version.json"));
-            versionManifest = new JSONObject(content);
-            Printer.info("Configuration chargée avec succès.");
-        } catch (IOException e) {
-            Printer.error("Erreur lors du chargement du manifest de version : " + e.getMessage());
-        }
         if (versionManifest == null) {
             Printer.fatalError("Le manifest de version n'a pas pu être chargé. Assurez-vous que Minecraft est installé.");
             return;
@@ -50,15 +63,16 @@ public class StarterMc {
 
     }
 
-
+    /**
+     * Génère la commande pour démarrer Minecraft avec les paramètres appropriés.
+     * Cette méthode construit la commande en fonction des propriétés et de l'authentification.
+     */
     public void genCmd() {
         List<String> classpath = new ArrayList<>();
 
-        // 1) JAR de la version
+
         classpath.add(Paths.get(Proprieties.MC_PATH, "versions", Proprieties.MINECRAFT_VERSION,
                 Proprieties.MINECRAFT_VERSION + ".jar").toString());
-
-        // 2) Toutes les libs
         try {
             Files.walk(Paths.get(Proprieties.MC_PATH, "libraries"))
                     .filter(p -> p.toString().endsWith(".jar"))
@@ -70,21 +84,24 @@ public class StarterMc {
 
         String cp = String.join(File.pathSeparator, classpath);
 
-        // 3) Auth infos
+        // Récupération des informations d'authentification
         String playerName = authResult.getProfile().getName();
         String playerUUID = authResult.getProfile().getId();
         String accessToken = authResult.getAccessToken();
 
-
         command.clear();
 
-
-
+        // === Commande de base ===
         command.add(Proprieties.foundJava());
 
         // === Options JVM ===
-        command.add("-Xms4G");
-        command.add("-Xmx6G");
+        int minMemory = Config.getIntConfig("minRAM");
+        int maxMemory = Config.getIntConfig("maxRAM");
+        minMemory = minMemory == 0 ? 4 : minMemory; // Valeur par défaut si minRAM est 0
+        maxMemory = maxMemory == 0 ? 6 : maxMemory; // Valeur par défaut si maxRAM est 0
+
+        command.add("-Xms" + minMemory + "G"); // Mémoire minimale
+        command.add("-Xmx" + maxMemory + "G"); // Mémoire maximale
 
         // natives
         command.add("-Djava.library.path=" + Paths.get(Proprieties.MC_PATH, "natives").toString());
@@ -126,9 +143,10 @@ public class StarterMc {
         command.add("release");
     }
 
-
-
-
+    /**
+     * Démarre Minecraft avec la commande générée.
+     * Assure que la commande a été générée avant de démarrer le processus.
+     */
     public void start() {
         if (command.isEmpty()) {
             Printer.fatalError("La commande n'a pas été générée. Veuillez appeler genCmd() avant de démarrer Minecraft.");
