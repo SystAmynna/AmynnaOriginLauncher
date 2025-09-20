@@ -3,8 +3,8 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
-group = 'fr.amynna'
-version = '1.0-SNAPSHOT'
+group = 'com.amynna'
+version = '0.0.1'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -48,19 +48,17 @@ shadowJar {
 
 // Tâche pour créer un JAR contenant uniquement le package KeyUtil
 task keyUtilJar(type: Jar) {
-    archiveBaseName.set('keyutil')
+    archiveBaseName.set('OriginRP')
     archiveClassifier.set('')
     archiveVersion.set(version)
 
     // Inclure uniquement les fichiers du package fr.amynna.KeyUtil
     from(sourceSets.main.output) {
-        include 'fr/amynna/KeyUtil/**'
+        include 'com/amynna/OriginBootstrap/**'
     }
 
     manifest {
-        attributes 'Implementation-Title': 'KeyUtil Library',
-                'Implementation-Version': version
-        attributes 'Main-Class': 'fr.amynna.KeyUtil.KeyUtil' // Facultatif, si vous voulez une classe principale
+        attributes 'Main-Class': 'com.amynna.OriginBootstrap.App'
     }
 }
 
