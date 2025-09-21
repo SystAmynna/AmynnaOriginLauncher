@@ -8,31 +8,47 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
+/**
+ * Utilitaire pour la gestion des clés cryptographiques et des signatures.
+ */
 public final class KeyUtil {
 
+    /**
+     * Instance de l'application contenant les configurations.
+     */
     private static App APP;
 
+    /**
+     * Clé publique par défaut pour valider les signatures des fichiers de clés publiques de confiance.
+     */
     private static final String DEFAULT_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm33YXcr/8sf5icM+WP7/XvdJKOjCXurcnN++kE7RBQmI+vOpbR5BIZNnRfo4FeVYRGd7shBd9ASAjjZjHQAfC7EyU91NMNUjCCQPgvavUnRv7F7wyDkDCCsUTBHHG0egkYBRysOIilTLLclUnseBvvmdaQ+JS7RFuLgsc5G96+F14DEPp8kZFCpY8MR/NgJeN/XQzC4+mFlHAaoU6l81Y4E2sdF4kKKuSVEpWkfoCFlLKwR22dCQEUnAn0U93EJfIKQb5cyX5oTAN42B/Qn5jkbc8QElWBh8IrJmIi+mlVqd0ioCWBlMpAee/AlLx8aTvZpdcrjN4LzwgudL01WDlQIDAQAB";
+    /**
+     * Nom associé à la clé publique par défaut.
+     */
+    private static final String DEFAULT_PUBLIC_KEY_NAME = "Stiles";
 
-    private static final LinkedList<String> TRUSTED_PUBLIC_KEYS = new LinkedList<>();
+    /**
+     * Liste des clés publiques de confiance pour valider les signatures des fichiers.
+     */
+    private static final Map<String, String> TRUSTED_PUBLIC_KEYS = new HashMap<>();
 
-    // La taille de la signature dépend de la taille de la clé. Pour une clé RSA 2048 bits, elle est de 256 octets.
-    private static final int RSA_SIGNATURE_SIZE = 256;
-    private static final int RSA_ENCRYPTION_KEY_SIZE = 2048;
+    // TODO : REFAIRE LA GESTION DES SIGNATURES ET CLÉS
+    public static final int RSA_SIGNATURE_SIZE = 256;
+    public static final int RSA_ENCRYPTION_KEY_SIZE = 2048;
 
-
+    /**
+     * Initialise le gestionnaire de clés avec l'application donnée.
+     * @param app Instance de l'application contenant les configurations.
+     */
     public static void init(App app) {
-        TRUSTED_PUBLIC_KEYS.add(DEFAULT_PUBLIC_KEY);
+        TRUSTED_PUBLIC_KEYS.put(DEFAULT_PUBLIC_KEY, DEFAULT_PUBLIC_KEY_NAME);
         APP = app;
 
         // Télécharger le fichier des clés publiques de confiance
 
-        String trustedKeysFileName = "trusted-keys.json";
+        String trustedKeysFileName = "trusted-keys";
         String trustedKeysFileUrl = APP.SERVER_URL + File.separator + trustedKeysFileName;
 
         File trustedKeysFile = FileManager.downloadFile(trustedKeysFileUrl, APP.LAUNCHER_ROOT + trustedKeysFileName);
@@ -51,8 +67,10 @@ public final class KeyUtil {
 
         // Lire le fichier des clés publiques de confiance et extraire les clés publiques
 
-        Map<String, String> trustedKeysFileContent = FileManager.readKeyValueTextFile(trustedKeysFile);
-        if (trustedKeysFileContent == null || trustedKeysFileContent.isEmpty()) {
+        File unsignedTrustedKeysFile = FileManager.extractOriginalDataToFile(trustedKeysFile, app.TEMP_DIR);
+
+        Map<String, String> trustedKeysFileContent = FileManager.readKeyValueTextFile(unsignedTrustedKeysFile);
+        if (trustedKeysFileContent.isEmpty()) {
             System.err.println("⚠️  Le fichier des clés publiques de confiance est vide ou invalide.");
             return;
         }
@@ -60,20 +78,31 @@ public final class KeyUtil {
         for (Map.Entry<String, String> entry : trustedKeysFileContent.entrySet()) {
             String keyName = entry.getKey();
             String keyValue = entry.getValue();
-            TRUSTED_PUBLIC_KEYS.add(keyValue);
+            TRUSTED_PUBLIC_KEYS.put(keyValue, keyName);
 
+        }
+
+
+        for (Map.Entry<String, String> entry : TRUSTED_PUBLIC_KEYS.entrySet()) {
+            System.out.println("🔑 Clé publique de confiance : " + entry.getValue());
         }
 
     }
 
+    /**
+     * Valide la signature d'un fichier en utilisant les clés publiques de confiance.
+     * @param file Le fichier à valider.
+     * @return true si la signature est valide avec au moins une clé publique de confiance, false sinon.
+     */
+    public static boolean validateSignature(File file) {
 
-    public static boolean validateSignature(File launcherFile) {
-
-        for (String publicKey : TRUSTED_PUBLIC_KEYS) {
-            if (verifySignature(launcherFile, publicKey)) {
+        for (String publicKey : TRUSTED_PUBLIC_KEYS.keySet()) {
+            if (verifySignature(file, publicKey)) {
+                System.out.println("✅ Fichier [" + file.getName() + "] signé avec la clé publique de confiance : " + TRUSTED_PUBLIC_KEYS.get(publicKey));
                 return true;
             }
         }
+        System.out.println("❌ Fichier [" + file.getName() + "] non signé avec une clé publique de confiance.");
         return false;
     }
 
@@ -83,6 +112,8 @@ public final class KeyUtil {
      * @param privateKeyPath Le chemin vers la clé privée (format PKCS#8).
      */
     public static void signFile(String filePath, String privateKeyPath) {
+
+        // TODO : CHANGER LA MÉTHODE DE SIGNATURE
 
         try {
 
@@ -119,7 +150,14 @@ public final class KeyUtil {
         }
     }
 
+    /**
+     * Génère une paire de clés RSA et les sauvegarde dans des fichiers.
+     * La clé privée est sauvegardée dans "private.key" et la clé publique dans "public.key".
+     */
     public static void generateKeys() {
+
+        // TODO : CHANGER LA MÉTHODE DE GÉNÉRATION DES CLÉS
+
         try {
             // Générer une paire de clés RSA
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
@@ -148,9 +186,16 @@ public final class KeyUtil {
         System.out.println("🔑 Clés privée et publique générées.");
     }
 
-
-
+    /**
+     * Vérifie la signature d'un fichier signé avec une clé publique donnée.
+     * @param signedFile Le fichier signé à vérifier.
+     * @param publicKeyBase64 La clé publique en format base64 utilisée pour la vérification.
+     * @return true si la signature est valide, false sinon.
+     */
     public static boolean verifySignature(File signedFile, String publicKeyBase64) {
+
+        // TODO : CHANGER LA MÉTHODE DE VÉRIFICATION
+
         try {
             // Décoder la clé publique depuis la chaîne base64
             byte[] keyBytes = Base64.getDecoder().decode(publicKeyBase64);
@@ -180,6 +225,11 @@ public final class KeyUtil {
         }
     }
 
+    /**
+     * Lit une clé depuis un fichier et la retourne sous forme de chaîne base64.
+     * @param KeyPath Le chemin vers le fichier contenant la clé.
+     * @return La clé en format base64, ou une chaîne vide en cas d'erreur.
+     */
     public static String keyAsString(String KeyPath) {
         try {
             byte[] keyBytes = Files.readAllBytes(Paths.get(KeyPath));

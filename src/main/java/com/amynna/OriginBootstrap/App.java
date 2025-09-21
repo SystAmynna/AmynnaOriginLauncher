@@ -1,7 +1,5 @@
 package com.amynna.OriginBootstrap;
 
-import com.amynna.OriginBootstrap.tasks.Launch;
-
 import java.io.File;
 
 /**
@@ -12,7 +10,7 @@ public final class App {
     /**
      * URL du serveur distant pour les mises à jour et la récupération des clés publiques.
      */
-    public final String SERVER_URL = "http://localhost:8080";
+    public final String SERVER_URL = "http://localhost:8000";
     /**
      * Nom de l'application.
      */
@@ -21,6 +19,10 @@ public final class App {
      * Répertoire racine du lanceur.
      */
     public final String LAUNCHER_ROOT = System.getProperty("user.home") + File.separator + "." + APP_NAME + File.separator;
+    /**
+     * Répertoire temporaire pour les fichiers téléchargés et autres opérations temporaires.
+     */
+    public final String TEMP_DIR = LAUNCHER_ROOT + "temp" + File.separator;
 
 
     /**
@@ -59,16 +61,17 @@ public final class App {
      */
     private void verify(String ... args) {
 
-        if (args.length != 3) {
-            System.out.println("Please provide the signed file path and the public key path.");
-            return;
-        }
 
-        File signedFile = new File(args[1]);
-        String publicKeyPath = args[2];
-
-        System.out.println(KeyUtil.verifySignature(signedFile, publicKeyPath));
-
+        if (args.length == 3) {
+            File signedFile = new File(args[1]);
+            String publicKeyPath = args[2];
+            boolean valid = KeyUtil.verifySignature(signedFile, KeyUtil.keyAsString(publicKeyPath));
+            System.out.println(valid ? "✅ Signature is valid." : "❌ Signature is NOT valid.");
+        } else if (args.length == 2) {
+            File signedFile = new File(args[1]);
+            KeyUtil.init(this);
+            KeyUtil.validateSignature(signedFile);
+        } else System.out.println("Please provide the signed file path and the public key path.");
     }
 
     /**
