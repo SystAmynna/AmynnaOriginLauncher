@@ -32,12 +32,12 @@ public final class App {
     private void sign(String ... args) {
 
         if (args.length != 3) {
-            System.out.println("Please provide the file path to sign and the private key path.");
+            Logger.log("Please provide the file path to sign and the private key path.");
             return;
         }
 
         String filePath = args[1];
-        String privateKeyPath = args[2];
+        String privateKeyPath = KeyUtil.loadKeyAsString(new File(args[2]));
 
         KeyUtil.signFile(filePath, privateKeyPath);
     }
@@ -65,7 +65,7 @@ public final class App {
      * Affiche l'aide avec les commandes disponibles.
      */
     private void help() {
-        System.out.println("Available commands: launch, genKeys, sign, verify, help");
+        Logger.log("Available commands: launch, genKeys, sign, verify, help");
     }
 
     /**
@@ -97,7 +97,7 @@ public final class App {
             case "sign" -> app.sign(args);
             case "verify" -> app.verify(args);
             case "help" -> app.help();
-            default -> System.out.println("Commande inconnue. Utilisez 'help' pour voir les commandes disponibles.");
+            default -> Logger.log("Commande inconnue. Utilisez 'help' pour voir les commandes disponibles.");
         }
 
     }

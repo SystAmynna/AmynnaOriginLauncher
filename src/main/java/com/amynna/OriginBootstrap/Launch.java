@@ -3,6 +3,7 @@ package com.amynna.OriginBootstrap;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.KeyUtil;
+import com.amynna.Tools.SignedFile;
 
 import java.io.File;
 import java.util.Map;
@@ -104,7 +105,17 @@ public final class Launch {
      */
     private void checkLauncher() {
         File launcherFile = new File(AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
-        if (!launcherFile.exists() || !KeyUtil.validateSignature(launcherFile)) downloadLauncher();
+        File signatureFile = new File(KeyUtil.getSignaturePath(launcherName));
+
+        if (!launcherFile.exists() || signatureFile.exists()) {
+            FileManager.downloadAndValidateFile(launcherName, AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
+            downloaded = true;
+            return;
+        }
+
+        SignedFile signedFile = new SignedFile(launcherFile, signatureFile);
+        KeyUtil.validateSignature(signedFile);
+
     }
 
     /**
@@ -117,7 +128,7 @@ public final class Launch {
 
         String onServerFileName = AppProperties.LAUNCHER_ROOT + ".properties";
 
-        File propertiesFile = FileManager.downloadAndValidateFile(AppProperties.LAUNCHER_ROOT.getPath() + onServerFileName, AppProperties.LAUNCHER_ROOT.getPath() + onServerFileName);
+        File propertiesFile = FileManager.downloadAndValidateFile(onServerFileName, AppProperties.LAUNCHER_ROOT.getPath() + onServerFileName);
 
         Map<String, String> Properties = FileManager.readKeyValueTextFile(propertiesFile);
 
@@ -134,7 +145,7 @@ public final class Launch {
             String currentVersion = new String(process.getInputStream().readAllBytes()).trim();
             if (!currentVersion.equals(lastVersion)) {
                 System.out.println("Une nouvelle version du launcher est disponible. Téléchargement...");
-                downloadLauncher();
+                FileManager.downloadAndValidateFile(launcherName, AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
             } else {
                 System.out.println("Le launcher est à jour.");
             }
@@ -146,22 +157,6 @@ public final class Launch {
 
     }
 
-    /**
-     * Méthode pour télécharger le launcher depuis le serveur.
-     * Si un fichier du launcher existe déjà, il est supprimé avant le téléchargement.
-     * Après le téléchargement, l'indicateur 'downloaded' est mis à true.
-     */
-    private void downloadLauncher() {
-        File launcherFile = new File(AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
-        if (launcherFile.exists()) {
-            try { launcherFile.delete(); } catch (Exception e) {
-                System.err.println("Erreur lors de la suppression de l'ancien launcher: " + e.getMessage());
-                System.exit(-1);
-            }
-        }
-        FileManager.downloadAndValidateFile(AppProperties.LAUNCHER_ROOT.getPath() + launcherName, AppProperties.LAUNCHER_ROOT.getPath() + launcherName );
-        downloaded = true;
-    }
 
 
 

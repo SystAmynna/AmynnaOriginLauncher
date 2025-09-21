@@ -7,6 +7,10 @@ public final class Logger {
 
     private static final List<String> logMessages = new LinkedList<String>();
 
+    public static final String RESET = "\u001B[0m";
+    public static final String BOLD = "\u001B[1m";
+
+
 
     public static void log(String message) {
         System.out.println(message);
@@ -27,6 +31,14 @@ public final class Logger {
     private static void saveLogToFile() {
 
 
+    }
+
+    public static String getLogMessages() {
+        StringBuilder sb = new StringBuilder();
+        for (String msg : logMessages) {
+            sb.append(msg).append(System.lineSeparator());
+        }
+        return sb.toString();
     }
 
 

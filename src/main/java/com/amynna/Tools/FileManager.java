@@ -76,7 +76,7 @@ public class FileManager {
             }
 
             File downloadedFile = destination.toFile();
-            System.out.println("\uD83D\uDCE5 Fichier téléchargé dans : " + downloadedFile.getAbsolutePath());
+            System.out.println("\uD83D\uDCE5 Fichier téléchargé : " + url + " -> " + downloadedFile.getAbsolutePath());
 
             return downloadedFile;
 
@@ -143,6 +143,9 @@ public class FileManager {
      * @return Le fichier téléchargé et validé, ou null en cas d'erreur ou de validation échouée
      */
     public static File downloadAndValidateFile(String urlString, String destinationPath) {
+
+        urlString = AppProperties.REPO_SERVER_URL + File.separator + urlString;
+
         File file = downloadFile(urlString, destinationPath);
 
         if (file == null || !file.exists()) {
@@ -150,8 +153,10 @@ public class FileManager {
             return null;
         }
 
-        File signatureFile = downloadFile(AppProperties.SIGNATURE_LOCATION_ON_SERVER,
-                AppProperties.SIGNATURE_DIR.getPath() + file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION);
+        String onServerSignPath = AppProperties.SIGNATURE_LOCATION_ON_SERVER + file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+        String localSignPath = AppProperties.SIGNATURE_DIR.getPath() + File.separator + file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        File signatureFile = downloadFile(onServerSignPath, localSignPath);
 
         if (signatureFile == null || !signatureFile.exists()) {
             Logger.error("Erreur lors du téléchargement du fichier de signature...");

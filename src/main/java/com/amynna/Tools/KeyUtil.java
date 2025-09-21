@@ -35,9 +35,8 @@ public final class KeyUtil {
         // Télécharger le fichier des clés publiques de confiance
 
         String trustedKeysFileName = "trusted-keys";
-        String trustedKeysFileUrl = AppProperties.REPO_SERVER_URL + File.separator + trustedKeysFileName;
 
-        File trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileUrl, trustedKeysFileName);
+        File trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
 
         // Lire le fichier des clés publiques de confiance et extraire les clés publiques
 
@@ -56,9 +55,14 @@ public final class KeyUtil {
 
         // Lister les clés publiques de confiance chargées
 
+        Logger.log("🔐 Clé publique de confiance prioritaire (Master Key) : " + Logger.BOLD +
+                AppProperties.DEFAULT_PUBLIC_KEY_OWNER + Logger.RESET);
+        StringBuilder keysList = new StringBuilder();
         for (Map.Entry<String, String> entry : TRUSTED_PUBLIC_KEYS.entrySet()) {
-            System.out.println("🔑 Clé publique de confiance : " + entry.getValue());
+            if (entry.getValue().equals(AppProperties.DEFAULT_PUBLIC_KEY_OWNER)) continue;
+            keysList.append(entry.getValue()).append("  ");
         }
+        Logger.log("🔑 Clés publiques de confiance (Certifiées par la Master Key) : " + Logger.BOLD + keysList + Logger.RESET);
 
     }
 
@@ -206,6 +210,10 @@ public final class KeyUtil {
             Logger.error("Erreur lors de la vérification de la signature : " + e.getMessage());
             return false;
         }
+    }
+
+    public static String getSignaturePath(String filename) {
+        return AppProperties.SIGNATURE_DIR + filename + AppProperties.SIGNATURE_FILE_EXTENSION;
     }
 
 }

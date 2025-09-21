@@ -47,14 +47,16 @@ shadowJar {
 }
 
 // Tâche pour créer un JAR contenant uniquement le package KeyUtil
-task keyUtilJar(type: Jar) {
+task OriginJar(type: Jar) {
     archiveBaseName.set('OriginRP')
     archiveClassifier.set('')
     archiveVersion.set(version)
 
-    // Inclure uniquement les fichiers du package fr.amynna.KeyUtil
+    // Inclure les packages OriginBootstrap et Tools, mais pas OriginLauncher
     from(sourceSets.main.output) {
         include 'com/amynna/OriginBootstrap/**'
+        include 'com/amynna/Tools/**'
+        exclude 'com/amynna/OriginLauncher/**'
     }
 
     manifest {
