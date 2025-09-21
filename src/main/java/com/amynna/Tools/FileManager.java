@@ -1,23 +1,28 @@
-package com.amynna.OriginBootstrap;
+package com.amynna.Tools;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Gestionnaire de fichiers pour le téléchargement et la lecture de fichiers.
+ */
 public class FileManager {
 
+    /**
+     * Télécharge un fichier depuis une URL et le sauvegarde dans le chemin spécifié.
+     * Si le chemin de destination est un répertoire, le nom du fichier est déterminé automatiquement.
+     * @param url URL du fichier à télécharger
+     * @param destinationPath Chemin de destination (fichier ou répertoire)
+     * @return Le fichier téléchargé, ou null en cas d'erreur
+     */
     public static File downloadFile(String url, String destinationPath) {
 
         try {
@@ -83,6 +88,12 @@ public class FileManager {
 
     }
 
+    /**
+     * Lit un fichier texte contenant des paires clé:valeur et les retourne dans une Map.
+     * Les lignes vides ou sans ':' sont ignorées.
+     * @param file Le fichier texte à lire
+     * @return Une Map contenant les paires clé:valeur
+     */
     public static Map<String, String> readKeyValueTextFile(File file) {
         Map<String, String> map = new HashMap<>();
         try {
@@ -101,68 +112,60 @@ public class FileManager {
         return map;
     }
 
+    /**
+     * Crée les répertoires spécifiés dans le chemin s'ils n'existent pas.
+     * Si un fichier existe déjà à cet emplacement, il est supprimé et remplacé par un répertoire.
+     * @param directoryPath Le chemin du répertoire à créer
+     */
+    public static void createDirectoriesIfNotExist(String directoryPath) {
+        File dir = new File(directoryPath);
+        if (!dir.exists()) {
+            if (dir.mkdirs()) {
+                Logger.log("Répertoire créé : " + directoryPath);
+            } else {
+                Logger.fatal("Échec de la création du répertoire : " + directoryPath);
+            }
+        } else if (!dir.isDirectory()) {
+            if (dir.delete() && dir.mkdirs()) {
+                Logger.log("Fichier remplacé par un répertoire : " + directoryPath);
+            } else {
+                Logger.fatal("Échec de la création du répertoire (un fichier existe déjà) : " + directoryPath);
+            }
+        }
+    }
+
+    /**
+     * Télécharge un fichier depuis une URL, le sauvegarde dans le chemin spécifié,
+     * puis valide sa signature avec une clé publique de confiance.
+     * Si la validation échoue, le fichier est supprimé.
+     * @param urlString URL du fichier à télécharger
+     * @param destinationPath Chemin de destination (fichier ou répertoire)
+     * @return Le fichier téléchargé et validé, ou null en cas d'erreur ou de validation échouée
+     */
     public static File downloadAndValidateFile(String urlString, String destinationPath) {
         File file = downloadFile(urlString, destinationPath);
+
         if (file == null || !file.exists()) {
-            System.err.println("Erreur lors du téléchargement du fichier...");
+            Logger.error("Erreur lors du téléchargement du fichier...");
             return null;
         }
-        if (!KeyUtil.validateSignature(file)) {
-            System.err.println("Le fichier téléchargé n'est pas signé avec une clé publique de confiance.");
+
+        File signatureFile = downloadFile(AppProperties.SIGNATURE_LOCATION_ON_SERVER,
+                AppProperties.SIGNATURE_DIR.getPath() + file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION);
+
+        if (signatureFile == null || !signatureFile.exists()) {
+            Logger.error("Erreur lors du téléchargement du fichier de signature...");
+        }
+
+        SignedFile signedFile = new SignedFile(file, signatureFile);
+
+        if (!KeyUtil.validateSignature(signedFile)) {
+            Logger.error("Le fichier téléchargé n'est pas signé avec une clé publique de confiance.");
             file.delete();
+            signatureFile.delete();
             return null;
         }
         return file;
-    }
-
-
-    /**
-     * Extrait les données originales d'un fichier signé et les enregistre dans un nouveau fichier.
-     * @param signedFile Le fichier signé contenant la signature et les données
-     * @param outputPath Le chemin où sauvegarder le fichier extrait (si null, crée un fichier temporaire)
-     * @return Le fichier contenant les données originales, ou null en cas d'erreur
-     */
-    public static File extractOriginalDataToFile(File signedFile, String outputPath) {
-        try {
-            // Lire le contenu du fichier signé
-            byte[] signedFileBytes = Files.readAllBytes(signedFile.toPath());
-
-            // Vérifier que le fichier est assez grand pour contenir une signature
-            if (signedFileBytes.length <= KeyUtil.RSA_SIGNATURE_SIZE) {
-                System.err.println("Fichier trop petit pour contenir une signature valide");
-                return null;
-            }
-
-            // Extraire les données originales
-            byte[] originalData = Arrays.copyOfRange(signedFileBytes, KeyUtil.RSA_SIGNATURE_SIZE, signedFileBytes.length);
-
-            // Créer le fichier de sortie
-            File outputFile;
-            if (outputPath != null) {
-                outputFile = new File(outputPath);
-                if (outputFile.getParentFile() != null && !outputFile.getParentFile().exists()) {
-                    outputFile.getParentFile().mkdirs();
-                }
-            } else {
-                // Créer un fichier temporaire avec le même nom mais sans signature
-                String originalName = signedFile.getName();
-                String extension = "";
-                int dotIndex = originalName.lastIndexOf('.');
-                if (dotIndex > 0) {
-                    extension = originalName.substring(dotIndex);
-                    originalName = originalName.substring(0, dotIndex);
-                }
-                outputFile = File.createTempFile(originalName + "-unsigned", extension);
-            }
-
-            // Écrire les données dans le fichier
-            Files.write(outputFile.toPath(), originalData);
-
-            return outputFile;
-        } catch (Exception e) {
-            System.err.println("Erreur lors de l'extraction des données : " + e.getMessage());
-            return null;
-        }
     }
 
 

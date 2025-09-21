@@ -1,29 +1,15 @@
 package com.amynna.OriginBootstrap;
 
+import com.amynna.Tools.KeyUtil;
+import com.amynna.Tools.Logger;
+import com.amynna.Tools.SignedFile;
+
 import java.io.File;
 
 /**
  * Point d'entrée du BootStrap de l'application.
  */
 public final class App {
-
-    /**
-     * URL du serveur distant pour les mises à jour et la récupération des clés publiques.
-     */
-    public final String SERVER_URL = "http://localhost:8000";
-    /**
-     * Nom de l'application.
-     */
-    public final String APP_NAME = "OriginRP";
-    /**
-     * Répertoire racine du lanceur.
-     */
-    public final String LAUNCHER_ROOT = System.getProperty("user.home") + File.separator + "." + APP_NAME + File.separator;
-    /**
-     * Répertoire temporaire pour les fichiers téléchargés et autres opérations temporaires.
-     */
-    public final String TEMP_DIR = LAUNCHER_ROOT + "temp" + File.separator;
-
 
     /**
      * Lance le processus de lancement de l'application.
@@ -61,17 +47,18 @@ public final class App {
      */
     private void verify(String ... args) {
 
-
-        if (args.length == 3) {
-            File signedFile = new File(args[1]);
-            String publicKeyPath = args[2];
-            boolean valid = KeyUtil.verifySignature(signedFile, KeyUtil.keyAsString(publicKeyPath));
-            System.out.println(valid ? "✅ Signature is valid." : "❌ Signature is NOT valid.");
-        } else if (args.length == 2) {
-            File signedFile = new File(args[1]);
+        SignedFile signedFile;
+        if (args.length == 4) {
+            signedFile = new SignedFile(new File(args[1]), new File(args[2]));
+            File publicKey = new File(args[3]);
+            String keyString = KeyUtil.loadKeyAsString(publicKey);
+            boolean valid = KeyUtil.verifyFile(signedFile, keyString);
+            Logger.log(valid ? "✅ Signature is valid." : "❌ Signature is NOT valid.");
+        } else if (args.length == 3) {
+            signedFile = new SignedFile(new File(args[1]), new File(args[2]));
             KeyUtil.init(this);
             KeyUtil.validateSignature(signedFile);
-        } else System.out.println("Please provide the signed file path and the public key path.");
+        } else Logger.log("Please provide the signed file path and the public key path.");
     }
 
     /**
@@ -86,11 +73,11 @@ public final class App {
      */
     private void showKey(String ... args) {
         if (args.length != 2) {
-            System.out.println("Please provide the key file path.");
+            Logger.log("Please provide the key file path.");
             return;
         }
         String keyFilePath = args[1];
-        System.out.println(keyFilePath + " :\n" + KeyUtil.keyAsString(keyFilePath));
+        Logger.log(keyFilePath + " :\n" + KeyUtil.loadKeyAsString(new File(keyFilePath)));
     }
 
     /**

@@ -1,5 +1,9 @@
 package com.amynna.OriginBootstrap;
 
+import com.amynna.Tools.AppProperties;
+import com.amynna.Tools.FileManager;
+import com.amynna.Tools.KeyUtil;
+
 import java.io.File;
 import java.util.Map;
 
@@ -52,7 +56,7 @@ public final class Launch {
      * Utilise ProcessBuilder pour lancer le launcher avec les arguments nécessaires.
      */
     private void runLauncher() {
-        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", app.LAUNCHER_ROOT + launcherName, "launch", app.SERVER_URL);
+        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", AppProperties.LAUNCHER_ROOT.getPath() + launcherName, "launch");
         try {
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
@@ -72,7 +76,7 @@ public final class Launch {
      * Si un fichier avec le même nom existe, il est supprimé avant de créer le répertoire.
      */
     private void checkRootDir() {
-        File rootDir = new File(app.LAUNCHER_ROOT);
+        File rootDir = new File(AppProperties.LAUNCHER_ROOT.getPath());
         boolean success = true;
         if (!rootDir.exists()) {
             success = rootDir.mkdirs();
@@ -81,7 +85,7 @@ public final class Launch {
             if (success) success = rootDir.mkdirs();
         }
 
-        File tempDir = new File(app.TEMP_DIR);
+        File tempDir = AppProperties.TEMP_DIR;
         if (success && !tempDir.exists()) success = tempDir.mkdirs();
         else if (success && tempDir.isDirectory()) {
             success = tempDir.delete();
@@ -99,7 +103,7 @@ public final class Launch {
      * Si le launcher n'existe pas ou si la signature est invalide, il est téléchargé.
      */
     private void checkLauncher() {
-        File launcherFile = new File(app.LAUNCHER_ROOT + launcherName);
+        File launcherFile = new File(AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
         if (!launcherFile.exists() || !KeyUtil.validateSignature(launcherFile)) downloadLauncher();
     }
 
@@ -111,15 +115,15 @@ public final class Launch {
      */
     private void checkVersion() {
 
-        String onServerFileName = app.APP_NAME + ".properties";
+        String onServerFileName = AppProperties.LAUNCHER_ROOT + ".properties";
 
-        File propertiesFile = FileManager.downloadAndValidateFile(app.SERVER_URL + onServerFileName, app.LAUNCHER_ROOT + onServerFileName);
+        File propertiesFile = FileManager.downloadAndValidateFile(AppProperties.LAUNCHER_ROOT.getPath() + onServerFileName, AppProperties.LAUNCHER_ROOT.getPath() + onServerFileName);
 
         Map<String, String> Properties = FileManager.readKeyValueTextFile(propertiesFile);
 
         String lastVersion = Properties.get("LauncherVersion");
 
-        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", app.LAUNCHER_ROOT + launcherName, "version");
+        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", AppProperties.LAUNCHER_ROOT.getPath() + launcherName, "version");
         try {
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
@@ -148,14 +152,14 @@ public final class Launch {
      * Après le téléchargement, l'indicateur 'downloaded' est mis à true.
      */
     private void downloadLauncher() {
-        File launcherFile = new File(app.LAUNCHER_ROOT + launcherName);
+        File launcherFile = new File(AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
         if (launcherFile.exists()) {
             try { launcherFile.delete(); } catch (Exception e) {
                 System.err.println("Erreur lors de la suppression de l'ancien launcher: " + e.getMessage());
                 System.exit(-1);
             }
         }
-        FileManager.downloadAndValidateFile(app.LAUNCHER_ROOT + launcherName, app.LAUNCHER_ROOT + launcherName );
+        FileManager.downloadAndValidateFile(AppProperties.LAUNCHER_ROOT.getPath() + launcherName, AppProperties.LAUNCHER_ROOT.getPath() + launcherName );
         downloaded = true;
     }
 
