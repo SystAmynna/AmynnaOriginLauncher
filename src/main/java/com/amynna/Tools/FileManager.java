@@ -6,7 +6,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,12 @@ import java.util.Map;
 /**
  * Gestionnaire de fichiers pour le téléchargement et la lecture de fichiers.
  */
-public class FileManager {
+public final class FileManager {
+
+    private FileManager() {
+        // Constructeur privé pour empêcher l'instanciation
+        Logger.fatal("FileManager ne peut pas être instancié.");
+    }
 
     /**
      * Télécharge un fichier depuis une URL et le sauvegarde dans le chemin spécifié.
@@ -138,15 +142,15 @@ public class FileManager {
      * Télécharge un fichier depuis une URL, le sauvegarde dans le chemin spécifié,
      * puis valide sa signature avec une clé publique de confiance.
      * Si la validation échoue, le fichier est supprimé.
-     * @param urlString URL du fichier à télécharger
+     * @param onServerPath URL du fichier à télécharger
      * @param destinationPath Chemin de destination (fichier ou répertoire)
      * @return Le fichier téléchargé et validé, ou null en cas d'erreur ou de validation échouée
      */
-    public static File downloadAndValidateFile(String urlString, String destinationPath) {
+    public static File downloadAndValidateFile(String onServerPath, String destinationPath) {
 
-        urlString = AppProperties.REPO_SERVER_URL + File.separator + urlString;
+        onServerPath = AppProperties.REPO_SERVER_URL + File.separator + onServerPath;
 
-        File file = downloadFile(urlString, destinationPath);
+        File file = downloadFile(onServerPath, destinationPath);
 
         if (file == null || !file.exists()) {
             Logger.error("Erreur lors du téléchargement du fichier...");
