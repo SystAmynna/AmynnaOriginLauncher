@@ -22,8 +22,12 @@ public final class App {
     /**
      * Génère une paire de clés publique/privée.
      */
-    private void genKeys() {
-        KeyUtil.generateKeys();
+    private void genKeys(String ... args) {
+
+        if (args.length == 2) {
+            KeyUtil.generateKeys(args[1]);
+        }
+
     }
 
     /**

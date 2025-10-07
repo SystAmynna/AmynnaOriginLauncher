@@ -90,22 +90,19 @@ public final class KeyUtil {
     /**
      * Génère une paire de clés publique/privée et les sauvegarde dans des fichiers.
      */
-    public static void generateKeys() {
+    public static void generateKeys(String name) {
 
         // TODO : REFAIRE toute la logique de gestion des clées
 
-        String privatePath = "private.key";
-        String publicPath = "public.key";
-
         try {
+            // Génération de la paire de clés
             KeyPairGenerator kpg = KeyPairGenerator.getInstance(KEY_ALGORITHM);
             KeyPair kp = kpg.generateKeyPair();
 
-            // Sauvegarde des clés en Base64
-            Files.write(Paths.get(privatePath),
-                    Base64.getEncoder().encode(kp.getPrivate().getEncoded()));
-            Files.write(Paths.get(publicPath),
-                    Base64.getEncoder().encode(kp.getPublic().getEncoded()));
+            // Encodage des clés en Base64
+            String password = Asker.askFirstPassword();
+
+
         } catch (Exception e) {
             Logger.error("Erreur lors de la génération des clés : " + e.getMessage());
             return;
