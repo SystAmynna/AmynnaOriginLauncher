@@ -104,7 +104,7 @@ public final class FileManager {
             List<String> lines = Files.readAllLines(file.toPath());
             for (String line : lines) {
                 line = line.trim();
-                if (line.isEmpty() || !line.contains(":")) continue;
+                if (!line.contains(":")) continue;
                 String[] parts = line.split(":", 2);
                 String key = parts[0].trim();
                 String value = parts[1].trim();

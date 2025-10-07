@@ -15,8 +15,8 @@ public final class App {
      * Lance le processus de lancement de l'application.
      */
     private void launch() {
-        KeyUtil.init(this);
-        new Launch(this).process();
+        KeyUtil.init();
+        new Launch().process();
     }
 
     /**
@@ -56,7 +56,7 @@ public final class App {
             Logger.log(valid ? "✅ Signature is valid." : "❌ Signature is NOT valid.");
         } else if (args.length == 3) {
             signedFile = new SignedFile(new File(args[1]), new File(args[2]));
-            KeyUtil.init(this);
+            KeyUtil.init();
             KeyUtil.validateSignature(signedFile);
         } else Logger.log("Please provide the signed file path and the public key path.");
     }

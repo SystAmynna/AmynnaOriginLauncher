@@ -27,9 +27,8 @@ public final class KeyUtil {
 
     /**
      * Initialise le gestionnaire de clés avec l'application donnée.
-     * @param app Instance de l'application contenant les configurations.
      */
-    public static void init(App app) {
+    public static void init() {
         TRUSTED_PUBLIC_KEYS.put(AppProperties.DEFAULT_PUBLIC_KEY, AppProperties.DEFAULT_PUBLIC_KEY_OWNER);
 
         // Télécharger le fichier des clés publiques de confiance
@@ -93,6 +92,8 @@ public final class KeyUtil {
      */
     public static void generateKeys() {
 
+        // TODO : REFAIRE toute la logique de gestion des clées
+
         String privatePath = "private.key";
         String publicPath = "public.key";
 
@@ -118,6 +119,9 @@ public final class KeyUtil {
      * @return La clé sous forme de chaîne, ou null en cas d'erreur.
      */
     public static String loadKeyAsString(File keyFile) {
+
+        // TODO : REFAIRE toute la logique de gestion des clées
+
         try {
             return new String(Files.readAllBytes(keyFile.toPath()));
         } catch (Exception e) {
@@ -132,6 +136,9 @@ public final class KeyUtil {
      * @return La clé privée.
      */
     private static PrivateKey privateKeyFromString(String base64) {
+
+        // TODO : REFAIRE toute la logique de gestion des clées
+
         try {
             byte[] bytes = Base64.getDecoder().decode(base64);
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(bytes);
@@ -149,6 +156,9 @@ public final class KeyUtil {
      * @return La clé publique.
      */
     private static PublicKey publicKeyFromString(String base64) {
+
+        // TODO : REFAIRE toute la logique de gestion des clées
+
         try {
             byte[] bytes = Base64.getDecoder().decode(base64);
             X509EncodedKeySpec spec = new X509EncodedKeySpec(bytes);
@@ -167,6 +177,9 @@ public final class KeyUtil {
      * @param privateKeyBase64 La clé privée en format base64 utilisée pour la signature.
      */
     public static void signFile(String filePath, String privateKeyBase64) {
+
+        // TODO : REFAIRE toute la logique de gestion des clées
+
         try {
             byte[] data = Files.readAllBytes(Paths.get(filePath));
 
@@ -193,6 +206,9 @@ public final class KeyUtil {
      * @return true si la signature est valide, false sinon.
      */
     public static boolean verifyFile(SignedFile signedFile, String publicKeyBase64) {
+
+        // TODO : REFAIRE toute la logique de gestion des clées
+
         try {
             // data du fichier
             byte[] data = Files.readAllBytes(signedFile.file.toPath());

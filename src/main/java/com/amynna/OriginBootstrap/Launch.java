@@ -15,10 +15,6 @@ import java.util.Map;
 public final class Launch {
 
     /**
-     * Instance de l'application contenant les configurations.
-     */
-    private final App app;
-    /**
      * Nom du fichier du launcher.
      */
     private final String launcherName = "launcher.jar";
@@ -27,15 +23,6 @@ public final class Launch {
      * Indicateur si le launcher a été téléchargé.
      */
     private boolean downloaded = false;
-
-    /**
-     * Constructeur de la classe Launch.
-     *
-     * @param app Instance de l'application contenant les configurations.
-     */
-    public Launch(App app) {
-        this.app = app;
-    }
 
     /**
      * Méthode principale pour vérifier et lancer le launcher.

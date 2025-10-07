@@ -1,3 +1,5 @@
+package tests;
+
 import com.amynna.Tools.FileManager;
 import org.junit.jupiter.api.Test;
 

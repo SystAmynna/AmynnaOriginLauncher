@@ -1,3 +1,5 @@
+package tests;
+
 import com.amynna.OriginBootstrap.App;
 import com.amynna.Tools.Logger;
 import org.junit.jupiter.api.Test;
