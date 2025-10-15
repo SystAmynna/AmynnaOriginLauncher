@@ -11,9 +11,9 @@ public class Asker {
             JPasswordField confirmPasswordField = new JPasswordField(20);
 
             JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
-            panel.add(new JLabel("🔐 Mot de passe :"));
+            panel.add(new JLabel("Mot de passe :"));
             panel.add(passwordField);
-            panel.add(new JLabel("🔐 Confirmation :"));
+            panel.add(new JLabel("Confirmation :"));
             panel.add(confirmPasswordField);
 
             int result = JOptionPane.showConfirmDialog(
@@ -32,17 +32,11 @@ public class Asker {
             String confirmPassword = new String(confirmPasswordField.getPassword());
 
             if (password.equals(confirmPassword)) {
-                JOptionPane.showMessageDialog(
-                    null,
-                    "✅ Mot de passe confirmé avec succès.",
-                    "Succès",
-                    JOptionPane.INFORMATION_MESSAGE
-                );
-                return password;
+                return Encrypter.sha512(password);
             } else {
                 JOptionPane.showMessageDialog(
                     null,
-                    "❌ Les mots de passe ne correspondent pas.\nVeuillez réessayer.",
+                    "Les mots de passe ne correspondent pas.\nVeuillez réessayer.",
                     "Erreur",
                     JOptionPane.ERROR_MESSAGE
                 );
@@ -50,6 +44,27 @@ public class Asker {
         }
     }
 
+    public static String askPassword() {
+        JPasswordField passwordField = new JPasswordField(20);
+
+        JPanel panel = new JPanel(new GridLayout(1, 2, 5, 5));
+        panel.add(new JLabel("Mot de passe :"));
+        panel.add(passwordField);
+
+        int result = JOptionPane.showConfirmDialog(
+            null,
+            panel,
+            "Saisie du mot de passe",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            return Encrypter.sha512(new String(passwordField.getPassword()));
+        } else {
+            return null; // Annulation
+        }
+    }
 
 
 

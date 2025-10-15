@@ -59,6 +59,10 @@ public final class AppProperties {
      * Extension des fichiers de signature.
      */
     public static final String SIGNATURE_FILE_EXTENSION = ".sig";
+    /**
+     * Emplacement local des clés publiques de confiance.
+     */
+    public static final File LOCAL_PRIVATE_KEYS_LOCATION = new File(LAUNCHER_ROOT + File.separator + "private_keys" + ".p12");
 
 
 

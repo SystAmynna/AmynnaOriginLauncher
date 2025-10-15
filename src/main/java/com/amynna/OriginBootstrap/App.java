@@ -1,10 +1,10 @@
 package com.amynna.OriginBootstrap;
 
-import com.amynna.Tools.KeyUtil;
-import com.amynna.Tools.Logger;
-import com.amynna.Tools.SignedFile;
+import com.amynna.Tools.*;
 
 import java.io.File;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 /**
  * Point d'entrée du BootStrap de l'application.
@@ -15,7 +15,6 @@ public final class App {
      * Lance le processus de lancement de l'application.
      */
     private void launch() {
-        KeyUtil.init();
         new Launch().process();
     }
 
@@ -25,7 +24,7 @@ public final class App {
     private void genKeys(String ... args) {
 
         if (args.length == 2) {
-            KeyUtil.generateKeys(args[1]);
+            KeyUtil.generatePrivateKey(args[1]);
         }
 
     }
@@ -36,14 +35,16 @@ public final class App {
     private void sign(String ... args) {
 
         if (args.length != 3) {
-            Logger.log("Please provide the file path to sign and the private key path.");
+            Logger.log("Please provide the file path to sign and the alias of the private key.");
             return;
         }
 
         String filePath = args[1];
-        String privateKeyPath = KeyUtil.loadKeyAsString(new File(args[2]));
+        String keyAlias = args[2];
+        String password = Asker.askPassword();
+        PrivateKey privateKey = KeyUtil.loadPrivateKey(keyAlias, password);
 
-        KeyUtil.signFile(filePath, privateKeyPath);
+        KeyUtil.signFile(filePath, privateKey);
     }
 
     /**
@@ -52,15 +53,8 @@ public final class App {
     private void verify(String ... args) {
 
         SignedFile signedFile;
-        if (args.length == 4) {
+        if (args.length == 3) {
             signedFile = new SignedFile(new File(args[1]), new File(args[2]));
-            File publicKey = new File(args[3]);
-            String keyString = KeyUtil.loadKeyAsString(publicKey);
-            boolean valid = KeyUtil.verifyFile(signedFile, keyString);
-            Logger.log(valid ? "✅ Signature is valid." : "❌ Signature is NOT valid.");
-        } else if (args.length == 3) {
-            signedFile = new SignedFile(new File(args[1]), new File(args[2]));
-            KeyUtil.init();
             KeyUtil.validateSignature(signedFile);
         } else Logger.log("Please provide the signed file path and the public key path.");
     }
@@ -77,11 +71,24 @@ public final class App {
      */
     private void showKey(String ... args) {
         if (args.length != 2) {
-            Logger.log("Please provide the key file path.");
+            Logger.log("Please provide the alias of the key to display.");
             return;
         }
-        String keyFilePath = args[1];
-        Logger.log(keyFilePath + " :\n" + KeyUtil.loadKeyAsString(new File(keyFilePath)));
+
+        String keyAlias = args[1];
+        if (keyAlias.isEmpty()) {
+            Logger.log("Key alias cannot be empty.");
+            return;
+        }
+
+        PrivateKey privateKey = KeyUtil.loadPrivateKey(keyAlias, Asker.askPassword());
+        PublicKey publicKey = KeyUtil.getPublicKeyFromPrivateKey(privateKey);
+
+        assert publicKey != null;
+        String publicKeyString = KeyUtil.getPublicKeyAsString(publicKey);
+
+        Logger.log("Public Key:\n" + publicKeyString);
+
     }
 
     /**
