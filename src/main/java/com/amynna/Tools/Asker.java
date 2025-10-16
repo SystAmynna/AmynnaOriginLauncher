@@ -77,5 +77,17 @@ public class Asker {
         return result == JOptionPane.YES_OPTION;
     }
 
+    /**
+     * Affiche une popup d'information avec le message fourni.
+     * @param message Le message à afficher.
+     */
+    public static void askInfo(String message) {
+        JOptionPane.showMessageDialog(
+            null,
+            message,
+            "Information",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }
 
 }

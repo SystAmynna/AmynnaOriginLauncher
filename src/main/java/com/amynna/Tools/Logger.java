@@ -28,6 +28,10 @@ public final class Logger {
         System.exit(1);
     }
 
+    public static void version() {
+        log(AppProperties.APP_NAME + " version " + AppProperties.APP_VERSION + " \nby " + AppProperties.APP_AUTHOR);
+    }
+
     private static void saveLogToFile() {
 
 

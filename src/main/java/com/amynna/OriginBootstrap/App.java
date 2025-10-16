@@ -111,6 +111,10 @@ public final class App {
         KeyUtil.changeKeyStorePassword(password);
     }
 
+    private void version() {
+        Logger.version();
+    }
+
     /**
      * Affiche l'aide avec les commandes disponibles.
      */
@@ -155,6 +159,7 @@ public final class App {
             case "listKeys", "list", "ls" -> app.listKeys();
             case "changePassword", "passwd", "pass" -> app.changePassword();
             case "help" -> app.help();
+            case "version" -> app.version();
             default -> Logger.log("Commande inconnue. Utilisez 'help' pour voir les commandes disponibles.");
         }
 

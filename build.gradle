@@ -91,4 +91,43 @@ task OriginJar(type: Jar) {
     }
 }
 
+task LauncherJar(type: Jar) {
+    archiveBaseName.set(LauncherName)
+    archiveClassifier.set('')
+    archiveVersion.set(version)
+
+    // Inclure les packages OriginLauncher et Tools
+    from(sourceSets.main.output) {
+        include 'com/amynna/OriginLauncher/**'
+        include 'com/amynna/Tools/**'
+        exclude 'com/amynna/OriginBootstrap/**'
+    }
+
+    // Inclure les dépendances globalDeps et launcherDeps
+    from {
+        configurations.runtimeClasspath.findAll { dep ->
+            globalDeps.any { bcDep ->
+                dep.name.contains(bcDep.split(':')[1].split('-')[0])
+            } || launcherDeps.any { lDep ->
+                dep.name.contains(lDep.split(':')[1].split('-')[0])
+            }
+        }.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    // Exclure les fichiers de signature qui causent des conflits
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/MANIFEST.MF'
+
+    // Éviter les doublons de fichiers META-INF
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes 'Main-Class': 'com.amynna.OriginLauncher.App'
+    }
+}
+
 build.dependsOn shadowJar
