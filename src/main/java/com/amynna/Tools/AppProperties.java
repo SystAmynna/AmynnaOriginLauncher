@@ -46,7 +46,7 @@ public final class AppProperties {
     /**
      * Clé publique par défaut pour valider les signatures des fichiers de clés publiques de confiance.
      */
-    public static final String DEFAULT_PUBLIC_KEY = "MCowBQYDK2VwAyEAsH6fERNzZS3TSFGH4Vphg8hK+lMcBhXdrnwocNZfFLY=";
+    public static final String DEFAULT_PUBLIC_KEY = "MCowBQYDK2VwAyEAjmK39hqdjOM606UVvmjqrFRSf7ZLXMKKy1Tabc1z3Ec=";
     /**
      * Nom associé à la clé publique par défaut.
      */

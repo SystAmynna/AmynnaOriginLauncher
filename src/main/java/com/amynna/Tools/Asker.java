@@ -66,6 +66,16 @@ public class Asker {
         }
     }
 
+    public static boolean confirmAction(String message) {
+        int result = JOptionPane.showConfirmDialog(
+            null,
+            message,
+            "Confirmation",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+        return result == JOptionPane.YES_OPTION;
+    }
 
 
 }

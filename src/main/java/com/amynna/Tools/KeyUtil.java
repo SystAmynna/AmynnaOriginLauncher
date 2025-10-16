@@ -1,13 +1,21 @@
 package com.amynna.Tools;
 
-import javax.swing.*;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.cert.Certificate;
 import java.security.*;
+import java.util.Date;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 
@@ -43,6 +51,7 @@ public final class KeyUtil {
     private static void init() {
         // Vérifier si déjà initialisé
         if (initialized) return;
+        initialized = true;
 
         // Ajouter la clé publique de confiance prioritaire (Master Key)
         TRUSTED_PUBLIC_KEYS.put(AppProperties.DEFAULT_PUBLIC_KEY_OWNER, getPublicKeyFromString(AppProperties.DEFAULT_PUBLIC_KEY));
@@ -72,9 +81,6 @@ public final class KeyUtil {
             keysList.append(entry.getKey()).append("  ");
         }
         Logger.log("🔑 Clés publiques de confiance (Certifiées par la Master Key) : " + Logger.BOLD + keysList + Logger.RESET);
-
-        // Marquer comme initialisé
-        initialized = true;
     }
 
     /**
@@ -101,14 +107,53 @@ public final class KeyUtil {
         return false;
     }
 
+    /**
+     * Génère une paire de clés publique/privée et sauvegarde la clé privée dans le KeyStore.
+     * @return La clé privée générée, ou null en cas d'erreur.
+     */
+    public static void generateKeys(String alias) {
+        try {
+
+            if (alias == null || alias.trim().isEmpty()) {
+                Logger.error("❌ Alias requis pour générer une clé.");
+                return;
+            }
+
+            // Demander un mot de passe pour protéger la clé
+            String password;
+            if (AppProperties.LOCAL_PRIVATE_KEYS_LOCATION.exists() && AppProperties.LOCAL_PRIVATE_KEYS_LOCATION.isFile())
+                password = Asker.askPassword();
+            else password = Asker.askFirstPassword();
+
+            // Générer la paire de clés
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance(KEY_ALGORITHM);
+            KeyPair keyPair = kpg.generateKeyPair();
+
+            PrivateKey privateKey = keyPair.getPrivate();
+            PublicKey publicKey = keyPair.getPublic();
+
+            // Sauvegarder la clé privée dans le KeyStore
+            saveKeys(privateKey, publicKey, alias, password);
+
+            // Afficher la clé publique (pour distribution)
+            Logger.log("🔑 Clé publique générée (à partager) :");
+            Logger.log(getPublicKeyAsString(publicKey));
+
+
+        } catch (Exception e) {
+            Logger.error("❌ Erreur lors de la génération de la clé : " + e.getMessage());
+            return;
+        }
+    }
 
     /**
-     * Sauvegarde une clé privée dans un KeyStore protégé par mot de passe.
+     * Sauvegarde une paire de clés (privée + publique) dans un KeyStore PKCS12.
      * @param privateKey La clé privée à sauvegarder.
-     * @param alias L'alias sous lequel sauvegarder la clé.
+     * @param publicKey La clé publique à sauvegarder.
+     * @param alias L'alias sous lequel sauvegarder les clés.
      * @param password Le mot de passe pour protéger le KeyStore.
      */
-    private static void savePrivateKey(PrivateKey privateKey, String alias, String password) {
+    private static void saveKeys(PrivateKey privateKey, PublicKey publicKey, String alias, String password) {
         try {
             // Créer ou charger le KeyStore
             KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
@@ -119,35 +164,298 @@ public final class KeyUtil {
                     keyStore.load(fis, password.toCharArray());
                 }
             } else {
-                keyStore.load(null, null); // Nouveau KeyStore vide
+                keyStore.load(null, null);
+                ksFile.getParentFile().mkdirs();
             }
 
-            // Créer l'entrée avec la clé privée
-            KeyStore.PrivateKeyEntry entry = new KeyStore.PrivateKeyEntry(
-                privateKey,
-                new Certificate[0]
+            // Vérifier si l'alias existe déjà
+            if (keyStore.containsAlias(alias)) {
+                Logger.error("❌ Alias déjà utilisé. Choisissez un autre alias.");
+                return;
+            }
+
+            // Créer le certificat factice avec la vraie clé publique
+            Certificate cert = createCertificateWithPublicKey(privateKey, publicKey);
+
+            // Sauvegarder la clé privée avec le certificat
+            keyStore.setKeyEntry(
+                    alias,
+                    privateKey,
+                    password.toCharArray(),
+                    new Certificate[]{cert}
             );
 
-            // Sauvegarder avec protection par mot de passe
-            KeyStore.PasswordProtection protection = new KeyStore.PasswordProtection(
-                password.toCharArray()
-            );
-            keyStore.setEntry(alias, entry, protection);
-
-            // Écrire sur disque
+            // Écrire le KeyStore sur disque
             try (FileOutputStream fos = new FileOutputStream(ksFile)) {
                 keyStore.store(fos, password.toCharArray());
             }
 
-            Logger.log("🔒 Clé privée sauvegardée dans KeyStore");
+            Logger.log("🔒 Clés privée et publique sauvegardées, alias : " + alias);
+
         } catch (Exception e) {
             Logger.error("Erreur lors de la sauvegarde : " + e.getMessage());
         }
     }
 
     /**
+     * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
+     * @param filePath Le chemin vers le fichier à signer.
+     * @param privateKey La clé privée.
+     */
+    public static void signFile(String filePath, PrivateKey privateKey) {
+
+        try {
+            byte[] data = Files.readAllBytes(Paths.get(filePath));
+
+            Signature sig = Signature.getInstance(KEY_ALGORITHM);
+            sig.initSign(privateKey);
+            sig.update(data);
+            byte[] sigBytes = sig.sign();
+
+            String sigFile = filePath + AppProperties.SIGNATURE_FILE_EXTENSION;
+            Files.write(Paths.get(sigFile), Base64.getEncoder().encode(sigBytes));
+
+            Logger.log("✅ Signature générée : " + sigFile);
+        } catch (Exception e) {
+            Logger.error("Erreur lors de la signature du fichier : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Vérifie la signature d'un fichier avec une clé publique donnée.
+     * @param signedFile Le fichier signé.
+     * @param publicKey La clé publique.
+     * @return true si la signature est valide, false sinon.
+     */
+    public static boolean verifyFile(SignedFile signedFile, PublicKey publicKey) {
+
+        try {
+            // data du fichier
+            byte[] data = Files.readAllBytes(signedFile.file.toPath());
+            // data de la signature
+            byte[] sigBytes = Base64.getDecoder().decode(Files.readAllBytes(signedFile.signature.toPath()));
+
+            Signature sig = Signature.getInstance(KEY_ALGORITHM);
+            sig.initVerify(publicKey);
+            sig.update(data);
+
+            return sig.verify(sigBytes);
+        } catch (Exception e) {
+            Logger.error("Erreur lors de la vérification de la signature : " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Supprime une paire de clés (privée + publique) du KeyStore.
+     * @param alias L'alias de la clé à supprimer.
+     * @param password Le mot de passe pour accéder au KeyStore.
+     * @return true si la suppression a réussi, false sinon.
+     */
+    public static boolean deleteKeys(String alias, String password) {
+        try {
+            KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
+            File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
+
+            if (!ksFile.exists()) {
+                Logger.error("❌ KeyStore introuvable.");
+                return false;
+            }
+
+            // Charger le KeyStore
+            try (FileInputStream fis = new FileInputStream(ksFile)) {
+                keyStore.load(fis, password.toCharArray());
+            }
+
+            // Vérifier que l'alias existe
+            if (!keyStore.containsAlias(alias)) {
+                Logger.error("❌ Aucune clé trouvée pour l'alias : " + alias);
+                return false;
+            }
+
+            if (!Asker.confirmAction("Confirmer la suppression de la clé '" + alias + "' ?")) {
+                Logger.log("Suppression annulée par l'utilisateur.");
+                return false;
+            }
+
+            // Supprimer l'entrée
+            keyStore.deleteEntry(alias);
+
+            // Sauvegarder le KeyStore modifié
+            try (FileOutputStream fos = new FileOutputStream(ksFile)) {
+                keyStore.store(fos, password.toCharArray());
+            }
+
+            Logger.log("🗑️  Clé supprimée : " + alias);
+            return true;
+
+        } catch (Exception e) {
+            Logger.error("❌ Erreur lors de la suppression : " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Change le mot de passe d'accès global du KeyStore.
+     * @param oldPassword L'ancien mot de passe du KeyStore.
+     * @return true si le changement a réussi, false sinon.
+     */
+    public static boolean changeKeyStorePassword(String oldPassword) {
+        try {
+            KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
+            File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
+
+            if (!ksFile.exists()) {
+                Logger.error("❌ KeyStore introuvable.");
+                return false;
+            }
+
+            // Charger le KeyStore avec l'ancien mot de passe
+            try (FileInputStream fis = new FileInputStream(ksFile)) {
+                keyStore.load(fis, oldPassword.toCharArray());
+            }
+
+            // Demander le nouveau mot de passe
+            String newPassword = Asker.askFirstPassword();
+
+            // Récupérer toutes les clés et les ré-encrypter avec le nouveau mot de passe
+            java.util.Enumeration<String> aliases = keyStore.aliases();
+            KeyStore newKeyStore = KeyStore.getInstance(KEY_STORE_TYPE);
+            newKeyStore.load(null, null);
+
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+
+                if (keyStore.isKeyEntry(alias)) {
+                    // Récupérer la clé privée avec l'ancien mot de passe
+                    KeyStore.PasswordProtection oldProtection =
+                        new KeyStore.PasswordProtection(oldPassword.toCharArray());
+                    KeyStore.PrivateKeyEntry entry =
+                        (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, oldProtection);
+
+                    // Sauvegarder avec le nouveau mot de passe
+                    newKeyStore.setKeyEntry(
+                        alias,
+                        entry.getPrivateKey(),
+                        newPassword.toCharArray(),
+                        entry.getCertificateChain()
+                    );
+                } else if (keyStore.isCertificateEntry(alias)) {
+                    // Copier les certificats seuls
+                    newKeyStore.setCertificateEntry(alias, keyStore.getCertificate(alias));
+                }
+            }
+
+            // Sauvegarder le nouveau KeyStore avec le nouveau mot de passe
+            try (FileOutputStream fos = new FileOutputStream(ksFile)) {
+                newKeyStore.store(fos, newPassword.toCharArray());
+            }
+
+            Logger.log("🔐 Mot de passe du KeyStore changé avec succès");
+            return true;
+
+        } catch (Exception e) {
+            Logger.error("❌ Erreur lors du changement de mot de passe : " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Liste toutes les clés stockées dans le KeyStore avec leurs informations.
+     * @param password Le mot de passe pour accéder au KeyStore.
+     * @return true si la liste a été affichée, false sinon.
+     */
+    public static boolean listKeys(String password) {
+        try {
+            KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
+            File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
+
+            if (!ksFile.exists()) {
+                Logger.error("❌ KeyStore introuvable.");
+                return false;
+            }
+
+            // Charger le KeyStore
+            try (FileInputStream fis = new FileInputStream(ksFile)) {
+                keyStore.load(fis, password.toCharArray());
+            }
+
+            // Récupérer tous les alias
+            java.util.Enumeration<String> aliases = keyStore.aliases();
+
+            if (!aliases.hasMoreElements()) {
+                Logger.log("ℹ️  Aucune clé stockée dans le KeyStore.");
+                return true;
+            }
+
+            Logger.log("🔑 Clés stockées dans le KeyStore :");
+            Logger.log("═══════════════════════════════════");
+
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+
+                if (keyStore.isKeyEntry(alias)) {
+                    // C'est une clé privée
+                    Certificate cert = keyStore.getCertificate(alias);
+                    PublicKey publicKey = cert.getPublicKey();
+
+                    Logger.log("📌 Alias : " + Logger.BOLD + alias + Logger.RESET);
+                    Logger.log("   Type : Clé privée + publique");
+                    Logger.log("   Algorithme : " + publicKey.getAlgorithm());
+                    Logger.log("   Clé publique : " + getPublicKeyAsString(publicKey));
+                    Logger.log("───────────────────────────────────");
+
+                } else if (keyStore.isCertificateEntry(alias)) {
+                    // C'est uniquement un certificat
+                    Certificate cert = keyStore.getCertificate(alias);
+                    PublicKey publicKey = cert.getPublicKey();
+
+                    Logger.log("📌 Alias : " + Logger.BOLD + alias + Logger.RESET);
+                    Logger.log("   Type : Certificat seul");
+                    Logger.log("   Algorithme : " + publicKey.getAlgorithm());
+                    Logger.log("───────────────────────────────────");
+                }
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            Logger.error("❌ Erreur lors de la liste des clés : " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    /**
+     * Crée un certificat X.509 contenant la clé publique fournie.
+     * @param privateKey La clé privée pour signer le certificat.
+     * @param publicKey La clé publique à inclure dans le certificat.
+     * @return Le certificat X.509 auto-signé.
+     * @throws Exception En cas d'erreur lors de la création du certificat.
+     */
+    private static Certificate createCertificateWithPublicKey(PrivateKey privateKey, PublicKey publicKey) throws Exception {
+        X500Name issuer = new X500Name("CN=" + AppProperties.APP_NAME + "-LocalKey");
+        BigInteger serialNumber = new BigInteger(64, new SecureRandom());
+        Date notBefore = new Date();
+        Date notAfter = new Date(notBefore.getTime() + 365L * 24 * 60 * 60 * 1000 * 10); // 10 ans
+
+        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+                issuer,
+                serialNumber,
+                notBefore,
+                notAfter,
+                issuer,
+                publicKey  // Utiliser la vraie clé publique
+        );
+
+        ContentSigner signer = new JcaContentSignerBuilder(KEY_ALGORITHM).build(privateKey);
+
+        return new JcaX509CertificateConverter().getCertificate(certBuilder.build(signer));
+    }
+
+
+    /**
      * Charge une clé privée depuis un KeyStore protégé par mot de passe.
-     * @param keystorePath Le chemin vers le fichier du KeyStore.
      * @param alias L'alias de la clé à charger.
      * @param password Le mot de passe pour accéder au KeyStore.
      * @return La clé privée, ou null en cas d'erreur.
@@ -182,55 +490,35 @@ public final class KeyUtil {
     }
 
     /**
-     * Extrait la clé publique à partir d'une clé privée.
-     * @param privateKey La clé privée.
-     * @return La clé publique correspondante, ou null en cas d'erreur.
+     * Charge la clé publique associée à une clé privée depuis le KeyStore.
+     * @param alias L'alias de la clé.
+     * @param password Le mot de passe du KeyStore.
+     * @return La clé publique, ou null en cas d'erreur.
      */
-    public static PublicKey getPublicKeyFromPrivateKey(PrivateKey privateKey) {
+    public static PublicKey loadPublicKey(String alias, String password) {
         try {
-            KeyFactory kf = KeyFactory.getInstance(KEY_ALGORITHM);
-            // Pour Ed25519, la clé publique peut être dérivée
-            return kf.generatePublic(new X509EncodedKeySpec(privateKey.getEncoded()));
+            KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
+
+            File keystoreFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
+            try (FileInputStream fis = new FileInputStream(keystoreFile)) {
+                keyStore.load(fis, password.toCharArray());
+            }
+
+            // Récupérer le certificat qui contient la clé publique
+            Certificate cert = keyStore.getCertificate(alias);
+            if (cert == null) {
+                Logger.error("Aucun certificat trouvé pour l'alias : " + alias);
+                return null;
+            }
+
+            return cert.getPublicKey();
+
         } catch (Exception e) {
-            Logger.error("Erreur lors de l'extraction : " + e.getMessage());
+            Logger.error("Erreur lors du chargement de la clé publique : " + e.getMessage());
             return null;
         }
     }
 
-
-    /**
-     * Génère une paire de clés publique/privée et sauvegarde la clé privée dans le KeyStore.
-     * @return La clé privée générée, ou null en cas d'erreur.
-     */
-    public static void generatePrivateKey(String alias) {
-        try {
-
-            if (alias == null || alias.trim().isEmpty()) {
-                Logger.error("❌ Alias requis pour générer une clé.");
-                return;
-            }
-
-            // Demander un mot de passe pour protéger la clé
-            String password = Asker.askFirstPassword();
-
-            // Générer la paire de clés
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance(KEY_ALGORITHM);
-            KeyPair keyPair = kpg.generateKeyPair();
-
-            PrivateKey privateKey = keyPair.getPrivate();
-            PublicKey publicKey = keyPair.getPublic();
-
-            // Sauvegarder la clé privée dans le KeyStore
-            savePrivateKey(privateKey, alias, password);
-
-            // Afficher la clé publique (pour distribution)
-            Logger.log("🔑 Clé publique générée (à partager) :");
-            Logger.log(getPublicKeyAsString(publicKey));
-
-        } catch (Exception e) {
-            Logger.error("❌ Erreur lors de la génération de la clé : " + e.getMessage());
-        }
-    }
 
     /**
      * Convertit une clé publique en une chaîne Base64.
@@ -238,6 +526,10 @@ public final class KeyUtil {
      * @return La représentation Base64 de la clé publique.
      */
     public static String getPublicKeyAsString(PublicKey publicKey) {
+        if (publicKey == null) {
+            Logger.error("Clé publique invalide (null)");
+            return "";
+        }
         return Base64.getEncoder().encodeToString(publicKey.getEncoded());
     }
 
@@ -255,56 +547,6 @@ public final class KeyUtil {
         } catch (Exception e) {
             Logger.error("Erreur lors de la conversion de la clé publique : " + e.getMessage());
             return null;
-        }
-    }
-
-
-    /**
-     * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
-     * @param filePath Le chemin vers le fichier à signer.
-     * @param privateKey La clé privée.
-     */
-    public static void signFile(String filePath, PrivateKey privateKey) {
-
-        try {
-            byte[] data = Files.readAllBytes(Paths.get(filePath));
-
-            Signature sig = Signature.getInstance(KEY_ALGORITHM);
-            sig.initSign(privateKey);
-            sig.update(data);
-            byte[] sigBytes = sig.sign();
-
-            String sigFile = filePath + ".sig";
-            Files.write(Paths.get(sigFile), Base64.getEncoder().encode(sigBytes));
-
-            Logger.log("✅ Signature générée : " + sigFile);
-        } catch (Exception e) {
-            Logger.error("Erreur lors de la signature du fichier : " + e.getMessage());
-        }
-    }
-
-    /**
-     * Vérifie la signature d'un fichier avec une clé publique donnée.
-     * @param signedFile Le fichier signé.
-     * @param publicKey La clé publique.
-     * @return true si la signature est valide, false sinon.
-     */
-    public static boolean verifyFile(SignedFile signedFile, PublicKey publicKey) {
-
-        try {
-            // data du fichier
-            byte[] data = Files.readAllBytes(signedFile.file.toPath());
-            // data de la signature
-            byte[] sigBytes = Base64.getDecoder().decode(Files.readAllBytes(signedFile.signature.toPath()));
-
-            Signature sig = Signature.getInstance(KEY_ALGORITHM);
-            sig.initVerify(publicKey);
-            sig.update(data);
-
-            return sig.verify(sigBytes);
-        } catch (Exception e) {
-            Logger.error("Erreur lors de la vérification de la signature : " + e.getMessage());
-            return false;
         }
     }
 
