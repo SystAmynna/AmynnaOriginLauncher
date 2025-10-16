@@ -38,7 +38,7 @@ public final class KeyUtil {
     /**
      * Type de KeyStore utilisé pour stocker les clés privées.
      */
-    private static final String KEY_STORE_TYPE = "PKCS12";
+    public static final String KEY_STORE_TYPE = "PKCS12";
 
     /**
      * Indicateur si le gestionnaire de clés a été initialisé.

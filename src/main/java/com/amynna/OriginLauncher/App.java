@@ -6,8 +6,19 @@ import com.amynna.Tools.Logger;
 
 public final class App {
 
+    private final Auth auth;
+
+    private App () {
+        auth = new Auth();
+    }
+
     public void launch() {
 
+    }
+
+
+    private void authentifie() {
+        auth.authentifie();
     }
 
 

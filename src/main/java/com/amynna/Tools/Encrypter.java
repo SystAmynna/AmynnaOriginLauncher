@@ -1,18 +1,14 @@
 package com.amynna.Tools;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.security.SecureRandom;
-import java.security.spec.KeySpec;
 
 
 public class Encrypter {
@@ -40,79 +36,93 @@ public class Encrypter {
     }
 
     /**
-     * Encrypte une clé privée avec un mot de passe.
-     * @param privateKey La clé privée à encrypter (en format encodé)
-     * @param password Le mot de passe d'encryption
-     * @return Un tableau de bytes contenant [iv + sel + données chiffrées], ou null en cas d'erreur
+     * Sauvegarde un token dans le KeyStore sous forme de clé secrète.
+     * @param alias L'alias sous lequel sauvegarder le token.
+     * @param token Le token à sauvegarder.
+     * @param password Le mot de passe du KeyStore.
+     * @return true si la sauvegarde a réussi, false sinon.
      */
-    public static byte[] encryptPrivateKey(byte[] privateKey, String password) {
+    public static boolean saveToken(String alias, String token, String password) {
         try {
-            // Générer un sel aléatoire pour PBKDF2
-            SecureRandom random = new SecureRandom();
-            byte[] salt = new byte[16];
-            random.nextBytes(salt);
+            KeyStore keyStore = KeyStore.getInstance(KeyUtil.KEY_STORE_TYPE);
+            File ksFile = AppProperties.MS_AUTH_TOKEN;
 
-            // Dériver une clé de chiffrement à partir du mot de passe
-            int iterations = 10000;
-            KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, iterations, 256);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            SecretKey tmp = factory.generateSecret(keySpec);
-            SecretKey secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+            // Charger ou créer le KeyStore
+            if (ksFile.exists()) {
+                try (FileInputStream fis = new FileInputStream(ksFile)) {
+                    keyStore.load(fis, password.toCharArray());
+                }
+            } else {
+                keyStore.load(null, null);
+            }
 
-            // Initialiser le chiffrement
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            byte[] iv = new byte[12]; // GCM recommande 12 octets pour l'IV
-            random.nextBytes(iv);
-            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec);
+            // Convertir le token en SecretKey
+            SecretKey secretKey = new SecretKeySpec(token.getBytes(StandardCharsets.UTF_8), "AES");
 
-            // Chiffrer la clé privée
-            byte[] encryptedData = cipher.doFinal(privateKey);
+            // Créer une entrée protégée par mot de passe
+            KeyStore.SecretKeyEntry secretKeyEntry = new KeyStore.SecretKeyEntry(secretKey);
+            KeyStore.PasswordProtection protection =
+                new KeyStore.PasswordProtection(password.toCharArray());
 
-            // Concaténer IV + sel + données chiffrées pour stockage
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            outputStream.write(iv);
-            outputStream.write(salt);
-            outputStream.write(encryptedData);
+            // Sauvegarder l'entrée
+            keyStore.setEntry(alias, secretKeyEntry, protection);
 
-            return outputStream.toByteArray();
+            // Sauvegarder le KeyStore
+            try (FileOutputStream fos = new FileOutputStream(ksFile)) {
+                keyStore.store(fos, password.toCharArray());
+            }
+
+            Logger.log("🔐 Token sauvegardé : " + alias);
+            return true;
+
         } catch (Exception e) {
-            Logger.error("Erreur lors de l'encryption de la clé privée: " + e.getMessage());
-            return null;
+            Logger.error("❌ Erreur lors de la sauvegarde du token : " + e.getMessage());
+            return false;
         }
     }
 
     /**
-     * Décrypte une clé privée avec un mot de passe.
-     * @param encryptedData Les données chiffrées (iv + sel + clé chiffrée)
-     * @param password Le mot de passe de décryption
-     * @return La clé privée déchiffrée, ou null en cas d'erreur
+     * Récupère un token du KeyStore.
+     * @param alias L'alias du token à récupérer.
+     * @param password Le mot de passe du KeyStore.
+     * @return Le token récupéré, ou null en cas d'erreur.
      */
-    public static byte[] decryptPrivateKey(byte[] encryptedData, String password) {
+    public static String loadToken(String alias, String password) {
         try {
-            // Extraire IV, sel et données chiffrées
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(encryptedData);
-            byte[] iv = new byte[12];
-            byte[] salt = new byte[16];
-            inputStream.read(iv);
-            inputStream.read(salt);
-            byte[] encrypted = inputStream.readAllBytes();
+            KeyStore keyStore = KeyStore.getInstance(KeyUtil.KEY_STORE_TYPE);
+            File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
 
-            // Dériver la clé de déchiffrement
-            int iterations = 10000;
-            KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, iterations, 256);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            SecretKey tmp = factory.generateSecret(keySpec);
-            SecretKey secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+            if (!ksFile.exists()) {
+                Logger.error("❌ KeyStore introuvable.");
+                return null;
+            }
 
-            // Déchiffrer
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec);
+            // Charger le KeyStore
+            try (FileInputStream fis = new FileInputStream(ksFile)) {
+                keyStore.load(fis, password.toCharArray());
+            }
 
-            return cipher.doFinal(encrypted);
+            // Vérifier que l'alias existe
+            if (!keyStore.containsAlias(alias)) {
+                Logger.error("❌ Aucun token trouvé pour l'alias : " + alias);
+                return null;
+            }
+
+            // Récupérer l'entrée
+            KeyStore.PasswordProtection protection =
+                new KeyStore.PasswordProtection(password.toCharArray());
+            KeyStore.SecretKeyEntry entry =
+                (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, protection);
+
+            // Convertir la SecretKey en String
+            byte[] tokenBytes = entry.getSecretKey().getEncoded();
+            String token = new String(tokenBytes, StandardCharsets.UTF_8);
+
+            Logger.log("🔓 Token récupéré : " + alias);
+            return token;
+
         } catch (Exception e) {
-            Logger.error("Erreur lors de la décryption de la clé privée: " + e.getMessage());
+            Logger.error("❌ Erreur lors de la récupération du token : " + e.getMessage());
             return null;
         }
     }

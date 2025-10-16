@@ -64,6 +64,12 @@ public final class AppProperties {
      */
     public static final File LOCAL_PRIVATE_KEYS_LOCATION = new File(LAUNCHER_ROOT + File.separator + "KEYS" + ".p12");
 
+    // AUTRES
+
+    public static final String MS_TOKEN_ALIAS = APP_NAME + "_MS_Token";
+
+    public static final File MS_AUTH_TOKEN = new File(LAUNCHER_ROOT + File.separator + "MsAuthToken");
+
 
 
 }
