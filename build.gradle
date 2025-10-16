@@ -4,10 +4,7 @@ plugins {
 }
 
 group = 'com.amynna'
-version = '0.0.1'
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+version = '0.1.0'
 
 repositories {
     mavenCentral()
@@ -15,49 +12,73 @@ repositories {
     maven { url "https://maven.minecraftforge.net/" }
 }
 
+ext {
+    bootstrapName = 'OriginRP'
+    LauncherName = 'OriginLauncher'
+
+    bouncyCastleVersion = '1.78'
+    globalDeps = [
+            'org.bouncycastle:bcprov-jdk18on:' + bouncyCastleVersion,
+            'org.bouncycastle:bcpkix-jdk18on:' + bouncyCastleVersion,
+    ]
+
+    launcherDeps = [
+            'org.json:json:20231013',
+            'fr.litarvan:openauth:1.1.3',
+            'net.java.dev.jna:jna:5.13.0',
+            'net.java.dev.jna:jna-platform:5.13.0',
+            'net.minecraftforge:forge:1.20.1-47.4.0:installer'
+    ]
+}
+
 dependencies {
+
+    // TESTS
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    implementation 'org.json:json:20231013'
-    implementation 'fr.litarvan:openauth:1.1.3'
+    // GLOBAL
+    globalDeps.each { implementation it }
 
-    implementation 'net.java.dev.jna:jna:5.13.0'
-    implementation 'net.java.dev.jna:jna-platform:5.13.0'
+    // LAUNCHER
+    launcherDeps.each { implementation it }
 
-    implementation "net.minecraftforge:forge:1.20.1-47.4.0:installer"
 }
 
 test {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.release = 17
 }
 
-shadowJar {
-    archiveBaseName.set('archive')
-    archiveClassifier.set('')
-    archiveVersion.set(version)
-    manifest {
-        attributes 'Main-Class': 'fr.amynna.OriginLauncher.App'
-    }
-}
-
-// Tâche pour créer un JAR contenant uniquement le package KeyUtil
 task OriginJar(type: Jar) {
-    archiveBaseName.set('OriginRP')
+    archiveBaseName.set(bootstrapName)
     archiveClassifier.set('')
     archiveVersion.set(version)
 
-    // Inclure les packages OriginBootstrap et Tools, mais pas OriginLauncher
+    // Inclure les packages OriginBootstrap et Tools
     from(sourceSets.main.output) {
         include 'com/amynna/OriginBootstrap/**'
         include 'com/amynna/Tools/**'
         exclude 'com/amynna/OriginLauncher/**'
     }
+
+    // Inclure uniquement les dépendances Bouncy Castle
+    from {
+        configurations.runtimeClasspath.findAll { dep ->
+            globalDeps.any { bcDep ->
+                dep.name.contains(bcDep.split(':')[1].split('-')[0])
+            }
+        }.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    // Éviter les doublons de fichiers META-INF
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes 'Main-Class': 'com.amynna.OriginBootstrap.App'
