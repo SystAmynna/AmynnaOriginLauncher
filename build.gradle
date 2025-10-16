@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.amynna'
-version = '0.1.0'
+version = '0.1.1'
 
 repositories {
     mavenCentral()
@@ -76,6 +76,12 @@ task OriginJar(type: Jar) {
             it.isDirectory() ? it : zipTree(it)
         }
     }
+
+    // Exclure les fichiers de signature qui causent des conflits
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/MANIFEST.MF'
 
     // Éviter les doublons de fichiers META-INF
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

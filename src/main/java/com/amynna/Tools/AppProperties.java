@@ -46,7 +46,7 @@ public final class AppProperties {
     /**
      * Clé publique par défaut pour valider les signatures des fichiers de clés publiques de confiance.
      */
-    public static final String DEFAULT_PUBLIC_KEY = "MCowBQYDK2VwAyEAjmK39hqdjOM606UVvmjqrFRSf7ZLXMKKy1Tabc1z3Ec=";
+    public static final String DEFAULT_PUBLIC_KEY = "-----------------------";
     /**
      * Nom associé à la clé publique par défaut.
      */
@@ -62,7 +62,7 @@ public final class AppProperties {
     /**
      * Emplacement local des clés publiques de confiance.
      */
-    public static final File LOCAL_PRIVATE_KEYS_LOCATION = new File(LAUNCHER_ROOT + File.separator + "private_keys" + ".p12");
+    public static final File LOCAL_PRIVATE_KEYS_LOCATION = new File(LAUNCHER_ROOT + File.separator + "KEYS" + ".p12");
 
 
 

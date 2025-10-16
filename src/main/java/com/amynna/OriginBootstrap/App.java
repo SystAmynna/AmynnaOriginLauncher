@@ -20,25 +20,24 @@ public final class App {
 
     /**
      * Génère une paire de clés publique/privée.
+     * @param args Arguments de la ligne de commande.
      */
     private void genKeys(String ... args) {
-
         if (args.length == 2) {
             String alias = args[1];
             KeyUtil.generateKeys(alias);
         } else {
-            Logger.log("Please provide an alias for the key...");
+            Logger.log("L'alias de la clé est requis. Usage: genKeys <alias>");
         }
-
     }
 
     /**
      * Signe un fichier avec une clé privée.
+     * @param args Arguments de la ligne de commande.
      */
     private void sign(String ... args) {
-
         if (args.length != 3) {
-            Logger.log("Please provide the file path to sign and the alias of the private key.");
+            Logger.log("Le chemin du fichier et l'alias de la clé sont requis. Usage: sign <filePath> <keyAlias>");
             return;
         }
 
@@ -52,74 +51,82 @@ public final class App {
 
     /**
      * Vérifie la signature d'un fichier avec une clé publique.
+     * @param args Arguments de la ligne de commande.
      */
     private void verify(String ... args) {
-
         SignedFile signedFile;
         if (args.length == 3) {
             signedFile = new SignedFile(new File(args[1]), new File(args[2]));
             KeyUtil.validateSignature(signedFile);
-        } else Logger.log("Please provide the signed file path and the public key path.");
+        } else Logger.log("Le chemin du fichier et le chemin de la signature sont requis. Usage: verify <filePath> <signaturePath>");
+    }
+
+    /**
+     * Affiche la clé publique associée à un alias donné.
+     * @param args Arguments de la ligne de commande.
+     */
+    private void showKey(String ... args) {
+        if (args.length != 2) {
+            Logger.log("L'alias de la clé est requis. Usage: showKey <keyAlias>");
+            return;
+        }
+
+        String keyAlias = args[1];
+        String password = Asker.askPassword();
+        PublicKey publicKey = KeyUtil.loadPublicKey(keyAlias, password);
+        String publicKeyString = KeyUtil.getPublicKeyAsString(publicKey);
+
+        Logger.log("Public Key:\n" + publicKeyString);
+    }
+
+    /**
+     * Supprime une paire de clés associée à un alias donné.
+     * @param args Arguments de la ligne de commande.
+     */
+    private void delKey(String ... args) {
+        if (args.length != 2) {
+            Logger.log("L'alias de la clé est requis. Usage: delKey <keyAlias>");
+            return;
+        }
+
+        String keyAlias = args[1];
+        String password = Asker.askPassword();
+
+        KeyUtil.deleteKeys(keyAlias, password);
+    }
+
+    /**
+     * Liste toutes les clés stockées dans le keystore.
+     */
+    private void listKeys() {
+        String password = Asker.askPassword();
+        KeyUtil.listKeys(password);
+    }
+
+    /**
+     * Change le mot de passe du keystore.
+     */
+    private void changePassword() {
+        String password = Asker.askPassword();
+        KeyUtil.changeKeyStorePassword(password);
     }
 
     /**
      * Affiche l'aide avec les commandes disponibles.
      */
     private void help() {
-        Logger.log("Available commands: launch, genKeys, sign, verify, help");
-    }
+        Logger.log("Available commands:\n" +
+                "  launch                               : Lance l'application.\n" +
+                "  genKeys <alias>                      : Génère une paire de clés publique/privée avec l'alias spécifié.\n" +
+                "  showKey <keyAlias>                   : Affiche la clé publique associée à l'alias donné.\n" +
+                "  sign <filePath> <keyAlias>           : Signe le fichier spécifié avec la clé privée associée à l'alias donné.\n" +
+                "  verify <filePath> <signaturePath>    : Vérifie la signature du fichier avec la signature fournie.\n" +
+                "  delKey <keyAlias>                    : Supprime la paire de clés associée à l'alias donné.\n" +
+                "  listKeys                             : Liste toutes les clés stockées dans le keystore.\n" +
+                "  changePassword                       : Change le mot de passe du keystore.\n" +
+                "  help                                 : Affiche cette aide."
 
-    /**
-     * Affiche le contenu d'une clé (publique ou privée) à partir d'un fichier.
-     */
-    private void showKey(String ... args) {
-        if (args.length != 2) {
-            Logger.log("Please provide the alias of the key to display.");
-            return;
-        }
-
-        String keyAlias = args[1];
-        if (keyAlias.isEmpty()) {
-            Logger.log("Key alias cannot be empty.");
-            return;
-        }
-
-        String password = Asker.askPassword();
-
-        PublicKey publicKey = KeyUtil.loadPublicKey(keyAlias, password);
-
-        String publicKeyString = KeyUtil.getPublicKeyAsString(publicKey);
-
-        Logger.log("Public Key:\n" + publicKeyString);
-
-    }
-
-    private void delKey(String ... args) {
-        if (args.length != 2) {
-            Logger.log("Please provide the alias of the key to delete.");
-            return;
-        }
-
-        String keyAlias = args[1];
-        if (keyAlias.isEmpty()) {
-            Logger.log("Key alias cannot be empty.");
-            return;
-        }
-
-        String password = Asker.askPassword();
-
-        KeyUtil.deleteKeys(keyAlias, password);
-    }
-
-    private void listKeys() {
-        String password = Asker.askPassword();
-
-        KeyUtil.listKeys(password);
-    }
-
-    private void changePassword() {
-        String password = Asker.askPassword();
-        KeyUtil.changeKeyStorePassword(password);
+        );
     }
 
 
@@ -129,9 +136,9 @@ public final class App {
      */
     public static void main(String[] args) {
 
-        App app = new App();
+        App app = new App(); // Instance de l'application pour accéder aux méthodes non statiques
 
-        FileManager.createDirectoriesIfNotExist(AppProperties.LAUNCHER_ROOT.getPath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.LAUNCHER_ROOT.getPath()); // Assure que le répertoire racine existe
 
         if (args.length == 0) {
             app.launch();
