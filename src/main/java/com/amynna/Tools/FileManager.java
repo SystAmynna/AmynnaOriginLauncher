@@ -1,11 +1,16 @@
 package com.amynna.Tools;
 
+import org.json.JSONObject;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,5 +182,122 @@ public final class FileManager {
         return file;
     }
 
+    /**
+     * Ouvre un fichier JSON et le charge dans un objet JSONObject.
+     *
+     * @param file Fichier JSON à ouvrir
+     * @return Un objet JSONObject contenant les données du fichier, ou null en cas d'erreur
+     */
+    public static JSONObject openJsonFile(File file) {
+
+        if (!file.exists()) {
+            Logger.error("Le fichier JSON n'existe pas : " + file.getPath());
+            return null;
+        }
+
+        try {
+            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+            return new JSONObject(content);
+        } catch (IOException e) {
+            Logger.error("Erreur lors de la lecture du fichier JSON : " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Calcule et vérifie le hachage SHA-1 d'un fichier.
+     *
+     * @return Le hachage SHA-1 calculé ou null en cas d'erreur
+     * @throws IOException En cas d'erreur de lecture
+     */
+    public static String calculSHA1(File file) {
+
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+
+            try (InputStream fis = new FileInputStream(file);
+                 BufferedInputStream bis = new BufferedInputStream(fis)) {
+
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+
+                while ((bytesRead = bis.read(buffer)) != -1) {
+                    digest.update(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                Logger.error("Erreur de lecture du fichier pour le calcul SHA-1 : " + e.getMessage());
+                return null;
+            }
+
+            // Convertir le hachage en hexadécimal
+            byte[] hashBytes = digest.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            Logger.fatal("Algorithme SHA-1 non trouvé : " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Télécharge un fichier depuis une URL et vérifie son hachage SHA-1.
+     *
+     * @param url URL du fichier à télécharger
+     * @param destinationPath Chemin local où enregistrer le fichier
+     * @param expectedSha1 Hachage SHA-1 attendu pour le fichier
+     * @return true si le téléchargement et la vérification réussissent, false sinon
+     */
+    public static File downloadFileAndVerifySha1(String url, String destinationPath, String expectedSha1) {
+        File downloadedFile = downloadFile(url, destinationPath);
+        if (downloadedFile == null) {
+            return null; // Échec du téléchargement
+        }
+
+        try {
+            String calculatedSha1 = calculSHA1(downloadedFile);
+            if (calculatedSha1 != null && calculatedSha1.equals(expectedSha1)) {
+                return downloadedFile; // Vérification réussie
+            } else {
+                downloadedFile.delete(); // Supprimer le fichier en cas d'échec de vérification
+                return null; // Vérification échouée
+            }
+        } catch (SecurityException e) {
+            downloadedFile.delete(); // Supprimer le fichier en cas d'erreur
+            return null; // Erreur lors du calcul du hachage
+        }
+    }
+
+
+    /**
+     * Vérifie la taille d'un fichier sur le disque.
+     * @param file Le fichier à vérifier.
+     * @param expectedSize La taille attendue en octets.
+     * @return true si la taille correspond, false sinon.
+     * @throws IOException Si le fichier n'existe pas ou ne peut pas être lu.
+     */
+    public static boolean verifyFileSize(File file, long expectedSize){
+        if (!file.exists()) {
+            return false;
+        }
+        long actualSize = 0;
+        try {
+            actualSize = Files.size(file.toPath());
+        } catch (IOException e) {
+            Logger.error("Erreur lors de la vérification de la taille du fichier : " + e.getMessage());
+            return false;
+        }
+        // Une tolérance de 100 octets est ajoutée pour compenser les différences potentielles de métadonnées,
+        // mais le SHA1 reste la méthode de vérification principale.
+        return Math.abs(actualSize - expectedSize) <= 100;
+    }
 
 }

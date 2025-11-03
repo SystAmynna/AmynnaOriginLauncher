@@ -3,8 +3,16 @@ package com.amynna.Tools;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Classe utilitaire pour afficher des boîtes de dialogue et demander des informations à l'utilisateur.
+ */
 public class Asker {
 
+    /**
+     * Affiche une boîte de dialogue pour demander la création d'un mot de passe avec confirmation.
+     *
+     * @return le mot de passe haché en SHA-512 si les mots de passe correspondent, null si l'utilisateur annule.
+     */
     public static String askFirstPassword() {
         while (true) {
             JPasswordField passwordField = new JPasswordField(20);
@@ -44,6 +52,11 @@ public class Asker {
         }
     }
 
+    /**
+     * Affiche une boîte de dialogue pour demander un mot de passe.
+     *
+     * @return le mot de passe haché en SHA-512, ou null si l'utilisateur annule.
+     */
     public static String askPassword() {
         JPasswordField passwordField = new JPasswordField(20);
 
@@ -66,6 +79,11 @@ public class Asker {
         }
     }
 
+    /**
+     * Affiche une boîte de dialogue de confirmation avec le message fourni.
+     * @param message Le message à afficher.
+     * @return true si l'utilisateur confirme, false sinon.
+     */
     public static boolean confirmAction(String message) {
         int result = JOptionPane.showConfirmDialog(
             null,
@@ -95,6 +113,7 @@ public class Asker {
      *
      * @return un tableau de chaînes contenant l'email et le mot de passe, ou null si l'utilisateur annule.
      */
+    @Deprecated
     public static String[] askAuthentication() {
         String titre = "Authentification Launcher Origin";
         String message = "Veuillez entrer vos identifiants Microsoft pour vous connecter.";
@@ -138,5 +157,40 @@ public class Asker {
         }
         return null;
     }
+
+    /**
+     * Affiche un menu principal et retourne le choix de l'utilisateur.
+     *
+     * @return un entier représentant le choix de l'utilisateur :
+     *         0 pour "Télécharger le jeu",
+     *         1 pour "Lancer le jeu",
+     *         2 pour "Se connecter",
+     *         3 pour "Paramètres",
+     *         -1 si la boîte de dialogue est fermée.
+     */
+    public static int askMenu() {
+        String[] options = {
+                "Télécharger le jeu",
+                "Lancer le jeu",
+                "Se connecter",
+                "Paramètres"
+        };
+
+        String msg = "Bienvenue dans le Launcher Origin !\n" +
+                     "Veuillez choisir une option pour continuer.";
+
+        return JOptionPane.showOptionDialog(
+                null,
+                msg,
+                "Menu Principal",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+    }
+
+
 
 }

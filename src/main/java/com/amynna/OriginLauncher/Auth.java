@@ -31,8 +31,6 @@ public final class Auth {
      */
     private MicrosoftAuthResult msAuthResult;
 
-    private static final String PROFILE_API_URL = "https://api.minecraftservices.com/minecraft/profile";
-
     /**
      * Méthode principale qui gère l'authentification avec Microsoft.
      */
@@ -48,39 +46,19 @@ public final class Auth {
                 // restaure le jeton de rafraîchissement sauvegardé
                 msAuthResult = authenticator.loginWithRefreshToken(token);
             } else {
-                // demande les identifiants à l'utilisateur
-                /*
-                String[] credentials = Asker.askAuthentication();
-                if (credentials == null) {
-                    Logger.log("Authentification annulée par l'utilisateur.");
-                    return;
-                }
-                String email = credentials[0];
-                String password = credentials[1];
-
-
-                // effectue la connexion avec les identifiants
-                msAuthResult = authenticator.loginWithCredentials(email, password);
-
-                 */
-                // Procède avec JavaFX WebView
+                // Procède au login avec JavaFX WebView
                 try {
                     msAuthResult = authenticator.loginWithWebview();
-                } catch (NullPointerException e) {
+                } catch (Exception e) {
                     Logger.error("Échec de l'authentification via WebView : " + e.getMessage());
                     return;
                 }
-
 
                 // sauvegarde le jeton de rafraîchissement
                 saveToken(msAuthResult.getRefreshToken());
             }
         } catch (MicrosoftAuthenticationException e) {
             Logger.error("Erreur d'authentification aux services de Microsoft : " + e.getMessage());
-        }
-
-        if (msAuthResult == null) {
-            Logger.fatal("Échec de l'authentification.");
             return;
         }
 
@@ -88,13 +66,11 @@ public final class Auth {
 
     }
 
-
     /**
      * Récupère le XUID (Xbox User ID) et met à jour l'objet MicrosoftAuthResult.
      * Cette méthode interroge l'API de profil Minecraft en utilisant le jeton d'accès
      * déjà contenu dans l'objet d'authentification.
      * * @param authResult L'objet MicrosoftAuthResult contenant le jeton d'accès Minecraft.
-     * @throws Exception Si une erreur de connexion ou de lecture se produit.
      */
     public static String getXUID(MicrosoftAuthResult authResult) {
         String accessToken = authResult.getAccessToken();
@@ -108,7 +84,7 @@ public final class Auth {
 
         HttpURLConnection conn = null;
         try {
-            URL url = new URL(PROFILE_API_URL);
+            URL url = new URL(AppProperties.PROFILE_API_URL);
             conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("GET");
@@ -154,12 +130,35 @@ public final class Auth {
             // Propagation de l'erreur pour la gestion par l'appelant
         } finally {
             conn.disconnect();
-            return xuid;
         }
+        return xuid;
     }
 
+    /**
+     * Récupère le XUID (Xbox User ID) de l'utilisateur authentifié.
+     *
+     * @return {@code String} Le XUID de l'utilisateur.
+     */
     public String getXUID() {
         return getXUID(msAuthResult);
+    }
+
+    /**
+     * Obtient le résultat de l'authentification avec Microsoft.
+     *
+     * @return Le résultat de l'authentification.
+     */
+    public MicrosoftAuthResult getMsAuthResult() {
+        return msAuthResult;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est authentifié.
+     *
+     * @return true si l'utilisateur est authentifié, false sinon.
+     */
+    public boolean isAuthenticated() {
+        return msAuthResult != null;
     }
 
 
@@ -205,9 +204,10 @@ public final class Auth {
         } else {
             Logger.log("❌ Échec de la restauration du jeton de rafraîchissement (probablement obselète).");
             try {
-                // TODO: décommenter la ligne suivante une fois le KeyStore géré correctement
-                //AppProperties.MS_AUTH_TOKEN.delete();
-            } catch (Exception e) {
+                boolean deleted = AppProperties.MS_AUTH_TOKEN.delete();
+                if (deleted) Logger.log("Fichier de jeton obselète supprimé.");
+                else throw new SecurityException();
+            } catch (SecurityException e) {
                 Logger.error("Impossible de supprimer le fichier de jeton obselète.");
             }
         }
@@ -224,15 +224,6 @@ public final class Auth {
         String alias = AppProperties.MS_TOKEN_ALIAS;
 
         Encrypter.saveToken(alias, token, password);
-    }
-
-    /**
-     * Obtient le résultat de l'authentification avec Microsoft.
-     *
-     * @return Le résultat de l'authentification.
-     */
-    public MicrosoftAuthResult getMsAuthResult() {
-        return msAuthResult;
     }
 
     /**
@@ -261,13 +252,6 @@ public final class Auth {
         builder.append(System.getProperty("os.name"));
         builder.append(System.getProperty("os.version"));
 
-        //return Encrypter.sha512(builder.toString());
-        return "tmpPwd123"; // Temporary fixed password for testing
+        return Encrypter.sha512(builder.toString());
     }
-
-
-    public boolean isAuthenticated() {
-        return msAuthResult != null;
-    }
-
 }
