@@ -1,5 +1,6 @@
 package com.amynna.OriginLauncher;
 
+import com.amynna.OriginLauncher.setup.GameSetupManager;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.Asker;
 import com.amynna.Tools.FileManager;
@@ -23,11 +24,17 @@ public final class App {
     private final Auth auth;
 
     /**
+     * Instance du gestionnaire de l'installation du jeu.
+     */
+    private final GameSetupManager gameSetupManager;
+
+    /**
      * Constructeur privé pour empêcher l'instanciation externe.
      */
     private App () {
         // Initialisation du singleton
         auth = new Auth();
+        gameSetupManager = new GameSetupManager();
         // Configuration des répertoires
         setupDirs();
     }
@@ -75,6 +82,7 @@ public final class App {
             case 1 -> startGame();
             case 2 -> authentifie();
             case 3 -> showSettings();
+            case 4 -> verifyInstallation();
             default -> System.exit(0);
         }
 
@@ -92,7 +100,7 @@ public final class App {
      * Lance le processus d'installation du jeu.
      */
     private void installGame() {
-
+        gameSetupManager.setupGame();
     }
 
     /**
@@ -107,6 +115,13 @@ public final class App {
      */
     private void showSettings() {
 
+    }
+
+    /**
+     * Vérifie l'installation du jeu.
+     */
+    private void verifyInstallation() {
+        gameSetupManager.checkGameSetup();
     }
 
     // −−−-[ MAIN ]----
