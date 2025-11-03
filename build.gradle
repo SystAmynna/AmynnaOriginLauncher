@@ -1,6 +1,8 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+
+    id 'org.openjfx.javafxplugin' version '0.0.13' // Ajout du plugin JavaFX
 }
 
 group = 'com.amynna'
@@ -9,25 +11,32 @@ version = '0.1.1'
 repositories {
     mavenCentral()
     maven {url 'https://litarvan.github.io/maven'}
-    maven { url "https://maven.minecraftforge.net/" }
+    //maven {url 'https://KinjerJS.github.io/maven'}
+    maven {url "https://maven.minecraftforge.net/" }
+}
+
+javafx {
+    version = "21"
+    modules = [ 'javafx.swing', 'javafx.web' ]
 }
 
 ext {
     bootstrapName = 'OriginRP'
-    LauncherName = 'OriginLauncher'
+    LauncherName = 'OriginRP_Launcher'
 
     bouncyCastleVersion = '1.78'
     globalDeps = [
             'org.bouncycastle:bcprov-jdk18on:' + bouncyCastleVersion,
             'org.bouncycastle:bcpkix-jdk18on:' + bouncyCastleVersion,
+            'org.json:json:20231013',
     ]
 
     launcherDeps = [
-            'org.json:json:20231013',
-            'fr.litarvan:openauth:1.1.3',
+            'fr.litarvan:openauth:1.1.6',
+            //'com.github.KinjerJS:OpenAuth:1.2.0',
             'net.java.dev.jna:jna:5.13.0',
             'net.java.dev.jna:jna-platform:5.13.0',
-            'net.minecraftforge:forge:1.20.1-47.4.0:installer'
+            'net.minecraftforge:forge:1.20.1-47.4.0:installer',
     ]
 }
 
@@ -129,5 +138,3 @@ task LauncherJar(type: Jar) {
         attributes 'Main-Class': 'com.amynna.OriginLauncher.App'
     }
 }
-
-build.dependsOn shadowJar

@@ -90,15 +90,15 @@ public class Encrypter {
     public static String loadToken(String alias, String password) {
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyUtil.KEY_STORE_TYPE);
-            File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
+            File keyStoreFile = AppProperties.MS_AUTH_TOKEN;
 
-            if (!ksFile.exists()) {
+            if (!keyStoreFile.exists()) {
                 Logger.error("❌ KeyStore introuvable.");
                 return null;
             }
 
             // Charger le KeyStore
-            try (FileInputStream fis = new FileInputStream(ksFile)) {
+            try (FileInputStream fis = new FileInputStream(keyStoreFile)) {
                 keyStore.load(fis, password.toCharArray());
             }
 
