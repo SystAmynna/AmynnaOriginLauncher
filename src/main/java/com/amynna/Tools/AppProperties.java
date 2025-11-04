@@ -117,6 +117,9 @@ public final class AppProperties {
      */
     public static final File MINECRAFT_LIB_DIR = new File(MINECRAFT_DIR + File.separator + "libraries" + File.separator);
 
+    public static final File MINECRAFT_ASSETS_DIR = new File(MINECRAFT_DIR + File.separator + "assets" + File.separator);
+
+    public static final File MINECRAFT_ASSETS_OBJECTS_DIR = new File(MINECRAFT_ASSETS_DIR + File.separator + "objects" + File.separator);
 
     // OS
 

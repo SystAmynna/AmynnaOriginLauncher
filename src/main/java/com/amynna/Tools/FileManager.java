@@ -308,4 +308,7 @@ public final class FileManager {
         }
     }
 
+    public static void createDirectoryIfNotExists(File hashDir) {
+
+    }
 }

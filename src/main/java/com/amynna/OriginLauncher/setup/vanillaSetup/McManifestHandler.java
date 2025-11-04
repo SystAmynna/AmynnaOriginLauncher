@@ -51,13 +51,20 @@ public class McManifestHandler {
         // Récupération des bibliothèques
         JSONArray libs = mcManifest.getJSONArray("libraries");
         assert libs != null;
+        // Initialisation du gestionnaire des bibliothèques
         this.mcLibManager = new McLibManager(libs);
 
+        // Récupération des assets
+        String assetsVal = mcManifest.getString("assets");
+        assert  assetsVal != null && !assetsVal.isEmpty();
+        JSONObject assetIndex = mcManifest.getJSONObject("assetIndex");
+        assert assetIndex != null;
+        // Initialisation du gestionnaire des assets
+        this.mcAssetManager = new McAssetManager(assetsVal, assetIndex);
 
 
         // TODO Initialisation des autres gestionnaires
 
-        this.mcAssetManager = new McAssetManager();
         this.mcStartManager = new McStartManager();
 
     }
@@ -141,7 +148,23 @@ public class McManifestHandler {
         // Téléchargement des bibliothèques Minecraft
         mcLibManager.downloadAllLibraries();
 
+        // Téléchargement des assets Minecraft
+        mcAssetManager.downloadAllAssets();
+
         // TODO Téléchargement de la suite
+    }
+
+    public void checkMinecraftFiles() {
+        // Vérification du client Minecraft
+        checkMcClient();
+
+        // Vérification des bibliothèques Minecraft
+        mcLibManager.checkAllLibraries();
+
+        // Vérification des assets Minecraft
+        mcAssetManager.checkAllAssets();
+
+        // TODO Vérification de la suite
     }
 
 
