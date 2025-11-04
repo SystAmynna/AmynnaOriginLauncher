@@ -162,20 +162,20 @@ public class Asker {
      * Affiche un menu principal et retourne le choix de l'utilisateur.
      *
      * @return un entier représentant le choix de l'utilisateur :
-     *         0 pour "Télécharger le jeu",
-     *         1 pour "Lancer le jeu",
+     *         0 pour "Lancer le jeu",
+     *         1 pour "Vérifier installation",
      *         2 pour "Se connecter",
      *         3 pour "Paramètres",
-     *         4 pour "Vérifier installation",
+     *         4 pour "Supprimer le jeu",
      *         -1 si la boîte de dialogue est fermée.
      */
     public static int askMenu() {
         String[] options = {
-                "Télécharger le jeu",
                 "Lancer le jeu",
+                "Vérifier installation",
                 "Se connecter",
                 "Paramètres",
-                "Vérifier installation"
+                "Supprimer le jeu"
         };
 
         String msg = "Bienvenue dans le Launcher Origin !\n" +

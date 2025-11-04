@@ -24,8 +24,6 @@ public class McAssetManager {
     private final JSONObject assetIndex;
     /** Manifeste des assets */
     private final JSONObject assetIndexObjects;
-    /** Nom de l'index des assets */
-    public final String assetIndexName;
 
     /** Taille totale des assets */
     private final int totalAssetsSize;
@@ -88,14 +86,11 @@ public class McAssetManager {
         this.assets = assetsVal;
 
         // téléchargement du fichier index des assets
-        String assetsManifestPath = AppProperties.MINECRAFT_ASSETS_DIR.getPath();
+        String assetsManifestPath = AppProperties.MINECRAFT_ASSETS_INDEX_DIR.getPath();
         File assetIndexFile = FileManager.downloadFileAndVerifySha1(url, assetsManifestPath, sha1);
         assert assetIndexFile != null;
         assert assetIndexFile.exists();
         assert assetIndexFile.length() == size;
-
-        // nom de l'index des assets
-        this.assetIndexName = assetIndexFile.getName();
 
         // lecture du fichier index des assets
         JSONObject jsonFile = FileManager.openJsonFile(assetIndexFile);
@@ -177,14 +172,17 @@ public class McAssetManager {
     public void checkAllAssets() {
         int processSize = 0;
         for (AssetObject asset : assetObjects) {
+            Logger.logc("Vérification de l'Asset: " + asset.name + " ... ");
             if (!asset.check()) {
-                Logger.log("L'asset' " + asset.name + " est corrompue ou manquant. Téléchargement...");
+                Logger.log(Logger.RED + "[CORROMPU]");
                 asset.download();
             }
             assert asset.size == asset.file.length();
             processSize += asset.size;
+            Logger.log(Logger.GREEN + "[OK]");
         }
         assert processSize == totalAssetsSize;
+        Logger.log(Logger.GREEN + "Taille de l'ensemble des Assets validé !");
     }
 
 

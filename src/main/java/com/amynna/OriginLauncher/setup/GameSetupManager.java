@@ -32,25 +32,38 @@ public class GameSetupManager {
     }
 
 
-
+    /**
+     * Installe le jeu (Minecraft Vanilla).
+     */
     public void setupGame() {
         // Crée le répertoire Minecraft s'il n'existe pas
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_DIR.getPath());
 
-
-
+        // Installation de Minecraft Vanilla
+        mcManager.setupMinecraft();
     }
 
-    public void lightCheckGameSetup() {
-    }
-
-    public void checkGameSetup() {
-    }
-
+    /**
+     * Désinstalle le jeu.
+     */
     public void uninstallGame() {
+        FileManager.deleteFileIfExists(AppProperties.MINECRAFT_LIB_DIR);
+        FileManager.deleteFileIfExists(AppProperties.MINECRAFT_ASSETS_DIR);
+        FileManager.deleteFileIfExists(AppProperties.MINECRAFT_VERSION_DIR);
+
     }
-
-
+    /**
+     * Répare l'installation du jeu.
+     */
+    public void repairGame() {
+        mcManager.repairMinecraft();
+    }
+    /**
+     * Démarre le jeu.
+     */
+    public void startGame() {
+        mcManager.startMinecraft();
+    }
 
 
 

@@ -66,6 +66,13 @@ public final class App {
         FileManager.createDirectoriesIfNotExist(AppProperties.LAUNCHER_ROOT.getAbsolutePath());
         FileManager.createDirectoriesIfNotExist(AppProperties.TEMP_DIR.getAbsolutePath());
         FileManager.createDirectoriesIfNotExist(AppProperties.SIGNATURE_DIR.getAbsolutePath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_DIR.getAbsolutePath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_VERSION_DIR.getAbsolutePath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_LIB_DIR.getAbsolutePath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_ASSETS_DIR.getAbsolutePath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_ASSETS_OBJECTS_DIR.getAbsolutePath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_ASSETS_INDEX_DIR.getAbsolutePath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_NATIVES_DIR.getAbsolutePath());
     }
 
     // −−−-[ PROCESSUS PRINCIPAL ]----
@@ -78,11 +85,11 @@ public final class App {
         int choice = Asker.askMenu();
 
         switch (choice) {
-            case 0 -> installGame();
-            case 1 -> startGame();
+            case 0 -> startGame();
+            case 1 -> verifyInstallation();
             case 2 -> authentifie();
             case 3 -> showSettings();
-            case 4 -> verifyInstallation();
+            case 4 -> uninstallGame();
             default -> System.exit(0);
         }
 
@@ -93,27 +100,24 @@ public final class App {
      * Lance le processus d'authentification.
      */
     private void authentifie() {
+        Logger.log(Logger.PURPLE + "[CALL] Authentification de l'utilisateur...");
         auth.authentifie();
-    }
-
-    /**
-     * Lance le processus d'installation du jeu.
-     */
-    private void installGame() {
-        gameSetupManager.setupGame();
     }
 
     /**
      * Lance le jeu.
      */
     private void startGame() {
-
+        Logger.log(Logger.PURPLE + "[CALL] Démarrage du jeu...");
+        if (!auth.isAuthenticated()) auth.authentifie();
+        gameSetupManager.startGame();
     }
 
     /**
      * Affiche les paramètres de l'application.
      */
     private void showSettings() {
+        Logger.log(Logger.PURPLE + "[CALL] Settings...");
 
     }
 
@@ -121,7 +125,13 @@ public final class App {
      * Vérifie l'installation du jeu.
      */
     private void verifyInstallation() {
-        gameSetupManager.checkGameSetup();
+        Logger.log(Logger.PURPLE + "[CALL] Vérification de l'installation du jeu...");
+        gameSetupManager.repairGame();
+    }
+
+    private void uninstallGame() {
+        Logger.log(Logger.PURPLE + "[CALL] Désinstallation du jeu...");
+        gameSetupManager.uninstallGame();
     }
 
     // −−−-[ MAIN ]----

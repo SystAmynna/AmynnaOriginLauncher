@@ -67,7 +67,7 @@ public class McManifestHandler {
         String mainClass = mcManifest.getString("mainClass");
         JSONObject logging = mcManifest.getJSONObject("logging");
         String classpath = mcLibManager.generateClasspath(mcClient.file);
-        String assetIndexName = mcAssetManager.assetIndexName;
+        String assetIndexName = mcAssetManager.assets;
         String versionType = mcManifest.getString("type");
         // Initialisation du gestionnaire de démarrage
         this.mcStartManager = new McStartManager(args, mainClass, logging, classpath, assetIndexName, versionType);
@@ -82,7 +82,9 @@ public class McManifestHandler {
      */
     private McClient parseMcClient() {
         // Récupération des informations du client Minecraft
-        JSONObject mcClient = mcManifest.getJSONObject("client");
+        JSONObject downloads = mcManifest.getJSONObject("downloads");
+        assert downloads != null;
+        JSONObject mcClient = downloads.getJSONObject("client");
         assert mcClient != null;
 
         // Extraction des données
@@ -115,13 +117,21 @@ public class McManifestHandler {
      * Si le fichier est manquant ou corrompu, il est retéléchargé.
      */
     private void checkMcClient() {
+
+        Logger.logc("Vérification du Client... ");
+
         // Vérification légère
         lightCheckMcClient();
 
         // Vérification du SHA1
         String fileSha1 = FileManager.calculSHA1(mcClient.file);
         assert fileSha1 != null;
-        if (fileSha1.equals(mcClient.sha1)) return;
+        if (fileSha1.equals(mcClient.sha1)) {
+            Logger.log(Logger.GREEN + "[OK]");
+            return;
+        }
+
+        Logger.log(Logger.RED + "[CORROMPU]");
 
         // Suppression du fichier corrompu
         FileManager.deleteFileIfExists(mcClient.file);
@@ -148,32 +158,38 @@ public class McManifestHandler {
      */
     public void setupMinecraftFiles() {
         // Téléchargement du client Minecraft
+        Logger.log(Logger.GREEN + "Vérification du client Minecraft...");
         downloadMcClient();
 
         // Téléchargement des bibliothèques Minecraft
+        Logger.log(Logger.GREEN + "Vérification des bibliothèques Minecraft...");
         mcLibManager.downloadAllLibraries();
 
         // Téléchargement des assets Minecraft
+        Logger.log(Logger.GREEN + "Vérification des assets Minecraft...");
         mcAssetManager.downloadAllAssets();
-
-        // Chargement des fichiers de démarrage
-        // TODO Téléchargement de la suite
     }
 
+    /**
+     * Vérifie l'intégrité des fichiers Minecraft.
+     */
     public void checkMinecraftFiles() {
         // Vérification du client Minecraft
+        Logger.log(Logger.GREEN + "Vérification avancée du client Minecraft...");
         checkMcClient();
 
         // Vérification des bibliothèques Minecraft
+        Logger.log(Logger.GREEN + "Vérification avancée des bibliothèques Minecraft...");
         mcLibManager.checkAllLibraries();
 
         // Vérification des assets Minecraft
+        Logger.log(Logger.GREEN + "Vérification avancée des assets Minecraft...");
         mcAssetManager.checkAllAssets();
-
-        // TODO Vérification de la suite
     }
 
-
+    /**
+     * Démarre Minecraft.
+     */
     public void startMinecraft() {
         // Extraction des natives
         mcLibManager.extractNatives();

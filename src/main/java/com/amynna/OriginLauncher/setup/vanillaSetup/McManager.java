@@ -28,23 +28,25 @@ public class McManager {
 
     private McManifestHandler mcManifestHandler;
 
-    /**
-     * Installe Minecraft Vanilla.
-     */
-    void setupMinecraft() {
+    public McManager() {
         // Téléchargement du manifeste des versions de Minecraft depuis Mojang
         downloadMojangManifest();
 
         // Téléchargement du manifeste de la version spécifique de Minecraft
         downloadVersionManifest();
 
-
-        mcManifestHandler = new McManifestHandler(mojangManifest);
-
+        // Initialisation du gestionnaire du manifeste Minecraft
+        mcManifestHandler = new McManifestHandler(minecraftManifest);
     }
 
+    /**
+     * Installe Minecraft Vanilla.
+     */
+    public void setupMinecraft() {
 
+        mcManifestHandler.setupMinecraftFiles();
 
+    }
 
     /**
      * Télécharge le manifeste des versions de Minecraft depuis Mojang.
@@ -110,9 +112,15 @@ public class McManager {
         }
     }
 
-
+    /** Démarre Minecraft Vanilla. */
     public void startMinecraft() {
+        setupMinecraft();
         mcManifestHandler.startMinecraft();
+    }
+
+    /** Répare l'installation de Minecraft Vanilla. */
+    public void repairMinecraft() {
+        mcManifestHandler.checkMinecraftFiles();
     }
 
 

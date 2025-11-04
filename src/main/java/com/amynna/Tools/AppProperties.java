@@ -17,7 +17,7 @@ public final class AppProperties {
     /**
      * Version de l'application.
      */
-    public static final String APP_VERSION = "0.1.1";
+    public static final String APP_VERSION = "0.2.1";
     /**
      * Auteur de l'application.
      */
@@ -79,10 +79,6 @@ public final class AppProperties {
      * Emplacement du fichier de token Microsoft.
      */
     public static final File MS_AUTH_TOKEN = new File(LAUNCHER_ROOT + File.separator + "MsAuthToken" + KEY_STORE_EXTENSION);
-    /**
-     * L'URL de l'API de profil Minecraft pour récupérer le XUID.
-     */
-    public static final String PROFILE_API_URL = "https://api.minecraftservices.com/minecraft/profile";
 
     // MOJANG
 
@@ -109,23 +105,34 @@ public final class AppProperties {
      * Version de Minecraft à utiliser.
      */
     public static final String MINECRAFT_VERSION = "1.20.1";
-
+    /**
+     * Répertoire de la version spécifique de Minecraft.
+     */
     public static final File MINECRAFT_VERSION_DIR = new File(MINECRAFT_DIR + File.separator + "versions" + File.separator + MINECRAFT_VERSION + File.separator);
     /**
      * Fichier JAR du client Minecraft.
      */
-    public static final File MINECRAFT_CLIENT = new File(MINECRAFT_VERSION_DIR + MINECRAFT_VERSION + ".jar");
+    public static final File MINECRAFT_CLIENT = new File(MINECRAFT_VERSION_DIR + File.separator + MINECRAFT_VERSION + ".jar");
     /**
      * Répertoire des bibliothèques Minecraft.
      */
     public static final File MINECRAFT_LIB_DIR = new File(MINECRAFT_DIR + File.separator + "libraries" + File.separator);
-
+    /**
+     * Répertoire des assets Minecraft.
+     */
     public static final File MINECRAFT_ASSETS_DIR = new File(MINECRAFT_DIR + File.separator + "assets" + File.separator);
-
+    /**
+     * Répertoire des objets des assets Minecraft.
+     */
     public static final File MINECRAFT_ASSETS_OBJECTS_DIR = new File(MINECRAFT_ASSETS_DIR + File.separator + "objects" + File.separator);
-
+    /**
+     * Répertoire des fichiers natifs de Minecraft.
+     */
     public static final File MINECRAFT_NATIVES_DIR = new File(MINECRAFT_VERSION_DIR + File.separator + "natives" + File.separator);
-
+    /**
+     * Répertoire des index des assets Minecraft.
+     */
+    public static final File MINECRAFT_ASSETS_INDEX_DIR = new File(MINECRAFT_ASSETS_DIR + File.separator + "indexes" + File.separator);
     // OS
 
     /**
@@ -176,6 +183,9 @@ public final class AppProperties {
 
     // SERVER
 
+    /**
+     * Valeur par défaut pour le mode multijoueur en jeu rapide.
+     */
     public static final String QUICK_PLAY_MULTIPLAYER_VALUE = "...";
 
 

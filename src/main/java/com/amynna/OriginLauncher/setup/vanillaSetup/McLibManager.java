@@ -192,10 +192,11 @@ public class McLibManager {
     /** Vérifie l'intégrité de toutes les bibliothèques Minecraft. */
     public void checkAllLibraries() {
         for (McLibrary lib : mcLibraries) {
+            Logger.logc("Vérification de la bibliothèque: " + lib.name + " ... ");
             if (!lib.check()) {
-                Logger.log("La bibliothèque " + lib.name + " est corrompue ou manquante. Téléchargement...");
+                Logger.log(Logger.RED + "[CORROMPUE]");
                 lib.download();
-            }
+            } else Logger.log(Logger.GREEN + "[OK]");
         }
     }
 

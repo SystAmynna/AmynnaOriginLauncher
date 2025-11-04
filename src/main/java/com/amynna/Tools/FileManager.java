@@ -303,13 +303,31 @@ public final class FileManager {
         return Math.abs(actualSize - expectedSize) <= 100;
     }
 
-    public static void deleteFileIfExists(File file) {
-        if (file.exists()) {
-            if (!file.delete()) {
-                Logger.error("Impossible de supprimer le fichier : " + file.getPath());
+/**
+ * Supprime un fichier ou un répertoire (et son contenu) s'il existe.
+ *
+ * @param file Fichier ou répertoire à supprimer
+ */
+public static void deleteFileIfExists(File file) {
+    if (!file.exists()) {
+        return;
+    }
+
+    // Si c'est un répertoire, supprimer son contenu récursivement
+    if (file.isDirectory()) {
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                deleteFileIfExists(f);
             }
         }
     }
+
+    // Supprimer le fichier ou le répertoire maintenant vide
+    if (!file.delete()) {
+        Logger.error("Impossible de supprimer : " + file.getPath());
+    }
+}
 
     /**
      * Décompresse un fichier ZIP (ou JAR) dans le dossier de destination.

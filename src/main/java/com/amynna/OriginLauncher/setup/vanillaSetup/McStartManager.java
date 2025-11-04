@@ -3,6 +3,7 @@ package com.amynna.OriginLauncher.setup.vanillaSetup;
 import com.amynna.OriginLauncher.App;
 import com.amynna.OriginLauncher.Config;
 import com.amynna.Tools.AppProperties;
+import com.amynna.Tools.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -188,21 +189,22 @@ public class McStartManager {
 
             if (rule.has("os")) {
                 JSONObject osRule = rule.getJSONObject("os");
-                // Vérifie si le nom de l'OS correspond
-                conditionMet = osRule.getString("name").equals(AppProperties.getOsType());
-                if (osRule.has("arch")) {
-                    // Vérifie si l'architecture de l'OS correspond
-                    conditionMet = osRule.getString("arch").equals(AppProperties.getOsArch());
-                }
-                // (Optionnel: Gérer les règles de version OS si elles existent, mais rares en JVM)
+                // Vérifie le nom de l'OS
+                if (osRule.has("name")) conditionMet = osRule.getString("name").equals(AppProperties.getOsType());
+                if (!conditionMet) continue;
+
+                // Vérifie l'architecture de l'OS
+                if (osRule.has("arch")) conditionMet = osRule.getString("arch").equals(AppProperties.getOsArch());
+                if (!conditionMet) continue;
+
             }
 
             if (rule.has("features")) {
                 JSONObject features = rule.getJSONObject("features");
-                while (features.keys().hasNext()) {
-                    String featureKey = features.keys().next();
+                for (String featureKey : features.keySet()) {
+                    if (!conditionMet) break;
                     boolean featureValue = features.getBoolean(featureKey);
-                    conditionMet = conditionMet && evaluateFeature(featureKey, featureValue);
+                    conditionMet = evaluateFeature(featureKey, featureValue);
                 }
             }
 
@@ -265,7 +267,9 @@ public class McStartManager {
     }
 
 
-
+    /**
+     * Démarre le processus Minecraft avec la commande construite.
+     */
     public void startMinecraft() {
 
         List<String> launchCommand = buildLaunchCommand();
