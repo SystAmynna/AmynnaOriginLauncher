@@ -1,9 +1,6 @@
 package com.amynna.OriginLauncher;
 
-import com.amynna.Tools.AppProperties;
-import com.amynna.Tools.Asker;
-import com.amynna.Tools.Encrypter;
-import com.amynna.Tools.Logger;
+import com.amynna.Tools.*;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticationException;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
@@ -204,9 +201,7 @@ public final class Auth {
         } else {
             Logger.log("❌ Échec de la restauration du jeton de rafraîchissement (probablement obselète).");
             try {
-                boolean deleted = AppProperties.MS_AUTH_TOKEN.delete();
-                if (deleted) Logger.log("Fichier de jeton obselète supprimé.");
-                else throw new SecurityException();
+                FileManager.deleteFileIfExists(AppProperties.MS_AUTH_TOKEN);
             } catch (SecurityException e) {
                 Logger.error("Impossible de supprimer le fichier de jeton obselète.");
             }

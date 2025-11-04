@@ -108,6 +108,14 @@ public final class AppProperties {
      * Version de Minecraft à utiliser.
      */
     public static final String MINECRAFT_VERSION = "1.20.1";
+    /**
+     * Fichier JAR du client Minecraft.
+     */
+    public static final File MINECRAFT_CLIENT = new File(MINECRAFT_DIR + File.separator + "versions" + File.separator + MINECRAFT_VERSION + File.separator + MINECRAFT_VERSION + ".jar");
+    /**
+     * Répertoire des bibliothèques Minecraft.
+     */
+    public static final File MINECRAFT_LIB_DIR = new File(MINECRAFT_DIR + File.separator + "libraries" + File.separator);
 
 
     // OS
@@ -123,13 +131,14 @@ public final class AppProperties {
             if (osName.startsWith("windows")) {
                 return "windows";
             } else if (osName.startsWith("mac os x") || osName.startsWith("darwin")) {
-                return "macos";
-            } else if (osName.startsWith("linux")) {
-                return "linux";
-            } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
-                // Catégorie de repli pour d'autres systèmes de type Unix
+                return "osx";
+            } else if (osName.startsWith("linux") || osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
                 return "linux";
             }
+
+            Logger.fatal("Votre OS n'a pas été reconnu : [" + osName + "]\n"+
+                    "Linux, Windows et MacOS sont normalement supportés.\n" +
+                    "Veuillez contacter un administrateur.");
 
             return "unknown";
         }

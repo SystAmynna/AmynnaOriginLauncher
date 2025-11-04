@@ -1,6 +1,8 @@
 package com.amynna.OriginLauncher.setup;
 
 import com.amynna.OriginLauncher.setup.vanillaSetup.McManager;
+import com.amynna.Tools.AppProperties;
+import com.amynna.Tools.FileManager;
 
 /**
  * Classe responsable de la gestion de l'installation du jeu.
@@ -32,6 +34,11 @@ public class GameSetupManager {
 
 
     public void setupGame() {
+        // Crée le répertoire Minecraft s'il n'existe pas
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_DIR.getPath());
+
+
+
     }
 
     public void lightCheckGameSetup() {

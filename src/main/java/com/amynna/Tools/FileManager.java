@@ -300,4 +300,12 @@ public final class FileManager {
         return Math.abs(actualSize - expectedSize) <= 100;
     }
 
+    public static void deleteFileIfExists(File file) {
+        if (file.exists()) {
+            if (!file.delete()) {
+                Logger.error("Impossible de supprimer le fichier : " + file.getPath());
+            }
+        }
+    }
+
 }

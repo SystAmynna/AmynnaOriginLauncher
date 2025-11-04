@@ -1,6 +1,7 @@
 package tests;
 
 import com.amynna.OriginLauncher.Auth;
+import com.amynna.OriginLauncher.setup.vanillaSetup.McLibManager;
 import com.amynna.Tools.Asker;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
@@ -45,6 +46,14 @@ public class testProp {
         assert msAuthResult != null;
 
     }
+
+
+    @Test
+    public void testCp() {
+        System.out.println(McLibManager.getCpSeparator());
+    }
+
+
 
 
 }
