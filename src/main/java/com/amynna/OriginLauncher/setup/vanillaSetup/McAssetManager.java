@@ -24,6 +24,8 @@ public class McAssetManager {
     private final JSONObject assetIndex;
     /** Manifeste des assets */
     private final JSONObject assetIndexObjects;
+    /** Nom de l'index des assets */
+    public final String assetIndexName;
 
     /** Taille totale des assets */
     private final int totalAssetsSize;
@@ -92,6 +94,9 @@ public class McAssetManager {
         assert assetIndexFile.exists();
         assert assetIndexFile.length() == size;
 
+        // nom de l'index des assets
+        this.assetIndexName = assetIndexFile.getName();
+
         // lecture du fichier index des assets
         JSONObject jsonFile = FileManager.openJsonFile(assetIndexFile);
         assert jsonFile != null;
@@ -130,7 +135,7 @@ public class McAssetManager {
         File assetFile = new File(hashDir, hash);
 
         // 3. Assurez-vous que le dossier de préfixe existe
-        FileManager.createDirectoryIfNotExists(hashDir);
+        FileManager.createDirectoriesIfNotExist(hashDir.getPath());
 
         // 4. Retourner l'instance
         return new AssetObject(assetName, hash, size, assetFile);

@@ -9,11 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Gestionnaire de fichiers pour le téléchargement et la lecture de fichiers.
@@ -308,7 +311,51 @@ public final class FileManager {
         }
     }
 
-    public static void createDirectoryIfNotExists(File hashDir) {
+    /**
+     * Décompresse un fichier ZIP (ou JAR) dans le dossier de destination.
+     *
+     * @param zipFile  fichier .zip/.jar à extraire
+     * @param destDir  répertoire de destination
+     */
+    public static void unzip(File zipFile, File destDir) {
+
+        // Crée le répertoire de destination s'il n'existe pas
+        createDirectoriesIfNotExist(destDir.getPath());
+
+
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry;
+            byte[] buffer = new byte[8192];
+
+            while ((entry = zis.getNextEntry()) != null) {
+                Path newFilePath = destDir.toPath().resolve(entry.getName()).normalize();
+
+                // ⚠️ Sécurité : empêcher les chemins malicieux (ZIP Slip)
+                if (!newFilePath.startsWith(destDir.toPath())) {
+                    zis.closeEntry();
+                    Logger.error("Entrée ZIP malicieuse détectée : " + entry.getName() + " - extraction ignorée.");
+                    continue;
+                }
+
+                if (entry.isDirectory()) {
+                    createDirectoriesIfNotExist(newFilePath.toString());
+                } else {
+                    createDirectoriesIfNotExist(newFilePath.getParent().toString());
+                    try (OutputStream fos = Files.newOutputStream(newFilePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
+                }
+                zis.closeEntry();
+            }
+        } catch (FileNotFoundException e) {
+            Logger.error("Fichier ZIP non trouvé : " + e.getMessage());
+        } catch (IOException e) {
+            Logger.error("Erreur lors de la décompression du fichier ZIP : " + e.getMessage());
+        }
+
 
     }
 }

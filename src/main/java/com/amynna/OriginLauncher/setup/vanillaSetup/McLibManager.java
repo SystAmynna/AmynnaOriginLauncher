@@ -1,5 +1,6 @@
 package com.amynna.OriginLauncher.setup.vanillaSetup;
 
+import com.amynna.OriginLauncher.App;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
@@ -153,7 +154,7 @@ public class McLibManager {
 
             // --- 3. Déterminer si la lib est "native" ---
             // La méthode la plus simple est de regarder le nom (name)
-            boolean isNative = name.contains(":natives-");
+            boolean isNative = name.contains("native");
 
             // --- 4. Construire l'objet File ---
             // Crée le chemin complet, ex: ".minecraft/libraries/" + "com/google/gson/..."
@@ -227,6 +228,29 @@ public class McLibManager {
         } else {
             return librariesPath + separator + clientPath;
         }
+    }
+
+    /**
+     * Extrait les fichiers natifs (natives) des bibliothèques Minecraft dans le répertoire dédié.
+     */
+    public void extractNatives() {
+
+        // Nettoie le répertoire des natives avant d'extraire les nouvelles
+        FileManager.deleteFileIfExists(AppProperties.MINECRAFT_NATIVES_DIR);
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_NATIVES_DIR.getPath());
+
+        // Parcourt toutes les bibliothèques pour extraire les natives
+        for (McLibrary lib : mcLibraries) {
+            if (lib.isNative) {
+
+                File zipFile = lib.file;
+                File outputDir = AppProperties.MINECRAFT_NATIVES_DIR; // TODO vérifier que ce répertoire est le bon
+
+                FileManager.unzip(zipFile, outputDir);
+
+            }
+        }
+
     }
 
 

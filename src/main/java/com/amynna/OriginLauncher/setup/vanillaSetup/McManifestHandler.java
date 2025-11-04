@@ -62,10 +62,15 @@ public class McManifestHandler {
         // Initialisation du gestionnaire des assets
         this.mcAssetManager = new McAssetManager(assetsVal, assetIndex);
 
-
-        // TODO Initialisation des autres gestionnaires
-
-        this.mcStartManager = new McStartManager();
+        // Récupération des informations de démarrage
+        JSONObject args = mcManifest.getJSONObject("arguments");
+        String mainClass = mcManifest.getString("mainClass");
+        JSONObject logging = mcManifest.getJSONObject("logging");
+        String classpath = mcLibManager.generateClasspath(mcClient.file);
+        String assetIndexName = mcAssetManager.assetIndexName;
+        String versionType = mcManifest.getString("type");
+        // Initialisation du gestionnaire de démarrage
+        this.mcStartManager = new McStartManager(args, mainClass, logging, classpath, assetIndexName, versionType);
 
     }
 
@@ -151,6 +156,7 @@ public class McManifestHandler {
         // Téléchargement des assets Minecraft
         mcAssetManager.downloadAllAssets();
 
+        // Chargement des fichiers de démarrage
         // TODO Téléchargement de la suite
     }
 
@@ -168,6 +174,13 @@ public class McManifestHandler {
     }
 
 
+    public void startMinecraft() {
+        // Extraction des natives
+        mcLibManager.extractNatives();
+
+        // Démarrage de Minecraft
+        mcStartManager.startMinecraft();
+    }
 
 
 

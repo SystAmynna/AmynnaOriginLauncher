@@ -111,6 +111,11 @@ public class McManager {
     }
 
 
+    public void startMinecraft() {
+        mcManifestHandler.startMinecraft();
+    }
+
+
 
 
 

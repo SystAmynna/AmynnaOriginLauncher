@@ -1,6 +1,7 @@
 package com.amynna.Tools;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 /**
  * Classe utilitaire pour la gestion des propriétés de l'application.
@@ -108,10 +109,12 @@ public final class AppProperties {
      * Version de Minecraft à utiliser.
      */
     public static final String MINECRAFT_VERSION = "1.20.1";
+
+    public static final File MINECRAFT_VERSION_DIR = new File(MINECRAFT_DIR + File.separator + "versions" + File.separator + MINECRAFT_VERSION + File.separator);
     /**
      * Fichier JAR du client Minecraft.
      */
-    public static final File MINECRAFT_CLIENT = new File(MINECRAFT_DIR + File.separator + "versions" + File.separator + MINECRAFT_VERSION + File.separator + MINECRAFT_VERSION + ".jar");
+    public static final File MINECRAFT_CLIENT = new File(MINECRAFT_VERSION_DIR + MINECRAFT_VERSION + ".jar");
     /**
      * Répertoire des bibliothèques Minecraft.
      */
@@ -120,6 +123,8 @@ public final class AppProperties {
     public static final File MINECRAFT_ASSETS_DIR = new File(MINECRAFT_DIR + File.separator + "assets" + File.separator);
 
     public static final File MINECRAFT_ASSETS_OBJECTS_DIR = new File(MINECRAFT_ASSETS_DIR + File.separator + "objects" + File.separator);
+
+    public static final File MINECRAFT_NATIVES_DIR = new File(MINECRAFT_VERSION_DIR + File.separator + "natives" + File.separator);
 
     // OS
 
@@ -158,7 +163,20 @@ public final class AppProperties {
         else if (arch.contains("arm")) return "arm";
         else return "unknown";
     }
+    /**
+     * Recherche l'exécutable Java dans les répertoires définis dans la variable PATH.
+     * @return Le chemin vers l'exécutable Java ou null si non trouvé
+     */
+    public static String foundJava() {
+        String javaHome = System.getProperty("java.home");
+        String javaExecutable = getOsType().equals("windows") ? "java.exe" : "java";
+        return Paths.get(javaHome, "bin", javaExecutable).toString();
+    }
 
+
+    // SERVER
+
+    public static final String QUICK_PLAY_MULTIPLAYER_VALUE = "...";
 
 
 }
