@@ -176,10 +176,10 @@ public class McAssetManager {
             if (!asset.check()) {
                 Logger.log(Logger.RED + "[CORROMPU]");
                 asset.download();
-            }
+            } else Logger.log(Logger.GREEN + "[OK]");
+
             assert asset.size == asset.file.length();
             processSize += asset.size;
-            Logger.log(Logger.GREEN + "[OK]");
         }
         assert processSize == totalAssetsSize;
         Logger.log(Logger.GREEN + "Taille de l'ensemble des Assets validé !");

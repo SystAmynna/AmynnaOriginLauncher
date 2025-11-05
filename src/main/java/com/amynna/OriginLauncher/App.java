@@ -19,6 +19,11 @@ public final class App {
     private final static App INSTANCE = new App();
 
     /**
+     * Indicateur pour quitter l'application.
+     */
+    private boolean shouldExit = false;
+
+    /**
      * Instance de l'authentification.
      */
     private final Auth auth;
@@ -81,18 +86,18 @@ public final class App {
      * Démarre le processus principal de l'application.
      */
     public void launch() {
+        while (!shouldExit) {
+            int choice = Asker.askMenu();
 
-        int choice = Asker.askMenu();
-
-        switch (choice) {
-            case 0 -> startGame();
-            case 1 -> verifyInstallation();
-            case 2 -> authentifie();
-            case 3 -> showSettings();
-            case 4 -> uninstallGame();
-            default -> System.exit(0);
+            switch (choice) {
+                case 0 -> startGame();
+                case 1 -> verifyInstallation();
+                case 2 -> authentifie();
+                case 3 -> showSettings();
+                case 4 -> uninstallGame();
+                default -> System.exit(0);
+            }
         }
-
     }
 
 
@@ -111,6 +116,7 @@ public final class App {
         Logger.log(Logger.PURPLE + "[CALL] Démarrage du jeu...");
         if (!auth.isAuthenticated()) auth.authentifie();
         gameSetupManager.startGame();
+        shouldExit = true;
     }
 
     /**

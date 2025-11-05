@@ -88,12 +88,12 @@ public final class FileManager {
             }
 
             File downloadedFile = destination.toFile();
-            System.out.println("\uD83D\uDCE5 Fichier téléchargé : " + url + " -> " + downloadedFile.getAbsolutePath());
+            Logger.log(Logger.BLUE + "\uD83D\uDCE5 Fichier téléchargé : " + url + " -> " + downloadedFile.getAbsolutePath());
 
             return downloadedFile;
 
         } catch (Exception e) {
-            System.err.println("Erreur lors du téléchargement du fichier : " + e.getMessage());
+            Logger.error("Erreur lors du téléchargement du fichier : " + e.getMessage());
             return null;
         }
 
@@ -132,9 +132,7 @@ public final class FileManager {
     public static void createDirectoriesIfNotExist(String directoryPath) {
         File dir = new File(directoryPath);
         if (!dir.exists()) {
-            if (dir.mkdirs()) {
-                Logger.log("Répertoire créé : " + directoryPath);
-            } else {
+            if (!dir.mkdirs()) {
                 Logger.fatal("Échec de la création du répertoire : " + directoryPath);
             }
         } else if (!dir.isDirectory()) {

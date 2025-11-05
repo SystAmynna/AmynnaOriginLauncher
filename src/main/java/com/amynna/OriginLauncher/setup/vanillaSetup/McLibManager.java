@@ -46,10 +46,9 @@ public class McLibManager {
          * Vérifie l'intégrité de la bibliothèque en comparant le SHA1.
          */
         public boolean check() {
-            lightCheck();
+            if (!lightCheck()) return  false;
             String fileSha1 = FileManager.calculSHA1(file);
-            assert fileSha1 != null;
-            return fileSha1.equals(sha1);
+            return fileSha1 != null && fileSha1.equals(sha1);
         }
 
         /**

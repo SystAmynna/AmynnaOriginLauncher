@@ -125,8 +125,7 @@ public class McManifestHandler {
 
         // Vérification du SHA1
         String fileSha1 = FileManager.calculSHA1(mcClient.file);
-        assert fileSha1 != null;
-        if (fileSha1.equals(mcClient.sha1)) {
+        if (fileSha1 != null && fileSha1.equals(mcClient.sha1)) {
             Logger.log(Logger.GREEN + "[OK]");
             return;
         }
