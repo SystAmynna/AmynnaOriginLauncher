@@ -44,6 +44,8 @@ public class McManager {
      */
     public void setupMinecraft() {
 
+        Logger.log(Logger.PURPLE + "Installation de Minecraft Vanilla...");
+
         mcManifestHandler.setupMinecraftFiles();
 
     }
@@ -114,7 +116,6 @@ public class McManager {
 
     /** Démarre Minecraft Vanilla. */
     public void startMinecraft() {
-        setupMinecraft();
         mcManifestHandler.startMinecraft();
     }
 

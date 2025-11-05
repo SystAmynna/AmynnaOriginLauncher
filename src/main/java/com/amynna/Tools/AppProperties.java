@@ -133,6 +133,18 @@ public final class AppProperties {
      * Répertoire des index des assets Minecraft.
      */
     public static final File MINECRAFT_ASSETS_INDEX_DIR = new File(MINECRAFT_ASSETS_DIR + File.separator + "indexes" + File.separator);
+
+    // FORGE
+
+    public static final String FORGE_VERSION = "47.4.0";
+
+    public static final String FORGE_ID = MINECRAFT_VERSION +"-forge-" + FORGE_VERSION;
+
+    public static final String FORGE_INSTALLER_URL = "https://maven.minecraftforge.net/net/minecraftforge/forge/" + MINECRAFT_VERSION + "-" + FORGE_VERSION + "/forge-" + MINECRAFT_VERSION + "-" + FORGE_VERSION + "-installer.jar";
+
+    public static final File FORGE_VERSION_DIR = new File(MINECRAFT_DIR + File.separator + "versions" + File.separator + FORGE_ID + File.separator);
+
+    public static final File FORGE_MANIFEST = new File(FORGE_VERSION_DIR + File.separator + FORGE_ID + ".json");
     // OS
 
     /**

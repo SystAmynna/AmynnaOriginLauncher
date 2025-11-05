@@ -1,5 +1,6 @@
 package com.amynna.OriginLauncher.setup;
 
+import com.amynna.OriginLauncher.setup.modloaderSetup.forge.ForgeManager;
 import com.amynna.OriginLauncher.setup.vanillaSetup.McManager;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
@@ -36,11 +37,11 @@ public class GameSetupManager {
      * Installe le jeu (Minecraft Vanilla).
      */
     public void setupGame() {
-        // Crée le répertoire Minecraft s'il n'existe pas
-        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_DIR.getPath());
 
         // Installation de Minecraft Vanilla
         mcManager.setupMinecraft();
+
+        forgeManager.setupForge();
     }
 
     /**
@@ -62,6 +63,7 @@ public class GameSetupManager {
      * Démarre le jeu.
      */
     public void startGame() {
+        setupGame();
         mcManager.startMinecraft();
     }
 
