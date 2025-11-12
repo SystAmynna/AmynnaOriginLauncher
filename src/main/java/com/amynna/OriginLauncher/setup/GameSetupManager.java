@@ -1,5 +1,6 @@
 package com.amynna.OriginLauncher.setup;
 
+import com.amynna.OriginLauncher.setup.global.McCommand;
 import com.amynna.OriginLauncher.setup.modloaderSetup.forge.ForgeManager;
 import com.amynna.OriginLauncher.setup.vanillaSetup.McManager;
 import com.amynna.Tools.AppProperties;
@@ -58,13 +59,14 @@ public class GameSetupManager {
      */
     public void repairGame() {
         mcManager.repairMinecraft();
+        forgeManager.checkForge();
     }
     /**
      * Démarre le jeu.
      */
     public void startGame() {
         setupGame();
-        mcManager.startMinecraft();
+        McCommand.get().startMinecraft();
     }
 
 

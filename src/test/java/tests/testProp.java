@@ -1,7 +1,7 @@
 package tests;
 
 import com.amynna.OriginLauncher.Auth;
-import com.amynna.OriginLauncher.setup.vanillaSetup.McLibManager;
+import com.amynna.OriginLauncher.setup.global.McLibManager;
 import com.amynna.Tools.Asker;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;

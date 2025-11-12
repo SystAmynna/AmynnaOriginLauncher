@@ -1,5 +1,8 @@
 package com.amynna.OriginLauncher.setup.modloaderSetup.forge;
 
+import com.amynna.OriginLauncher.Config;
+import com.amynna.OriginLauncher.setup.global.McLibManager;
+import com.amynna.OriginLauncher.setup.vanillaSetup.McStartManager;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
@@ -11,24 +14,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Classe responsable de la gestion de Forge.
  */
 public class ForgeManager {
 
+    // ----[ ATTRIBUTS ]----
+
     /**
      * Chemin vers l'exécutable Java.
      */
     private File installerFile;
 
-    /**
-     * Construit le ForgeManager.
-     */
-    public ForgeManager() {
+    private McLibManager mcLibManager;
 
-    }
+    private McStartManager mcStartManager;
 
+    // ---[ MÉTHODES PUBLIQUES ]---
 
     public void setupForge() {
 
@@ -41,11 +45,36 @@ public class ForgeManager {
         JSONObject manifest = getManifest();
         assert manifest != null;
 
+        mcLibManager = new McLibManager(manifest.getJSONArray("libraries"));
+        mcLibManager.downloadAllLibraries();
+        mcLibManager.checkAllLibraries();
+
+
+        JSONObject args = manifest.getJSONObject("arguments");
+        String mainClass = manifest.getString("mainClass");
+        String assets = "";
+        String versionType = manifest.getString("type");
+        mcStartManager = new McStartManager(args, mainClass, assets, versionType);
+        mcStartManager.buildLaunchCommand();
 
     }
 
 
-    // --- MÉTHODES ---
+    public void checkForge() {
+        if (mcLibManager == null) {
+            JSONObject manifest = getManifest();
+            assert manifest != null;
+            mcLibManager = new McLibManager(manifest.getJSONArray("libraries"));
+        }
+        mcLibManager.checkAllLibraries();
+    }
+
+    public void buildLaunchCommand() {
+
+    }
+
+    // ---[ MÉTHODES PRIVÉES ]---
+
 
     /**
      * Télécharge le JAR de l'installeur Forge.
@@ -65,6 +94,12 @@ public class ForgeManager {
      * Exécute l'installeur de Forge en mode client sur le dossier .minecraft.
      */
     private void runInstaller() {
+
+        if (Config.get().isForge_installed()) {
+            Logger.log("Forge est déjà installé, saut de l'installation.");
+            return;
+        }
+
         if (installerFile == null || !installerFile.exists()) {
             Logger.error("Fichier installeur Forge non trouvé.");
             return;
@@ -107,6 +142,7 @@ public class ForgeManager {
             Logger.error("Erreur lors de l'exécution de l'installeur Forge : " + e.getMessage());
         }
 
+        Config.get().setForge_installed(true);
 
     }
 
@@ -124,7 +160,6 @@ public class ForgeManager {
         // Retourner l'objet JSON
         return FileManager.openJsonFile(AppProperties.FORGE_MANIFEST);
     }
-
 
     /**
      * Crée un fichier launcher_profiles.json minimal pour satisfaire l'installeur Forge.

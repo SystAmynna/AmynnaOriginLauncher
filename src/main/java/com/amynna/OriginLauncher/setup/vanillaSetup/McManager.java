@@ -114,11 +114,6 @@ public class McManager {
         }
     }
 
-    /** Démarre Minecraft Vanilla. */
-    public void startMinecraft() {
-        mcManifestHandler.startMinecraft();
-    }
-
     /** Répare l'installation de Minecraft Vanilla. */
     public void repairMinecraft() {
         mcManifestHandler.checkMinecraftFiles();

@@ -1,5 +1,6 @@
 package com.amynna.OriginLauncher.setup.vanillaSetup;
 
+import com.amynna.OriginLauncher.setup.global.McLibManager;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
@@ -65,12 +66,10 @@ public class McManifestHandler {
         // Récupération des informations de démarrage
         JSONObject args = mcManifest.getJSONObject("arguments");
         String mainClass = mcManifest.getString("mainClass");
-        JSONObject logging = mcManifest.getJSONObject("logging");
-        String classpath = mcLibManager.generateClasspath(mcClient.file);
         String assetIndexName = mcAssetManager.assets;
         String versionType = mcManifest.getString("type");
         // Initialisation du gestionnaire de démarrage
-        this.mcStartManager = new McStartManager(args, mainClass, logging, classpath, assetIndexName, versionType);
+        this.mcStartManager = new McStartManager(args, mainClass, assetIndexName, versionType);
 
     }
 
@@ -167,6 +166,9 @@ public class McManifestHandler {
         // Téléchargement des assets Minecraft
         Logger.log(Logger.GREEN + "Vérification des assets Minecraft...");
         mcAssetManager.downloadAllAssets();
+
+        // Préparation de la commande de lancement
+        mcStartManager.buildLaunchCommand();
     }
 
     /**
@@ -185,18 +187,5 @@ public class McManifestHandler {
         Logger.log(Logger.GREEN + "Vérification avancée des assets Minecraft...");
         mcAssetManager.checkAllAssets();
     }
-
-    /**
-     * Démarre Minecraft.
-     */
-    public void startMinecraft() {
-        // Extraction des natives
-        mcLibManager.extractNatives();
-
-        // Démarrage de Minecraft
-        mcStartManager.startMinecraft();
-    }
-
-
 
 }

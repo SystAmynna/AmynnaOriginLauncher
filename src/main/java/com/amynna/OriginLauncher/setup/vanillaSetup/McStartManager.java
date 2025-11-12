@@ -2,6 +2,8 @@ package com.amynna.OriginLauncher.setup.vanillaSetup;
 
 import com.amynna.OriginLauncher.App;
 import com.amynna.OriginLauncher.Config;
+import com.amynna.OriginLauncher.setup.global.McCommand;
+import com.amynna.OriginLauncher.setup.global.McLibManager;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.Logger;
 import org.json.JSONArray;
@@ -21,13 +23,9 @@ public class McStartManager {
     private final JSONObject arguments;
     /** Classe principale du jeu */
     private final String mainClass;
-    /** Configuration de logging */
-    private final JSONObject logging;
 
     private final String versionType;
 
-    /** Classpath complet pour le lancement */
-    private final String classpath;
     /** Nom de l'index des assets */
     private final String assetIndexName;
 
@@ -35,11 +33,9 @@ public class McStartManager {
      * Constructeur de la classe McStartManager.
      * @param args Les arguments de lancement au format JSON.
      * @param mainClass La classe principale à exécuter.
-     * @param logging La configuration de logging au format JSON.
-     * @param classpath Le classpath complet pour le lancement.
      * @param assetIndexName Le nom de l'index des assets.
      */
-    protected McStartManager(JSONObject args, String mainClass, JSONObject logging, String classpath, String assetIndexName, String versionType) {
+    public McStartManager(JSONObject args, String mainClass, String assetIndexName, String versionType) {
         // Initialisation des arguments
         arguments = args;
         assert arguments != null && !arguments.isEmpty();
@@ -48,17 +44,9 @@ public class McStartManager {
         this.mainClass = mainClass;
         assert !this.mainClass.isEmpty();
 
-        // Initialisation de la configuration de logging
-        this.logging = logging;
-        assert logging != null && !this.logging.isEmpty();
-
-        // Initialisation du classpath
-        this.classpath = classpath;
-        assert this.classpath != null && !this.classpath.isEmpty();
-
         // Initialisation du nom de l'index des assets
         this.assetIndexName = assetIndexName;
-        assert this.assetIndexName != null && !this.assetIndexName.isEmpty();
+        assert this.assetIndexName != null;
 
         // Initialisation du type de version
         this.versionType = versionType;
@@ -75,13 +63,13 @@ public class McStartManager {
     private String resolvePlaceholders(String input) {
         String output = input;
 
-        // Remplacement des variables JVM spécifiques
+        // JVM
         output = output.replace("${natives_directory}", AppProperties.MINECRAFT_NATIVES_DIR.getPath());
-        output = output.replace("${classpath}", classpath); // Bien que le classpath soit souvent ajouté à part
+        output = output.replace("${classpath}", ""); // NE DOIS JAMAIS ÊTRE UTILISÉ
         output = output.replace("${launcher_name}", AppProperties.APP_NAME);
         output = output.replace("${launcher_version}", AppProperties.APP_VERSION);
 
-        // Remplacement des variables du jeu spécifiques
+        // MC
         output = output.replace("${auth_player_name}", App.get().getAuth().getMsAuthResult().getProfile().getName());
         output = output.replace("${version_name}", AppProperties.MINECRAFT_VERSION);
         output = output.replace("${game_directory}", AppProperties.MINECRAFT_DIR.getPath());
@@ -95,11 +83,14 @@ public class McStartManager {
         output = output.replace("${version_type}", versionType);
         output = output.replace("${resolution_width}", Config.get().getCustom_width() + "");
         output = output.replace("${resolution_height}", Config.get().getCustom_height() + "");
-        output = output.replace("${quickPlayPath}", "..."); // TODO chemin quick play (à voir plus tard)
-        output = output.replace("${quickPlaySingleplayer}", "..."); // NE DOIS JAMAIS ÊTRE UTILISÉ
+        output = output.replace("${quickPlayPath}", ""); // TODO chemin quick play (à voir plus tard)
+        output = output.replace("${quickPlaySingleplayer}", ""); // NE DOIS JAMAIS ÊTRE UTILISÉ
         output = output.replace("${quickPlayMultiplayer}", AppProperties.QUICK_PLAY_MULTIPLAYER_VALUE);
-        output = output.replace("${quickPlayRealms}", "..."); // NE DOIS JAMAIS ÊTRE UTILISÉ
+        output = output.replace("${quickPlayRealms}", ""); // NE DOIS JAMAIS ÊTRE UTILISÉ
 
+        // FORGE
+        output = output.replace("${library_directory}", AppProperties.MINECRAFT_DIR.getPath());
+        output = output.replace("${classpath_separator}", McLibManager.getCpSeparator());
 
         return output;
     }
@@ -138,7 +129,15 @@ public class McStartManager {
      */
     private List<String> parseArg(Object arg) {
         // Cas 1: L'argument est une simple String (ex: "-Djava.net.preferIPv4Stack=true")
-        if (arg instanceof String) return List.of(resolvePlaceholders((String) arg));
+        if (arg instanceof String) {
+            String argString = (String) arg;
+            if (argString.isEmpty() || argString.equals("-cp") || argString.equals("--classpath")) {
+                return null; // Ignorer les arguments vides
+            }
+            String resolved = resolvePlaceholders(argString);
+            // Si le placeholder se résout en une chaîne vide, on ignore l'argument.
+            return resolved.isEmpty() ? null : List.of(resolved);
+        }
 
         // Cas 2: L'argument est un JSONObject avec des règles ou une seule valeur
         else if (arg instanceof JSONObject argObject) {
@@ -155,17 +154,22 @@ public class McStartManager {
             Object value = argObject.get("value");
 
             if (value instanceof String) {
+                String resolved = resolvePlaceholders((String) value);
                 // Valeur simple (ex: "--demo")
-                return List.of(resolvePlaceholders((String) value));
+                return resolved.isEmpty() ? null : List.of(resolved);
             } else if (value instanceof JSONArray) {
                 // Valeurs multiples (ex: "--width", "${resolution_width}")
                 List<String> resolvedValues = new LinkedList<>();
                 JSONArray valuesArray = (JSONArray) value;
                 for (int i = 0; i < valuesArray.length(); i++) {
-                    // On résout les placeholders pour chaque partie
-                    resolvedValues.add(resolvePlaceholders(valuesArray.getString(i)));
+                    String resolvedPart = resolvePlaceholders(valuesArray.getString(i));
+                    // On n'ajoute pas les parties qui se résolvent en une chaîne vide.
+                    if (!resolvedPart.isEmpty()) {
+                        resolvedValues.add(resolvedPart);
+                    }
                 }
-                return resolvedValues;
+                // Si la liste est vide après résolution, on ignore tout l'argument.
+                return resolvedValues.isEmpty() ? null : resolvedValues;
             }
         }
         return null; // Si le format est inconnu
@@ -242,54 +246,18 @@ public class McStartManager {
      * Construit la commande de lancement complète (méthode de haut niveau).
      * @return Une liste d'arguments de la ligne de commande Java.
      */
-    public List<String> buildLaunchCommand() {
-        List<String> command = new LinkedList<>();
-
-        // 1. Début de la commande (exécutable Java)
-        command.add(AppProperties.foundJava());
-
-        // Ajout des options de la JVM spécifiques au launcher
-        command.add("-Xms" + Config.get().getMinRam() + "G");
-        command.add("-Xmx" + Config.get().getMaxRam() + "G");
+    public void buildLaunchCommand() {
 
         // 2. Arguments JVM
         JSONArray jvmArguments = arguments.getJSONArray("jvm");
-        command.addAll(buildArguments(jvmArguments));
+        McCommand.get().addJvmArgs(buildArguments(jvmArguments));
 
         // 3. Classe principale
-        command.add(mainClass);
+        McCommand.get().setMainClass(mainClass);
 
         // 4. Arguments du Jeu
         JSONArray gameArguments = arguments.getJSONArray("game");
-        command.addAll(buildArguments(gameArguments)); // Pour la prochaine étape
-
-        return command;
+        McCommand.get().addProgramArgs(buildArguments(gameArguments));
     }
-
-
-    /**
-     * Démarre le processus Minecraft avec la commande construite.
-     */
-    public void startMinecraft() {
-
-        List<String> launchCommand = buildLaunchCommand();
-
-        // Démarrage du processus Minecraft
-        ProcessBuilder processBuilder = new ProcessBuilder(launchCommand);
-        processBuilder.directory(AppProperties.MINECRAFT_DIR); // Définir le répertoire de travail
-
-        try {
-            Process process = processBuilder.start();
-            // Optionnel: Gérer les flux d'entrée/sortie du processus si nécessaire
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Gérer les erreurs de démarrage du processus
-        }
-
-    }
-
-
-
-
 
 }

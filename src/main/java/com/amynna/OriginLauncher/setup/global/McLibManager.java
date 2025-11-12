@@ -1,6 +1,5 @@
-package com.amynna.OriginLauncher.setup.vanillaSetup;
+package com.amynna.OriginLauncher.setup.global;
 
-import com.amynna.OriginLauncher.App;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
@@ -88,6 +87,8 @@ public class McLibManager {
             // Ajoute la bibliothèque à la liste
             mcLibraries.add(lib);
         }
+
+        McCommand.get().addToClasspath(generateClasspath());
 
     }
 
@@ -204,10 +205,9 @@ public class McLibManager {
      * Génère la chaîne complète du classpath (chemin de classe) pour l'exécution de Java.
      * Cette chaîne inclut toutes les bibliothèques standard et le JAR client du jeu.
      *
-     * @param clientJarFile Le chemin complet (File) vers le fichier client.jar du jeu.
      * @return La chaîne de classpath formatée, séparée par le caractère approprié à l'OS.
      */
-    public String generateClasspath(File clientJarFile) {
+    public String generateClasspath() {
 
         // 1. Déterminer le séparateur de classpath
         // ';' pour Windows, ':' pour Linux/macOS
@@ -219,15 +219,7 @@ public class McLibManager {
                 .map(lib -> lib.file.getAbsolutePath())
                 .collect(Collectors.joining(separator));
 
-        // 3. Ajouter le JAR du jeu au début ou à la fin de la chaîne.
-        // La convention habituelle est de le mettre à la fin, après toutes les dépendances.
-        String clientPath = clientJarFile.getAbsolutePath();
-
-        if (librariesPath.isEmpty()) {
-            return clientPath;
-        } else {
-            return librariesPath + separator + clientPath;
-        }
+        return librariesPath ;
     }
 
     /**
@@ -244,7 +236,7 @@ public class McLibManager {
             if (lib.isNative) {
 
                 File zipFile = lib.file;
-                File outputDir = AppProperties.MINECRAFT_NATIVES_DIR; // TODO vérifier que ce répertoire est le bon
+                File outputDir = AppProperties.MINECRAFT_NATIVES_DIR;
 
                 FileManager.unzip(zipFile, outputDir);
 
@@ -252,12 +244,5 @@ public class McLibManager {
         }
 
     }
-
-
-
-
-
-
-
 
 }
