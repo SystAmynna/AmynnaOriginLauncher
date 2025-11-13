@@ -7,7 +7,6 @@ import com.amynna.Tools.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -129,10 +128,9 @@ public class LaunchHandler {
                 String resolved = resolvePlaceholders((String) value);
                 // Valeur simple (ex: "--demo")
                 return resolved.isEmpty() ? null : List.of(resolved);
-            } else if (value instanceof JSONArray) {
+            } else if (value instanceof JSONArray valuesArray) {
                 // Valeurs multiples (ex: "--width", "${resolution_width}")
                 List<String> resolvedValues = new LinkedList<>();
-                JSONArray valuesArray = (JSONArray) value;
                 for (int i = 0; i < valuesArray.length(); i++) {
                     String resolvedPart = resolvePlaceholders(valuesArray.getString(i));
                     // On n'ajoute pas les parties qui se résolvent en une chaîne vide.
@@ -287,8 +285,6 @@ public class LaunchHandler {
     public void start() {
         List<String> command = buildLaunchCommand();
 
-        //logCommand(command);
-
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(AppProperties.MINECRAFT_DIR);
         pb.inheritIO(); // redirige la sortie du jeu vers la console
@@ -301,16 +297,5 @@ public class LaunchHandler {
         }
 
     }
-
-    /**
-     * Log la commande de lancement
-     * @param command La commande complète
-     */
-    private void logCommand(List<String> command) {
-        for (String part : command) {
-            Logger.log(Logger.ORANGE + part);
-        }
-    }
-
 
 }
