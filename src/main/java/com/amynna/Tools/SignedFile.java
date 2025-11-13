@@ -2,14 +2,14 @@ package com.amynna.Tools;
 
 import java.io.File;
 
-public class SignedFile {
+public record SignedFile(File file, File signature) {
 
-    public final File file;
-    public final File signature;
+    public boolean exists() {
+        return file.exists() && signature.exists();
+    }
 
-    public SignedFile(File file, File signature) {
-        this.file = file;
-        this.signature = signature;
+    public boolean valid() {
+        return exists() && KeyUtil.validateSignature(this);
     }
 
 }

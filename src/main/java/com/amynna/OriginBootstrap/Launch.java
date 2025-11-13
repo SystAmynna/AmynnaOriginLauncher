@@ -1,11 +1,11 @@
 package com.amynna.OriginBootstrap;
 
-import com.amynna.Tools.AppProperties;
-import com.amynna.Tools.FileManager;
-import com.amynna.Tools.KeyUtil;
-import com.amynna.Tools.SignedFile;
+import com.amynna.Tools.*;
+import org.json.JSONObject;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,12 +17,7 @@ public final class Launch {
     /**
      * Nom du fichier du launcher.
      */
-    private final String launcherName = "launcher.jar";
-
-    /**
-     * Indicateur si le launcher a été téléchargé.
-     */
-    private boolean downloaded = false;
+    private final String launcherName = AppProperties.APP_NAME + "_Launcher-" + AppProperties.APP_VERSION + ".jar";
 
     /**
      * Méthode principale pour vérifier et lancer le launcher.
@@ -31,9 +26,8 @@ public final class Launch {
 
         checkRootDir(); // Vérifier et créer le répertoire racine du launcher
 
-        checkLauncher(); // Vérifier, télécharger le launcher si nécessaire, et vérifier la signature
-
-        if (!downloaded) checkVersion(); // Vérifier la version si le launcher n'a pas été téléchargé
+        // Vérifier la présence du launcher et sa version
+        if (!checkLauncher() || !checkVersion()) installLauncher();
 
         runLauncher(); // Lancer le launcher
 
@@ -44,17 +38,23 @@ public final class Launch {
      * Utilise ProcessBuilder pour lancer le launcher avec les arguments nécessaires.
      */
     private void runLauncher() {
-        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", AppProperties.LAUNCHER_ROOT.getPath() + launcherName, "launch");
+        List<String> cmd = new LinkedList<String>();
+
+        cmd.add(AppProperties.foundJava());
+        cmd.add("-jar");
+        cmd.add(AppProperties.LAUNCHER_ROOT.getPath() + File.separator + launcherName);
+        cmd.add("launch");
+
+
+        ProcessBuilder processBuilder = new ProcessBuilder(cmd);
         try {
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                System.err.println("Erreur lors du lancement du launcher.");
-                System.exit(-1);
+                Logger.fatal("Erreur lors du lancement du launcher.");
             }
         } catch (Exception e) {
-            System.err.println("Erreur lors du lancement du launcher: " + e.getMessage());
-            System.exit(-1);
+            Logger.fatal("Erreur lors du lancement du launcher: " + e.getMessage());
         }
     }
 
@@ -64,44 +64,25 @@ public final class Launch {
      * Si un fichier avec le même nom existe, il est supprimé avant de créer le répertoire.
      */
     private void checkRootDir() {
-        File rootDir = new File(AppProperties.LAUNCHER_ROOT.getPath());
-        boolean success = true;
-        if (!rootDir.exists()) {
-            success = rootDir.mkdirs();
-        } else if (!rootDir.isDirectory()) {
-            success = rootDir.delete();
-            if (success) success = rootDir.mkdirs();
-        }
-
-        File tempDir = AppProperties.TEMP_DIR;
-        if (success && !tempDir.exists()) success = tempDir.mkdirs();
-        else if (success && tempDir.isDirectory()) {
-            success = tempDir.delete();
-            if (success) success = tempDir.mkdirs();
-        }
-
-        if (!success) {
-            System.err.println("Erreur lors de la création du répertoire racine du launcher.");
-            System.exit(-1);
-        }
+        FileManager.createDirectoriesIfNotExist(AppProperties.LAUNCHER_ROOT.getPath());
+        FileManager.createDirectoriesIfNotExist(AppProperties.TEMP_DIR.getPath());
     }
 
     /**
      * Méthode pour vérifier la présence du launcher et sa signature.
      * Si le launcher n'existe pas ou si la signature est invalide, il est téléchargé.
+     * @return true si le launcher existe et est valide, false sinon.
      */
-    private void checkLauncher() {
-        File launcherFile = new File(AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
+    private boolean checkLauncher() {
+        // déclarer les fichiers
+        File launcherFile = new File(AppProperties.LAUNCHER_ROOT.getPath() + File.separator + launcherName);
         File signatureFile = new File(KeyUtil.getSignaturePath(launcherName));
+        SignedFile signedLauncher = new SignedFile(launcherFile, signatureFile);
 
-        if (!launcherFile.exists() || signatureFile.exists()) {
-            FileManager.downloadAndValidateFile(launcherName, AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
-            downloaded = true;
-            return;
-        }
+        // vérifier l'existence des fichiers
+        if (!signedLauncher.exists()) return false;
 
-        SignedFile signedFile = new SignedFile(launcherFile, signatureFile);
-        KeyUtil.validateSignature(signedFile);
+        return signedLauncher.valid();
 
     }
 
@@ -110,41 +91,50 @@ public final class Launch {
      * Télécharge le fichier de propriétés depuis le serveur, lit la dernière version,
      * et compare avec la version actuelle du launcher.
      * Si une nouvelle version est disponible, le launcher est téléchargé.
+     * @return true si le launcher est à jour, false sinon.
      */
-    private void checkVersion() {
+    private boolean checkVersion() {
 
-        String onServerFileName = AppProperties.LAUNCHER_ROOT + ".properties";
-
+        // Télécharger le fichier de propriétés depuis le serveur
+        String onServerFileName = AppProperties.REPO_SERVER_URL + File.separator + AppProperties.APP_NAME + ".json";
         File propertiesFile = FileManager.downloadAndValidateFile(onServerFileName, AppProperties.LAUNCHER_ROOT.getPath() + onServerFileName);
+        assert propertiesFile != null;
 
-        Map<String, String> Properties = FileManager.readKeyValueTextFile(propertiesFile);
+        // Lire le fichier de propriétés
+        JSONObject properties = FileManager.openJsonFile(propertiesFile);
+        assert properties != null;
 
-        String lastVersion = Properties.get("LauncherVersion");
+        // Récupérer la dernière version du launcher
+        String lastVersion = properties.getString("last_launcher_version");
 
+        // Vérifier la version actuelle du launcher
+        String currentVersion = "";
+        // Exécuter le launcher avec l'argument "version" pour obtenir sa version actuelle
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", AppProperties.LAUNCHER_ROOT.getPath() + launcherName, "version");
         try {
             Process process = processBuilder.start();
+
+            // obtenir le code de sortie du processus
             int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                System.err.println("Erreur lors de la vérification de la version du launcher.");
-                System.exit(-1);
-            }
-            String currentVersion = new String(process.getInputStream().readAllBytes()).trim();
-            if (!currentVersion.equals(lastVersion)) {
-                System.out.println("Une nouvelle version du launcher est disponible. Téléchargement...");
-                FileManager.downloadAndValidateFile(launcherName, AppProperties.LAUNCHER_ROOT.getPath() + launcherName);
-            } else {
-                System.out.println("Le launcher est à jour.");
-            }
+            if (exitCode != 0) Logger.fatal("Erreur lors de la vérification de la version du launcher.");
+
+            // lire la sortie du processus
+            currentVersion = new String(process.getInputStream().readAllBytes()).trim();
+            if (!currentVersion.equals(lastVersion)) return  false;
+            else Logger.log("Le launcher est à jour.");
+
         } catch (Exception e) {
-            System.err.println("Erreur lors de la vérification de la version du launcher: " + e.getMessage());
-            System.exit(-1);
+            Logger.fatal("Erreur lors de la vérification de la version du launcher: " + e.getMessage());
         }
 
-
+        return true;
     }
 
+    private void installLauncher() {
+        FileManager.deleteFileIfExists(new File(AppProperties.LAUNCHER_ROOT + launcherName));
 
+        FileManager.downloadAndValidateFile(launcherName, AppProperties.LAUNCHER_ROOT.getPath() + File.separator + launcherName);
+    }
 
 
 }

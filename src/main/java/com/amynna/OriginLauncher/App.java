@@ -165,6 +165,8 @@ public final class App {
         // Lance le launcher si demandé
         else if (args[0].equals("launch")) App.get().launch();
 
+        FileManager.deleteFileIfExists(AppProperties.TEMP_DIR); // Nettoie le répertoire temporaire après l'exécution
+
     }
 
 }

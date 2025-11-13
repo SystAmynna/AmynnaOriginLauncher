@@ -108,14 +108,14 @@ public final class KeyUtil {
         // Vérifier la signature avec chaque clé publique de confiance
         for (String iPublicKey : TRUSTED_PUBLIC_KEYS.keySet()) {
             if (verifyFile(signedFile, TRUSTED_PUBLIC_KEYS.get(iPublicKey))) {
-                Logger.log("✅ Fichier [" + signedFile.file.getName() +
-                        "] signé par [" + signedFile.signature.getName() +
+                Logger.log("✅ Fichier [" + signedFile.file().getName() +
+                        "] signé par [" + signedFile.signature().getName() +
                         "] validé avec la clé publique de confiance : " + iPublicKey);
                 return true;
             }
         }
-        Logger.log("❌ Fichier [" + signedFile.file.getName() +
-                "] non signé par [" + signedFile.signature.getName() +
+        Logger.log("❌ Fichier [" + signedFile.file().getName() +
+                "] non signé par [" + signedFile.signature().getName() +
                 "] avec aucune clé publique de confiance.");
         return false;
     }
@@ -243,9 +243,9 @@ public final class KeyUtil {
 
         try {
             // data du fichier
-            byte[] data = Files.readAllBytes(signedFile.file.toPath());
+            byte[] data = Files.readAllBytes(signedFile.file().toPath());
             // data de la signature
-            byte[] sigBytes = Base64.getDecoder().decode(Files.readAllBytes(signedFile.signature.toPath()));
+            byte[] sigBytes = Base64.getDecoder().decode(Files.readAllBytes(signedFile.signature().toPath()));
 
             Signature sig = Signature.getInstance(KEY_ALGORITHM);
             sig.initVerify(publicKey);

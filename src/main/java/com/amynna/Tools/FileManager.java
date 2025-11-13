@@ -93,7 +93,7 @@ public final class FileManager {
             return downloadedFile;
 
         } catch (Exception e) {
-            Logger.error("Erreur lors du téléchargement du fichier : " + e.getMessage());
+            Logger.error("Erreur lors du téléchargement du fichier " + url + " : " + e.getMessage());
             return null;
         }
 

@@ -162,6 +162,8 @@ public final class App {
             default -> Logger.log("Commande inconnue. Utilisez 'help' pour voir les commandes disponibles.");
         }
 
+        FileManager.deleteFileIfExists(AppProperties.TEMP_DIR); // Nettoie le répertoire temporaire après l'exécution
+
     }
 
 

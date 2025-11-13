@@ -49,6 +49,7 @@ public final class Logger {
     public static void fatal(String message) {
         error(message);
         saveLogToFile();
+        FileManager.deleteFileIfExists(AppProperties.TEMP_DIR); // Nettoie le répertoire temporaire après l'exécution
         System.exit(1);
     }
 
