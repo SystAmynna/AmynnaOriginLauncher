@@ -74,9 +74,8 @@ public final class App {
         String keyAlias = args[1];
         String password = Asker.askPassword();
         PublicKey publicKey = KeyUtil.loadPublicKey(keyAlias, password);
-        String publicKeyString = KeyUtil.getPublicKeyAsString(publicKey);
 
-        Logger.log("Public Key:\n" + publicKeyString);
+        KeyUtil.printKeyInfo(keyAlias, publicKey);
     }
 
     /**

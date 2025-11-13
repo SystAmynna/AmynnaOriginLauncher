@@ -4,8 +4,6 @@ import com.amynna.Tools.*;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticationException;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
-import fr.litarvan.openauth.model.AuthProfile;
-import fr.theshark34.openlauncherlib.minecraft.AuthInfos;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -70,16 +68,6 @@ public final class Auth {
 
     public MicrosoftAuthResult getMsAuthResult() {
         return msAuthResult;
-    }
-
-
-    public AuthInfos getAuthInfos() {
-        if (!isAuthenticated()) return null;
-
-        String username = msAuthResult.getProfile().getName();
-        String uuid = msAuthResult.getProfile().getId();
-
-        return new AuthInfos(username, token, uuid);
     }
 
 

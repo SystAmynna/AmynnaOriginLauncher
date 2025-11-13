@@ -6,6 +6,8 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,24 +59,28 @@ public final class KeyUtil {
         TRUSTED_PUBLIC_KEYS.put(AppProperties.DEFAULT_PUBLIC_KEY_OWNER, getPublicKeyFromString(AppProperties.DEFAULT_PUBLIC_KEY));
 
         // Télécharger le fichier des clés publiques de confiance
-        String trustedKeysFileName = "trusted-keys";
+        final String trustedKeysFileName = "trusted-keys.json";
         File trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
+        assert trustedKeysFile != null;
 
         // Lire le fichier des clés publiques de confiance et extraire les clés publiques
-        Map<String, String> trustedKeysFileContent = FileManager.readKeyValueTextFile(trustedKeysFile);
-        if (trustedKeysFileContent.isEmpty()) {
+        final JSONObject trustedKeysJson = FileManager.openJsonFile(trustedKeysFile);
+        assert trustedKeysJson != null;
+        JSONArray trustedArray = trustedKeysJson.getJSONArray("trusted_keys");
+        if (trustedArray.isEmpty()) {
             Logger.error("⚠️  Le fichier des clés publiques de confiance est vide ou invalide.");
             return;
         }
-        for (Map.Entry<String, String> entry : trustedKeysFileContent.entrySet()) {
-            String keyName = entry.getKey();
-            String keyValue = entry.getValue();
+        for (int i = 0; i < trustedArray.length(); i++) {
+            JSONObject entry = trustedArray.getJSONObject(i);
+            String keyName = entry.getString("name");
+            String keyValue = entry.getString("key");
             TRUSTED_PUBLIC_KEYS.put(keyName, getPublicKeyFromString(keyValue));
         }
 
         // Lister les clés publiques de confiance chargées
         Logger.log("🔐 Clé publique de confiance prioritaire (Master Key) : " + Logger.BOLD +
-                AppProperties.DEFAULT_PUBLIC_KEY_OWNER + Logger.RESET);
+                AppProperties.DEFAULT_PUBLIC_KEY_OWNER);
         StringBuilder keysList = new StringBuilder();
         for (Map.Entry<String, PublicKey> entry : TRUSTED_PUBLIC_KEYS.entrySet()) {
             if (entry.getKey().equals(AppProperties.DEFAULT_PUBLIC_KEY_OWNER)) continue;
@@ -109,7 +115,6 @@ public final class KeyUtil {
 
     /**
      * Génère une paire de clés publique/privée et sauvegarde la clé privée dans le KeyStore.
-     * @return La clé privée générée, ou null en cas d'erreur.
      */
     public static void generateKeys(String alias) {
         try {
@@ -399,10 +404,7 @@ public final class KeyUtil {
                     Certificate cert = keyStore.getCertificate(alias);
                     PublicKey publicKey = cert.getPublicKey();
 
-                    Logger.log("📌 Alias : " + Logger.BOLD + alias + Logger.RESET);
-                    Logger.log("   Type : Clé privée + publique");
-                    Logger.log("   Algorithme : " + publicKey.getAlgorithm());
-                    Logger.log("   Clé publique : " + getPublicKeyAsString(publicKey));
+                    printKeyInfo(alias, publicKey);
                     Logger.log("───────────────────────────────────");
 
                 } else if (keyStore.isCertificateEntry(alias)) {
@@ -557,6 +559,12 @@ public final class KeyUtil {
      */
     public static String getSignaturePath(String filename) {
         return AppProperties.SIGNATURE_DIR + filename + AppProperties.SIGNATURE_FILE_EXTENSION;
+    }
+
+
+    public static void printKeyInfo(String alias, PublicKey publicKey) {
+        Logger.log("📌 Alias : " + Logger.BOLD + alias);
+        Logger.log("   Clé publique : " + getPublicKeyAsString(publicKey));
     }
 
 }

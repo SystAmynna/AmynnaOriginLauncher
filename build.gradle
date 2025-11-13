@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.amynna'
-version = '0.1.1'
+version = '0.1.2'
 
 repositories {
     mavenCentral()
@@ -30,7 +30,6 @@ ext {
     ]
 
     launcherDeps = [
-            'fr.flowarg:openlauncherlib:3.2.11',
             'fr.litarvan:openauth:1.1.6',
             'net.java.dev.jna:jna:5.13.0',
             'net.java.dev.jna:jna-platform:5.13.0',
@@ -60,37 +59,42 @@ tasks.withType(JavaCompile).configureEach {
     options.release = 17
 }
 
-task OriginJar(type: Jar) {
+// Version avec Shadow Plugin (plus robuste)
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+task OriginJar(type: ShadowJar) {
     archiveBaseName.set(bootstrapName)
     archiveClassifier.set('')
     archiveVersion.set(version)
 
-    // Inclure les packages OriginBootstrap et Tools
+    // Configuration du classpath
+    configurations = [project.configurations.runtimeClasspath]
+
+    // Inclure seulement les classes nécessaires
     from(sourceSets.main.output) {
         include 'com/amynna/OriginBootstrap/**'
         include 'com/amynna/Tools/**'
         exclude 'com/amynna/OriginLauncher/**'
     }
 
-    // Inclure uniquement les dépendances Bouncy Castle
-    from {
-        configurations.runtimeClasspath.findAll { dep ->
-            globalDeps.any { bcDep ->
-                dep.name.contains(bcDep.split(':')[1].split('-')[0])
-            }
-        }.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
+    // Filtrer les dépendances à inclure
+    dependencies {
+        // Inclure toutes les dépendances BouncyCastle
+        include(dependency('org.bouncycastle:.*:.*'))
+        // Inclure JSON
+        include(dependency('org.json:json:.*'))
     }
 
-    // Exclure les fichiers de signature qui causent des conflits
+    // Exclure les signatures
     exclude 'META-INF/*.SF'
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
-    exclude 'META-INF/MANIFEST.MF'
+    exclude 'META-INF/versions/**/*.SF'
+    exclude 'META-INF/versions/**/*.DSA'
+    exclude 'META-INF/versions/**/*.RSA'
 
-    // Éviter les doublons de fichiers META-INF
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    // Fusionner les services
+    mergeServiceFiles()
 
     manifest {
         attributes 'Main-Class': 'com.amynna.OriginBootstrap.App'
