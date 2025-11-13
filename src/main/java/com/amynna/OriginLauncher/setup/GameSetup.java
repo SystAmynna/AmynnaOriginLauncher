@@ -24,6 +24,8 @@ public class GameSetup {
     private final AssetManager assetManager;
     /** Gestionnaire du client Minecraft. */
     private final ClientManager clientManager;
+    /** Gestionnaire du lancement du jeu. */
+    private final LaunchHandler launchHandler;
 
 
 
@@ -60,12 +62,22 @@ public class GameSetup {
         final JSONObject downloads = mcVersionManifest.getJSONObject("downloads");
         this.clientManager = new ClientManager(downloads);
 
-        // ----[ FORGE ]----
+        // ----[ LAUNCHER ]----
 
-        if (checkForgeInstallation()) forgeSetup();
+        // Initialisation du gestionnaire de lancement
+        this.launchHandler = new LaunchHandler();
 
+        // Récupération de la classe principale
+        final String mainClass = mcVersionManifest.getString("mainClass");
+        launchHandler.setMainClass(mainClass);
 
+        // Récupération du type de version
+        final String type = mcVersionManifest.getString("type");
+        launchHandler.setVersionType(type);
 
+        // Récupération du nom de l'index des assets
+        final String assetIndexName = assetIndex.getString("id");
+        launchHandler.setAssetIndexName(assetIndexName);
 
 
     }
@@ -128,6 +140,10 @@ public class GameSetup {
         Logger.log(Logger.GREEN + Logger.BOLD + "Mise à jour des bibliothèques Minecraft pour Forge...");
         libManager.downloadAllLibraries();
 
+        Logger.log(Logger.GREEN + Logger.BOLD + "Décompression des bibliothèques natives...");
+        libManager.extractNatives();
+
+
 
     }
 
@@ -141,11 +157,17 @@ public class GameSetup {
 
     public void startGame() {
 
-        /*
-        - SOUS OBJET: launchCmdBuilder
+        final JSONObject mcArgs = mcVersionManifest.getJSONObject("arguments");
+        assert mcArgs != null;
 
-        - Start
-         */
+        final JSONObject forgeArgs = forgeVersionManifest.getJSONObject("arguments");
+        assert forgeArgs != null;
+
+
+        launchHandler.loadManifest(mcArgs);
+        launchHandler.loadManifest(forgeArgs);
+
+        launchHandler.start();
 
     }
 
@@ -301,6 +323,14 @@ public class GameSetup {
         assert forgeLibraries != null;
 
         libManager.updateLibList(forgeLibraries);
+
+        // Récupération de la classe principale de Forge
+        final String forgeMainClass = forgeVersionManifest.getString("mainClass");
+        launchHandler.setMainClass(forgeMainClass);
+
+        // Récupération du type de version de Forge
+        final String forgeType = forgeVersionManifest.getString("type");
+        launchHandler.setVersionType(forgeType);
 
     }
 

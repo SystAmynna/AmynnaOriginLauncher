@@ -133,7 +133,7 @@ public final class App {
      */
     private void verifyInstallation() {
         Logger.log(Logger.PURPLE + "[CALL] Vérification de l'installation du jeu...");
-        //gameSetup.repairGame();
+        gameSetup.checkInstallation();
     }
 
     private void uninstallGame() {
