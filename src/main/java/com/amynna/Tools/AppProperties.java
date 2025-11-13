@@ -10,9 +10,7 @@ public final class AppProperties {
 
     // GÉNÉRAL
 
-    /**
-     * Nom de l'application.
-     */
+    /** Nom de l'application. */
     public static final String APP_NAME = "OriginRP";
     /**
      * Version de l'application.
@@ -22,10 +20,17 @@ public final class AppProperties {
      * Auteur de l'application.
      */
     public static final String APP_AUTHOR = "SystAmynna";
+
+    // SERVEUR
+
     /**
      * URL du serveur distant pour les mises à jour et la récupération des clés publiques.
      */
-    public static final String REPO_SERVER_URL = "http://localhost:8000";
+    public static final String REPO_SERVER_URL = "http://localhost:8000/v1";
+    /**
+     * Emplacement du côté serveur des signatures des fichiers.
+     */
+    public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + File.separator + "signatures" + File.separator;
 
     // RÉPERTOIRES
 
@@ -47,15 +52,11 @@ public final class AppProperties {
     /**
      * Clé publique par défaut pour valider les signatures des fichiers de clés publiques de confiance.
      */
-    public static final String DEFAULT_PUBLIC_KEY = "-----------------------";
+    public static final String DEFAULT_PUBLIC_KEY = "MCowBQYDK2VwAyEAio7wTxwk3C2gm8KCfOPik7+mgspELKNmliJjTa2znPU=";
     /**
      * Nom associé à la clé publique par défaut.
      */
     public static final String DEFAULT_PUBLIC_KEY_OWNER = "Stiles";
-    /**
-     * Emplacement du côté serveur des signatures des fichiers.
-     */
-    public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + File.separator + "signatures" + File.separator;
     /**
      * Extension des fichiers de signature.
      */

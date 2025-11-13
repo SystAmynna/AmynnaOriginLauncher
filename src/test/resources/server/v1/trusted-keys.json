@@ -1,0 +1,12 @@
+{
+    "trusted_keys" : [
+        {
+            "name" : "Mura",
+            "key" : "MCowBQYDK2VwAyEAfJUGoLXQEOmROtBgIBxJi8NXFsbJmMLsjoBnccBnZL4="
+        },
+        {
+            "name" : "Tatou",
+            "key" : "MCowBQYDK2VwAyEAXYFKbchr/wv6PcX6TfeMli28KLb/xN6kZtlpCh2aJ64="
+        }
+    ]
+}

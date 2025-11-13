@@ -58,14 +58,23 @@ public final class KeyUtil {
         // Ajouter la clé publique de confiance prioritaire (Master Key)
         TRUSTED_PUBLIC_KEYS.put(AppProperties.DEFAULT_PUBLIC_KEY_OWNER, getPublicKeyFromString(AppProperties.DEFAULT_PUBLIC_KEY));
 
+        Logger.log("🔐 Clé publique de confiance prioritaire (Master Key) : " + Logger.BOLD +
+                AppProperties.DEFAULT_PUBLIC_KEY_OWNER);
+
         // Télécharger le fichier des clés publiques de confiance
         final String trustedKeysFileName = "trusted-keys.json";
         File trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
-        assert trustedKeysFile != null;
+        if (trustedKeysFile == null) {
+            Logger.error("⚠️  Impossible de charger le fichier des clés publiques de confiance.");
+            return;
+        }
 
         // Lire le fichier des clés publiques de confiance et extraire les clés publiques
         final JSONObject trustedKeysJson = FileManager.openJsonFile(trustedKeysFile);
-        assert trustedKeysJson != null;
+        if (trustedKeysJson == null || !trustedKeysJson.has("trusted_keys")) {
+            Logger.error("⚠️  Le fichier des clés publiques de confiance est invalide.");
+            return;
+        }
         JSONArray trustedArray = trustedKeysJson.getJSONArray("trusted_keys");
         if (trustedArray.isEmpty()) {
             Logger.error("⚠️  Le fichier des clés publiques de confiance est vide ou invalide.");
@@ -79,8 +88,6 @@ public final class KeyUtil {
         }
 
         // Lister les clés publiques de confiance chargées
-        Logger.log("🔐 Clé publique de confiance prioritaire (Master Key) : " + Logger.BOLD +
-                AppProperties.DEFAULT_PUBLIC_KEY_OWNER);
         StringBuilder keysList = new StringBuilder();
         for (Map.Entry<String, PublicKey> entry : TRUSTED_PUBLIC_KEYS.entrySet()) {
             if (entry.getKey().equals(AppProperties.DEFAULT_PUBLIC_KEY_OWNER)) continue;
@@ -170,7 +177,7 @@ public final class KeyUtil {
                 }
             } else {
                 keyStore.load(null, null);
-                ksFile.getParentFile().mkdirs();
+                FileManager.createDirectoriesIfNotExist(ksFile.getParentFile().getPath());
             }
 
             // Vérifier si l'alias existe déjà

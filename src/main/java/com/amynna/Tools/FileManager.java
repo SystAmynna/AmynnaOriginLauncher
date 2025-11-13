@@ -88,7 +88,7 @@ public final class FileManager {
             }
 
             File downloadedFile = destination.toFile();
-            Logger.log(Logger.BLUE + "\uD83D\uDCE5 Fichier téléchargé : " + url + " -> " + downloadedFile.getAbsolutePath());
+            Logger.log(Logger.BLUE + "\uD83D\uDCE5 Fichier téléchargé : " + url + " ➔ " + downloadedFile.getAbsolutePath());
 
             return downloadedFile;
 
