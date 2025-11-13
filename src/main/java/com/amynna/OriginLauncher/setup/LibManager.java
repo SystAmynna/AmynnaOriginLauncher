@@ -202,7 +202,7 @@ public class LibManager {
                 .map(lib -> lib.file.getAbsolutePath())
                 .collect(Collectors.joining(separator));
 
-        return librariesPath ;
+        return librariesPath + separator + AppProperties.MINECRAFT_CLIENT.getPath() ;
     }
 
     /**

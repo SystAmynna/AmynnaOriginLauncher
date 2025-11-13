@@ -9,29 +9,44 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/** Gestionnaire du lancement du jeu Minecraft. */
 public class LaunchHandler {
 
-
+    /** Liste des arguments JVM. */
     private final List<String> jvmArgs = new LinkedList<>();
+    /** Liste des arguments de jeu. */
     private final List<String> gameArgs = new LinkedList<>();
 
+    /** Nom de l'index des assets. */
     private String assetIndexName;
+    /** Type de version du jeu. */
     private String versionType;
+    /** Classe principale à exécuter. */
     private String mainClass;
 
+    /** Classpath complet pour le lancement. */
+    private String classpath;
+
+    // ----[ SETTERS ]----
+
+    /** Définit le nom de l'index des assets. */
     protected void setAssetIndexName(String assetIndexName) {
         this.assetIndexName = assetIndexName;
     }
+    /** Définit le type de version du jeu. */
     protected void setVersionType(String versionType) {
         this.versionType = versionType;
     }
+    /** Définit la classe principale à exécuter. */
     protected void setMainClass(String mainClass) {
         this.mainClass = mainClass;
+    }
+    /** Définit le classpath complet pour le lancement. */
+    protected void setClasspath(String classpath) {
+        this.classpath = classpath;
     }
 
     /**
@@ -142,7 +157,7 @@ public class LaunchHandler {
 
         // JVM
         output = output.replace("${natives_directory}", AppProperties.MINECRAFT_NATIVES_DIR.getPath());
-        output = output.replace("${classpath}", buildClassPath()); // NE DOIS JAMAIS ÊTRE UTILISÉ
+        output = output.replace("${classpath}", classpath); // NE DOIS JAMAIS ÊTRE UTILISÉ
         output = output.replace("${launcher_name}", AppProperties.APP_NAME);
         output = output.replace("${launcher_version}", AppProperties.APP_VERSION);
 
@@ -239,9 +254,6 @@ public class LaunchHandler {
         };
     }
 
-
-
-
     /**
      * Construit la commande finale de lancement
      */
@@ -269,35 +281,13 @@ public class LaunchHandler {
         return cmd;
     }
 
-    private String buildClassPath() {
-
-        // Exemple simplifié : classpath = toutes les libs + jar Forge
-        StringBuilder sb = new StringBuilder();
-        appendAllJars(AppProperties.MINECRAFT_LIB_DIR, sb);
-        sb.append(AppProperties.MINECRAFT_CLIENT.getAbsolutePath());
-        return sb.toString();
-    }
-
-    private void appendAllJars(File dir, StringBuilder sb) {
-        File[] files = dir.listFiles();
-        if (files == null) return;
-        for (File f : files) {
-            if (f.isDirectory()) appendAllJars(f, sb);
-            else if (f.getName().endsWith(".jar")) {
-                sb.append(f.getAbsolutePath()).append(File.pathSeparator);
-            }
-        }
-    }
-
-
-
     /**
      * Lance le jeu
      */
     public void start() {
         List<String> command = buildLaunchCommand();
 
-        logCommand(command);
+        //logCommand(command);
 
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(AppProperties.MINECRAFT_DIR);
@@ -312,6 +302,10 @@ public class LaunchHandler {
 
     }
 
+    /**
+     * Log la commande de lancement
+     * @param command La commande complète
+     */
     private void logCommand(List<String> command) {
         for (String part : command) {
             Logger.log(Logger.ORANGE + part);

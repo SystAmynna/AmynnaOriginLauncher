@@ -27,14 +27,11 @@ public class GameSetup {
     /** Gestionnaire du lancement du jeu. */
     private final LaunchHandler launchHandler;
 
-
-
-
     /** Manifeste de la version spécifique de Minecraft au format JSON. */
     private JSONObject mcVersionManifest;
 
+    /** Manifeste de la version spécifique de Forge au format JSON. */
     private JSONObject forgeVersionManifest;
-
 
     /** Constructeur */
     public GameSetup() {
@@ -79,42 +76,14 @@ public class GameSetup {
         final String assetIndexName = assetIndex.getString("id");
         launchHandler.setAssetIndexName(assetIndexName);
 
-
     }
 
 
-
+    /**
+     * Effectue l'installation complète du jeu Minecraft avec Forge.
+     */
     public void setup() {
 
-        /*
-    - traite le manifest de mojang
-    - traite le manifest de la version
-
-    - catch version.json
-
-    - SOUS OBJET: libManager
-    - SOUS OBJET: assetManager
-    - SOUS OBJET: clientManager
-
-    - installe les libs
-    - installe les assets
-    - installe le client
-
-    - installe forge installeur
-    - execute forge installeur
-
-    - catch forge version.json
-
-    - maj libs
-    - maj assets
-    - maj client
-
-
-
-    - SOUS OBJET: launchCmdBuilder
-
-    - Start
-     */
         // ----[ INSTALLATION VANILLA ]----
 
         // Installation des bibliothèques Minecraft
@@ -143,10 +112,11 @@ public class GameSetup {
         Logger.log(Logger.GREEN + Logger.BOLD + "Décompression des bibliothèques natives...");
         libManager.extractNatives();
 
-
-
     }
 
+    /**
+     * Vérifie l'installation complète du jeu Minecraft avec Forge.
+     */
     public void checkInstallation() {
 
         libManager.checkAllLibraries();
@@ -155,6 +125,9 @@ public class GameSetup {
 
     }
 
+    /**
+     * Démarre le jeu Minecraft avec Forge.
+     */
     public void startGame() {
 
         final JSONObject mcArgs = mcVersionManifest.getJSONObject("arguments");
@@ -163,7 +136,7 @@ public class GameSetup {
         final JSONObject forgeArgs = forgeVersionManifest.getJSONObject("arguments");
         assert forgeArgs != null;
 
-
+        launchHandler.setClasspath(libManager.generateClasspath());
         launchHandler.loadManifest(mcArgs);
         launchHandler.loadManifest(forgeArgs);
 
