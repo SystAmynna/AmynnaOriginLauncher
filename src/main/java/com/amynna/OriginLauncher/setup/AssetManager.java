@@ -1,4 +1,4 @@
-package com.amynna.OriginLauncher.setup.vanillaSetup;
+package com.amynna.OriginLauncher.setup;
 
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Classe responsable de la gestion des assets Minecraft.
  */
-public class McAssetManager {
+public class AssetManager {
 
     // ----[ ATTRIBUTS ]----
 
@@ -69,7 +69,7 @@ public class McAssetManager {
      * @param assetsVal Valeur des assets.
      * @param assetIndexJson Index des assets au format JSON.
      */
-    public McAssetManager(String assetsVal, JSONObject assetIndexJson) {
+    public AssetManager(String assetsVal, JSONObject assetIndexJson) {
         // résolution de l'index des assets
         this.assetIndex = assetIndexJson;
         assert assetIndex != null;

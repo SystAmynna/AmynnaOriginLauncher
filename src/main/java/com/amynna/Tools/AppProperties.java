@@ -80,20 +80,6 @@ public final class AppProperties {
      */
     public static final File MS_AUTH_TOKEN = new File(LAUNCHER_ROOT + File.separator + "MsAuthToken" + KEY_STORE_EXTENSION);
 
-    // MOJANG
-
-    /**
-     * URL du manifeste des versions de Minecraft.
-     */
-    public static final String MOJANG_MANIFEST_URL = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
-    /**
-     * Emplacement local du manifeste des versions de Minecraft.
-     */
-    public static final File MOJANG_MANIFEST = new File(TEMP_DIR + File.separator + "mojang_manifest.json");
-    /**
-     * Emplacement local du manifeste de la version actuellement installée.
-     */
-    public static final File VERSION_MANIFEST = new File(TEMP_DIR + File.separator + "version.json");
 
     // MINECRAFT
 
@@ -133,6 +119,22 @@ public final class AppProperties {
      * Répertoire des index des assets Minecraft.
      */
     public static final File MINECRAFT_ASSETS_INDEX_DIR = new File(MINECRAFT_ASSETS_DIR + File.separator + "indexes" + File.separator);
+
+    // MOJANG
+
+    /**
+     * URL du manifeste des versions de Minecraft.
+     */
+    public static final String MOJANG_MANIFEST_URL = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+    /**
+     * Emplacement local du manifeste des versions de Minecraft.
+     */
+    public static final File MOJANG_MANIFEST = new File(TEMP_DIR + File.separator + "mojang_manifest.json");
+    /**
+     * Emplacement local du manifeste de la version actuellement installée.
+     */
+    public static final File VERSION_MANIFEST = new File(MINECRAFT_VERSION_DIR + File.separator + "version.json");
+
 
     // FORGE
 
@@ -190,6 +192,16 @@ public final class AppProperties {
         String javaHome = System.getProperty("java.home");
         String javaExecutable = getOsType().equals("windows") ? "java.exe" : "java";
         return Paths.get(javaHome, "bin", javaExecutable).toString();
+    }
+
+    /**
+     * Détermine le séparateur de chemin de classe (classpath) en fonction de l'OS.
+     *
+     * @return Le séparateur (':' ou ';').
+     */
+    public static String getCpSeparator() {
+        // En Java, le séparateur de classpath est stocké dans la propriété du système.
+        return File.pathSeparator;
     }
 
 

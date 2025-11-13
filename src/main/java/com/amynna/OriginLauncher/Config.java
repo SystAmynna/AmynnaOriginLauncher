@@ -1,7 +1,5 @@
 package com.amynna.OriginLauncher;
 
-import com.amynna.OriginLauncher.setup.modloaderSetup.forge.ForgeManager;
-
 import java.util.LinkedList;
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.amynna.OriginLauncher.setup.global;
+package com.amynna.OriginLauncher.setup;
 
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
@@ -14,25 +14,22 @@ import java.util.stream.Collectors;
 /**
  * Classe responsable de la gestion des bibliothèques Minecraft.
  */
-public class McLibManager {
+public class LibManager {
 
     // ----[ ATTRIBUTS ]----
 
-    /** Bibliothèques Minecraft au format JSON. */
-    private final JSONArray libraries;
-
     /** Liste des bibliothèques Minecraft. */
-    private final List<McLibrary> mcLibraries;
+    private final List<Library> mcLibraries;
 
 
     /**
      * Classe représentant une bibliothèque Minecraft.
      */
-    private record McLibrary(String name, String url, String sha1, int size, File file, boolean isNative) {
+    private record Library(String name, String url, String sha1, int size, File file, boolean isNative) {
         /**
          * Constructeur de la classe McLibrary.
          */
-        private McLibrary {}
+        private Library {}
 
         /**
          * Télécharge la bibliothèque et vérifie son SHA1.
@@ -60,11 +57,8 @@ public class McLibManager {
     }
 
     /** Constructeur */
-    public McLibManager(JSONArray libs) {
-        this.libraries = libs;
+    public LibManager() {
         this.mcLibraries = new LinkedList<>();
-
-        makeLibList();
     }
 
     // ----[ MÉTHODES ]----
@@ -72,23 +66,20 @@ public class McLibManager {
     /**
      * Remplit la liste des bibliothèques Minecraft à partir du JSON.
      */
-    private void makeLibList() {
-        // Vide les listes avant de les remplir
-        mcLibraries.clear();
+    public void updateLibList(JSONArray libraries) {
 
         // Parcourt toutes les bibliothèques définies dans le manifest
         for (int i = 0; i < libraries.length(); i++) {
             // Récupère le JSON de la bibliothèque
             JSONObject libJson = libraries.getJSONObject(i);
             // Construit l'objet McLibrary
-            McLibrary lib = parseLib(libJson);
+            Library lib = parseLib(libJson);
             // Si la bibliothèque n'est pas applicable, on l'ignore
             if (lib == null) continue;
             // Ajoute la bibliothèque à la liste
             mcLibraries.add(lib);
         }
 
-        McCommand.get().addToClasspath(generateClasspath());
 
     }
 
@@ -100,7 +91,7 @@ public class McLibManager {
      * @return Un objet McLibrary prêt à être utilisé, ou null si la bibliothèque
      * ne doit pas être téléchargée sur l'OS actuel.
      */
-    private McLibrary parseLib(JSONObject lib) {
+    private Library parseLib(JSONObject lib) {
 
         // --- 1. Gérer les règles (Rules) ---
         if (lib.has("rules")) {
@@ -161,7 +152,7 @@ public class McLibManager {
             File libFile = new File(AppProperties.MINECRAFT_LIB_DIR, path);
 
             // --- 5. Retourner le nouvel objet ---
-            return new McLibrary(name, url, sha1, size, libFile, isNative);
+            return new Library(name, url, sha1, size, libFile, isNative);
 
         } catch (Exception e) {
             Logger.error("Erreur de parsing de la bibliothèque: " + lib.optString("name", "N/A"));
@@ -170,31 +161,23 @@ public class McLibManager {
         }
     }
 
-    /**
-     * Détermine le séparateur de chemin de classe (classpath) en fonction de l'OS.
-     *
-     * @return Le séparateur (':' ou ';').
-     */
-    public static String getCpSeparator() {
-        // En Java, le séparateur de classpath est stocké dans la propriété du système.
-        return System.getProperty("path.separator");
-    }
+
 
     // ----[ MÉTHODES PUBLIQUES ]----
 
     /** Télécharge toutes les bibliothèques Minecraft. */
     public void downloadAllLibraries() {
-        for (McLibrary lib : mcLibraries) {
+        for (Library lib : mcLibraries) {
             if (!lib.lightCheck()) lib.download();
         }
     }
 
     /** Vérifie l'intégrité de toutes les bibliothèques Minecraft. */
     public void checkAllLibraries() {
-        for (McLibrary lib : mcLibraries) {
+        for (Library lib : mcLibraries) {
             Logger.logc("Vérification de la bibliothèque: " + lib.name + " ... ");
             if (!lib.check()) {
-                Logger.log(Logger.RED + "[CORROMPUE]");
+                Logger.log(Logger.RED + "[ECHEC]");
                 lib.download();
             } else Logger.log(Logger.GREEN + "[OK]");
         }
@@ -211,7 +194,7 @@ public class McLibManager {
 
         // 1. Déterminer le séparateur de classpath
         // ';' pour Windows, ':' pour Linux/macOS
-        String separator = getCpSeparator();
+        String separator = AppProperties.getCpSeparator();
 
         // 2. Filtrer les bibliothèques non-natives et extraire leurs chemins absolus
         String librariesPath = mcLibraries.stream()
@@ -232,7 +215,7 @@ public class McLibManager {
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_NATIVES_DIR.getPath());
 
         // Parcourt toutes les bibliothèques pour extraire les natives
-        for (McLibrary lib : mcLibraries) {
+        for (Library lib : mcLibraries) {
             if (lib.isNative) {
 
                 File zipFile = lib.file;

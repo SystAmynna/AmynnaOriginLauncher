@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 
-    id 'org.openjfx.javafxplugin' version '0.0.13' // Ajout du plugin JavaFX
+    id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
 group = 'com.amynna'
@@ -11,12 +11,10 @@ version = '0.1.1'
 repositories {
     mavenCentral()
     maven {url 'https://litarvan.github.io/maven'}
-    //maven {url 'https://KinjerJS.github.io/maven'}
-    maven {url "https://maven.minecraftforge.net/" }
 }
 
 javafx {
-    version = "21"
+    version = "17"
     modules = [ 'javafx.swing', 'javafx.web' ]
 }
 
@@ -32,11 +30,10 @@ ext {
     ]
 
     launcherDeps = [
+            'fr.flowarg:openlauncherlib:3.2.11',
             'fr.litarvan:openauth:1.1.6',
-            //'com.github.KinjerJS:OpenAuth:1.2.0',
             'net.java.dev.jna:jna:5.13.0',
             'net.java.dev.jna:jna-platform:5.13.0',
-            'net.minecraftforge:forge:1.20.1-47.4.0:installer',
     ]
 }
 

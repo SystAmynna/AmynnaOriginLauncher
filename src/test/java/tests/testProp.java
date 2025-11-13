@@ -1,7 +1,8 @@
 package tests;
 
 import com.amynna.OriginLauncher.Auth;
-import com.amynna.OriginLauncher.setup.global.McLibManager;
+import com.amynna.OriginLauncher.setup.LibManager;
+import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.Asker;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
@@ -21,7 +22,7 @@ public class testProp {
         Auth auth = new Auth();
         auth.authentifie();
 
-        System.out.println(auth.getXUID());
+        //System.out.println(auth.getXUID());
     }
 
     @Test
@@ -50,7 +51,7 @@ public class testProp {
 
     @Test
     public void testCp() {
-        System.out.println(McLibManager.getCpSeparator());
+        System.out.println(AppProperties.getCpSeparator());
     }
 
 
