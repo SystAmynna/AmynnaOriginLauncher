@@ -1,7 +1,6 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-
+    id 'com.gradleup.shadow' version '8.3.5'
     id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
@@ -10,34 +9,33 @@ version = '0.1.2'
 
 repositories {
     mavenCentral()
-    maven {url 'https://litarvan.github.io/maven'}
+    maven { url 'https://litarvan.github.io/maven' }
 }
 
 javafx {
     version = "17"
-    modules = [ 'javafx.swing', 'javafx.web' ]
+    modules = ['javafx.swing', 'javafx.web']
 }
 
-ext {
-    bootstrapName = 'OriginRP'
-    LauncherName = 'OriginRP_Launcher'
+// Use extra properties with type-safe accessors
+def bootstrapName = 'OriginRP'
+def launcherName = 'OriginRP_Launcher'
+def bouncyCastleVersion = '1.78'
 
-    bouncyCastleVersion = '1.78'
-    globalDeps = [
-            'org.bouncycastle:bcprov-jdk18on:' + bouncyCastleVersion,
-            'org.bouncycastle:bcpkix-jdk18on:' + bouncyCastleVersion,
-            'org.json:json:20231013',
-    ]
+def globalDeps = [
+        'org.bouncycastle:bcprov-jdk18on:' + bouncyCastleVersion,
+        'org.bouncycastle:bcpkix-jdk18on:' + bouncyCastleVersion,
+        'org.json:json:20231013',
+]
 
-    launcherDeps = [
-            'fr.litarvan:openauth:1.1.6',
-            'net.java.dev.jna:jna:5.13.0',
-            'net.java.dev.jna:jna-platform:5.13.0',
-    ]
-}
+def launcherDeps = [
+        'fr.litarvan:openauth:1.1.6',
+        'com.google.code.gson:gson:2.10.1',  // Required by openauth
+        'net.java.dev.jna:jna:5.13.0',
+        'net.java.dev.jna:jna-platform:5.13.0',
+]
 
 dependencies {
-
     // TESTS
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -48,24 +46,24 @@ dependencies {
 
     // LAUNCHER
     launcherDeps.each { implementation it }
-
 }
 
 test {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.release = 17
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
-// Version avec Shadow Plugin (plus robuste)
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-task OriginJar(type: ShadowJar) {
+tasks.register('OriginJar', ShadowJar) {
     archiveBaseName.set(bootstrapName)
     archiveClassifier.set('')
-    archiveVersion.set(version)
+    archiveVersion.set(project.version.toString())
 
     // Configuration du classpath
     configurations = [project.configurations.runtimeClasspath]
@@ -101,10 +99,10 @@ task OriginJar(type: ShadowJar) {
     }
 }
 
-task LauncherJar(type: Jar) {
-    archiveBaseName.set(LauncherName)
+tasks.register('LauncherJar', Jar) {
+    archiveBaseName.set(launcherName)
     archiveClassifier.set('')
-    archiveVersion.set(version)
+    archiveVersion.set(project.version.toString())
 
     // Inclure les packages OriginLauncher et Tools
     from(sourceSets.main.output) {
@@ -119,7 +117,9 @@ task LauncherJar(type: Jar) {
             globalDeps.any { bcDep ->
                 dep.name.contains(bcDep.split(':')[1].split('-')[0])
             } || launcherDeps.any { lDep ->
-                dep.name.contains(lDep.split(':')[1].split('-')[0])
+                def depName = lDep.split(':')[1]
+                // Handle both 'gson' and other dependencies
+                dep.name.contains(depName.split('-')[0])
             }
         }.collect {
             it.isDirectory() ? it : zipTree(it)
