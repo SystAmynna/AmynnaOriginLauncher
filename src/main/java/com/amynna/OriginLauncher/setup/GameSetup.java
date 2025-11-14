@@ -119,8 +119,16 @@ public class GameSetup {
      */
     public void checkInstallation() {
 
+        //installForge();
+        forgeSetup();
+
+        Logger.log(Logger.GREEN + Logger.BOLD + "Vérification des bibliothèques...");
         libManager.checkAllLibraries();
+
+        Logger.log(Logger.GREEN + Logger.BOLD + "Vérification des assets...");
         assetManager.checkAllAssets();
+
+        Logger.log(Logger.GREEN + Logger.BOLD + "Vérification du client...");
         clientManager.checkMcClient();
 
     }

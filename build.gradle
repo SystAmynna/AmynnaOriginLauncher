@@ -60,30 +60,38 @@ java {
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-tasks.register('OriginJar', ShadowJar) {
+// Fonction utilitaire pour extraire 'group:artifact' d'un 'group:artifact:version'
+def depGA = { coord ->
+    def parts = coord.split(':')
+    return (parts.length >= 2) ? "${parts[0]}:${parts[1]}" : coord
+}
+
+// --- TÂCHE BOOTSTRAP CORRIGÉE ---
+tasks.register(bootstrapName, ShadowJar) {
     archiveBaseName.set(bootstrapName)
     archiveClassifier.set('')
     archiveVersion.set(project.version.toString())
 
-    // Configuration du classpath
+    // Utiliser le classpath d'exécution qui contient TOUTES les dépendances
     configurations = [project.configurations.runtimeClasspath]
 
-    // Inclure seulement les classes nécessaires
+    // Inclure seulement les classes nécessaires de ce projet
     from(sourceSets.main.output) {
         include 'com/amynna/OriginBootstrap/**'
         include 'com/amynna/Tools/**'
         exclude 'com/amynna/OriginLauncher/**'
     }
 
-    // Filtrer les dépendances à inclure
+    // Filtrer les dépendances pour n'inclure QUE celles de globalDeps
     dependencies {
-        // Inclure toutes les dépendances BouncyCastle
-        include(dependency('org.bouncycastle:.*:.*'))
-        // Inclure JSON
-        include(dependency('org.json:json:.*'))
+        globalDeps.each { depString ->
+            // inclure "org.json:json", "org.bouncycastle:bcprov-jdk18on", etc.
+            include(dependency(depGA(depString)))
+        }
+        // ShadowJar exclura automatiquement tout ce qui n'est pas inclus
     }
 
-    // Exclure les signatures
+    // Exclure les fichiers de signature en conflit
     exclude 'META-INF/*.SF'
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
@@ -91,7 +99,7 @@ tasks.register('OriginJar', ShadowJar) {
     exclude 'META-INF/versions/**/*.DSA'
     exclude 'META-INF/versions/**/*.RSA'
 
-    // Fusionner les services
+    // Fusionner les fichiers de service (bonne pratique)
     mergeServiceFiles()
 
     manifest {
@@ -99,41 +107,43 @@ tasks.register('OriginJar', ShadowJar) {
     }
 }
 
-tasks.register('LauncherJar', Jar) {
+// --- TÂCHE LAUNCHER CORRIGÉE ---
+tasks.register(launcherName, ShadowJar) { // <-- Changé en ShadowJar
     archiveBaseName.set(launcherName)
     archiveClassifier.set('')
     archiveVersion.set(project.version.toString())
 
-    // Inclure les packages OriginLauncher et Tools
+    // Utiliser le classpath d'exécution qui contient TOUTES les dépendances
+    configurations = [project.configurations.runtimeClasspath]
+
+    // Inclure seulement les classes nécessaires de ce projet
     from(sourceSets.main.output) {
         include 'com/amynna/OriginLauncher/**'
         include 'com/amynna/Tools/**'
         exclude 'com/amynna/OriginBootstrap/**'
     }
 
-    // Inclure les dépendances globalDeps et launcherDeps
-    from {
-        configurations.runtimeClasspath.findAll { dep ->
-            globalDeps.any { bcDep ->
-                dep.name.contains(bcDep.split(':')[1].split('-')[0])
-            } || launcherDeps.any { lDep ->
-                def depName = lDep.split(':')[1]
-                // Handle both 'gson' and other dependencies
-                dep.name.contains(depName.split('-')[0])
-            }
-        }.collect {
-            it.isDirectory() ? it : zipTree(it)
+    // Filtrer les dépendances pour inclure Celles de globalDeps ET launcherDeps
+    dependencies {
+        globalDeps.each { depString ->
+            include(dependency(depGA(depString)))
         }
+        launcherDeps.each { depString ->
+            include(dependency(depGA(depString)))
+        }
+        // ShadowJar exclura automatiquement tout ce qui n'est pas inclus
     }
 
-    // Exclure les fichiers de signature qui causent des conflits
+    // Exclure les fichiers de signature en conflit
     exclude 'META-INF/*.SF'
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
-    exclude 'META-INF/MANIFEST.MF'
+    exclude 'META-INF/versions/**/*.SF'
+    exclude 'META-INF/versions/**/*.DSA'
+    exclude 'META-INF/versions/**/*.RSA'
 
-    // Éviter les doublons de fichiers META-INF
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    // Fusionner les fichiers de service
+    mergeServiceFiles()
 
     manifest {
         attributes 'Main-Class': 'com.amynna.OriginLauncher.App'
