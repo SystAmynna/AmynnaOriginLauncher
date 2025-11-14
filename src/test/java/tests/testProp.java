@@ -1,6 +1,7 @@
 package tests;
 
 import com.amynna.OriginLauncher.Auth;
+import com.amynna.OriginLauncher.setup.JdkManager;
 import com.amynna.OriginLauncher.setup.LibManager;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.Asker;

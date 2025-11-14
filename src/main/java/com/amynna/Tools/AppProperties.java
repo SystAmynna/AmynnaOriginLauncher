@@ -70,6 +70,14 @@ public final class AppProperties {
      */
     public static final File LOCAL_PRIVATE_KEYS_LOCATION = new File(LAUNCHER_ROOT + File.separator + "KEYS" + KEY_STORE_EXTENSION);
 
+    // JAVA
+
+    public static final String JAVA_VERSION = "17";
+
+
+
+
+
     // AUTHENTIFICATION MICROSOFT
 
     /**
@@ -180,9 +188,9 @@ public final class AppProperties {
     public static String getOsArch() {
         String arch = System.getProperty("os.arch").toLowerCase();
 
-        if (arch.contains("86")) return "x86";
-        else if (arch.contains("64")) return "x64";
-        else if (arch.contains("arm")) return "arm";
+        if (arch.equals("x86_64") || arch.equals("amd64")) return "x64";
+        else if (arch.equals("aarch64") || arch.equals("arm64")) return "arm";
+        else if (arch.equals("x86") || arch.equals("i386") || arch.equals("i486") || arch.equals("i586") || arch.equals("i686")) return "x86";
         else return "unknown";
     }
     /**
