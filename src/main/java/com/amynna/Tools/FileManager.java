@@ -154,30 +154,31 @@ public final class FileManager {
      */
     public static File downloadAndValidateFile(String onServerPath, String destinationPath) {
 
-        onServerPath = AppProperties.REPO_SERVER_URL + File.separator + onServerPath;
+        // Chemin du fichier et de sa signature sur le serveur
+        String fileOnServerPath = AppProperties.REPO_SERVER_URL + onServerPath;
+        String signOnServerPath = AppProperties.SIGNATURE_LOCATION_ON_SERVER + onServerPath + AppProperties.SIGNATURE_FILE_EXTENSION;
 
-        File file = downloadFile(onServerPath, destinationPath);
-
+        // Télécharger le fichier principal
+        File file = downloadFile(fileOnServerPath, destinationPath);
         if (file == null || !file.exists()) {
             Logger.error("Erreur lors du téléchargement du fichier...");
             return null;
         }
 
-        String onServerSignPath = AppProperties.SIGNATURE_LOCATION_ON_SERVER + file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
-        String localSignPath = AppProperties.SIGNATURE_DIR.getPath() + File.separator + file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+        // Emplacement local du fichier de signature
+        String localSignPath = AppProperties.SIGNATURE_DIR.getPath() + File.separator + onServerPath + AppProperties.SIGNATURE_FILE_EXTENSION;
 
-        File signatureFile = downloadFile(onServerSignPath, localSignPath);
-
+        // Télécharger le fichier de signature
+        File signatureFile = downloadFile(signOnServerPath, localSignPath);
         if (signatureFile == null || !signatureFile.exists()) {
             Logger.error("Erreur lors du téléchargement du fichier de signature...");
         }
 
         SignedFile signedFile = new SignedFile(file, signatureFile);
 
-        if (!KeyUtil.validateSignature(signedFile)) {
+        if (!signedFile.valid()) {
             Logger.error("Le fichier téléchargé n'est pas signé avec une clé publique de confiance.");
-            file.delete();
-            signatureFile.delete();
+            signedFile.delete();
             return null;
         }
         return file;
@@ -349,28 +350,6 @@ public final class FileManager {
     }
 
 
-    /**
-     * Vérifie la taille d'un fichier sur le disque.
-     * @param file Le fichier à vérifier.
-     * @param expectedSize La taille attendue en octets.
-     * @return true si la taille correspond, false sinon.
-     * @throws IOException Si le fichier n'existe pas ou ne peut pas être lu.
-     */
-    public static boolean verifyFileSize(File file, long expectedSize){
-        if (!file.exists()) {
-            return false;
-        }
-        long actualSize = 0;
-        try {
-            actualSize = Files.size(file.toPath());
-        } catch (IOException e) {
-            Logger.error("Erreur lors de la vérification de la taille du fichier : " + e.getMessage());
-            return false;
-        }
-        // Une tolérance de 100 octets est ajoutée pour compenser les différences potentielles de métadonnées,
-        // mais le SHA1 reste la méthode de vérification principale.
-        return Math.abs(actualSize - expectedSize) <= 100;
-    }
 
 /**
  * Supprime un fichier ou un répertoire (et son contenu) s'il existe.
@@ -501,5 +480,39 @@ public static void deleteFileIfExists(File file) {
             Logger.error("Décompression TAR.GZ interrompue : " + e.getMessage());
         }
     }
+
+    /**
+     * Recherche un fichier par nom dans un répertoire et ses sous-répertoires.
+     *
+     * @param directory Répertoire de départ pour la recherche
+     * @param fileName  Nom du fichier à rechercher
+     * @return Le fichier trouvé, ou null si non trouvé
+     */
+    public static File searchFileInDirectory(File directory, String fileName) {
+        if (!directory.isDirectory()) {
+            Logger.error("Le chemin spécifié n'est pas un répertoire : " + directory.getPath());
+            return null;
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            Logger.error("Impossible de lister les fichiers dans le répertoire : " + directory.getPath());
+            return null;
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                File found = searchFileInDirectory(file, fileName);
+                if (found != null) {
+                    return found;
+                }
+            } else if (file.getName().equals(fileName)) {
+                return file;
+            }
+        }
+
+        return null; // Fichier non trouvé
+    }
+
 
 }

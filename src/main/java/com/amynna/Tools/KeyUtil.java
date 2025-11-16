@@ -565,7 +565,16 @@ public final class KeyUtil {
      * @return Le chemin complet du fichier de signature.
      */
     public static String getSignaturePath(String filename) {
-        return AppProperties.SIGNATURE_DIR + filename + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        String signName = filename + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        File signFile = FileManager.searchFileInDirectory(AppProperties.SIGNATURE_DIR, signName);
+        if (signFile != null) {
+            return signFile.getAbsolutePath();
+        } else {
+            return null;
+        }
+
     }
 
 

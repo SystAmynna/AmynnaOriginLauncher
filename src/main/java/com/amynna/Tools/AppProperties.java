@@ -20,9 +20,9 @@ public final class AppProperties {
     // SERVEUR
 
     /** URL du serveur distant pour les mises à jour et la récupération des clés publiques. */
-    public static final String REPO_SERVER_URL = "http://localhost:8000/v1";
+    public static final String REPO_SERVER_URL = "http://localhost:8000/v1/";
     /** Emplacement du côté serveur des signatures des fichiers. */
-    public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + File.separator + "signatures" + File.separator;
+    public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + "signatures" + File.separator;
     /** Valeur par défaut pour le mode multijoueur en jeu rapide. */
     public static final String QUICK_PLAY_MULTIPLAYER_VALUE = "...";
 

@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Classe principale pour le lancement du launcher.
@@ -79,7 +80,7 @@ public final class Launch {
     private boolean checkLauncher() {
         // déclarer les fichiers
         File launcherFile = new File(AppProperties.LAUNCHER_ROOT.getPath() + File.separator + launcherName);
-        File signatureFile = new File(KeyUtil.getSignaturePath(launcherName));
+        File signatureFile = new File(Objects.requireNonNull(KeyUtil.getSignaturePath(launcherName)));
         SignedFile signedLauncher = new SignedFile(launcherFile, signatureFile);
 
         // vérifier l'existence des fichiers
@@ -99,8 +100,8 @@ public final class Launch {
     private boolean checkVersion() {
 
         // Télécharger le fichier de propriétés depuis le serveur
-        String onServerFileName = AppProperties.REPO_SERVER_URL + File.separator + AppProperties.APP_NAME + ".json";
-        File propertiesFile = FileManager.downloadAndValidateFile(onServerFileName, AppProperties.LAUNCHER_ROOT.getPath() + onServerFileName);
+        String onServerFileName = AppProperties.APP_NAME + ".json";
+        File propertiesFile = FileManager.downloadAndValidateFile(onServerFileName, AppProperties.TEMP_DIR.getPath() + File.separator + onServerFileName);
         assert propertiesFile != null;
 
         // Lire le fichier de propriétés
@@ -113,21 +114,22 @@ public final class Launch {
         // Vérifier la version actuelle du launcher
         String currentVersion = "";
         // Exécuter le launcher avec l'argument "version" pour obtenir sa version actuelle
-        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", AppProperties.LAUNCHER_ROOT.getPath() + launcherName, "version");
+        String launcherPath = AppProperties.LAUNCHER_ROOT.getPath() + File.separator + launcherName;
+        ProcessBuilder processBuilder = new ProcessBuilder(AppProperties.foundJava(), "-jar", launcherPath, "version");
         try {
             Process process = processBuilder.start();
 
             // obtenir le code de sortie du processus
             int exitCode = process.waitFor();
-            if (exitCode != 0) Logger.fatal("Erreur lors de la vérification de la version du launcher.");
+            if (exitCode != 0) return false;
 
             // lire la sortie du processus
             currentVersion = new String(process.getInputStream().readAllBytes()).trim();
-            if (!currentVersion.equals(lastVersion)) return  false;
+            if (!currentVersion.contains(lastVersion)) return  false;
             else Logger.log("Le launcher est à jour.");
 
         } catch (Exception e) {
-            Logger.fatal("Erreur lors de la vérification de la version du launcher: " + e.getMessage());
+            return  false;
         }
 
         return true;

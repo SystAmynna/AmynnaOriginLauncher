@@ -17,7 +17,7 @@ public final class App {
     /**
      * Instance unique de l'application (singleton).
      */
-    private final static App INSTANCE = new App();
+    private static App instance;
 
     /**
      * Indicateur pour quitter l'application. Si vrai, le processus principal s'arrête.
@@ -52,7 +52,10 @@ public final class App {
      * @return {@code App} L'instance de l'application.
      */
     public static App get() {
-        return INSTANCE;
+        if (instance == null) {
+            instance = new App();
+        }
+        return instance;
     }
 
     /**
