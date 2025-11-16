@@ -250,6 +250,49 @@ public final class FileManager {
     }
 
     /**
+     * Calcule le hachage SHA-256 d'un fichier.
+     *
+     * @param file Fichier à hasher
+     * @return Le hachage SHA-256 en hexadécimal ou null en cas d'erreur
+     */
+    public static String calculSHA256(File file) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+            try (InputStream fis = new FileInputStream(file);
+                 BufferedInputStream bis = new BufferedInputStream(fis)) {
+
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+
+                while ((bytesRead = bis.read(buffer)) != -1) {
+                    digest.update(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                Logger.error("Erreur de lecture du fichier pour le calcul SHA-256 : " + e.getMessage());
+                return null;
+            }
+
+            // Convertir le hachage en hexadécimal
+            byte[] hashBytes = digest.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            Logger.fatal("Algorithme SHA-256 non trouvé : " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Télécharge un fichier depuis une URL et vérifie son hachage SHA-1.
      *
      * @param url URL du fichier à télécharger
@@ -267,14 +310,42 @@ public final class FileManager {
             String calculatedSha1 = calculSHA1(downloadedFile);
             if (calculatedSha1 != null && calculatedSha1.equals(expectedSha1)) {
                 return downloadedFile; // Vérification réussie
-            } else {
-                downloadedFile.delete(); // Supprimer le fichier en cas d'échec de vérification
-                return null; // Vérification échouée
             }
         } catch (SecurityException e) {
-            downloadedFile.delete(); // Supprimer le fichier en cas d'erreur
-            return null; // Erreur lors du calcul du hachage
+            Logger.error("Erreur de sécurité lors de la vérification SHA-1 : " + e.getMessage());
         }
+
+        deleteFileIfExists(downloadedFile);
+        return null;
+
+    }
+
+    /**
+     * Télécharge un fichier depuis une URL et vérifie son hachage SHA-256.
+     *
+     * @param url URL du fichier à télécharger
+     * @param destinationPath Chemin local où enregistrer le fichier
+     * @param expectedSha256 Hachage SHA-256 attendu pour le fichier
+     * @return true si le téléchargement et la vérification réussissent, false sinon
+     */
+    public static File downloadFileAndVerifySha256(String url, String destinationPath, String expectedSha256) {
+        File downloadedFile = downloadFile(url, destinationPath);
+        if (downloadedFile == null) {
+            return null; // Échec du téléchargement
+        }
+
+        try {
+            String calculatedSha256 = calculSHA256(downloadedFile);
+            if (calculatedSha256 != null && calculatedSha256.equals(expectedSha256)) {
+                return downloadedFile; // Vérification réussie
+            }
+        } catch (SecurityException e) {
+            Logger.error("Erreur de sécurité lors de la vérification SHA-256 : " + e.getMessage());
+        }
+
+        deleteFileIfExists(downloadedFile);
+        return null;
+
     }
 
 
@@ -374,4 +445,61 @@ public static void deleteFileIfExists(File file) {
 
 
     }
+
+    /**
+     * Décompresse un fichier TAR.GZ dans le dossier de destination en utilisant les outils système.
+     *
+     * @param tarGzFile fichier .tar.gz à extraire
+     * @param destDir   répertoire de destination
+     */
+    public static void untarGz(File tarGzFile, File destDir) {
+
+        // Crée le répertoire de destination s'il n'existe pas
+        createDirectoriesIfNotExist(destDir.getPath());
+
+        try {
+            ProcessBuilder processBuilder;
+
+            if (AppProperties.getOsType().equals("Windows")) {
+                // Windows : utiliser tar.exe (disponible depuis Windows 10)
+                processBuilder = new ProcessBuilder(
+                    "tar", "-xzf",
+                    tarGzFile.getAbsolutePath(),
+                    "-C", destDir.getAbsolutePath()
+                );
+            } else {
+                // Linux/macOS : utiliser tar
+                processBuilder = new ProcessBuilder(
+                    "tar", "-xzf",
+                    tarGzFile.getAbsolutePath(),
+                    "-C", destDir.getAbsolutePath()
+                );
+            }
+
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+
+            // Lire la sortie du processus
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    Logger.log(line);
+                }
+            }
+
+            int exitCode = process.waitFor();
+
+            if (exitCode != 0) {
+                Logger.error("Échec de la décompression TAR.GZ (code: " + exitCode + ")");
+            }
+
+        } catch (IOException e) {
+            Logger.error("Erreur lors de la décompression du fichier TAR.GZ : " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            Logger.error("Décompression TAR.GZ interrompue : " + e.getMessage());
+        }
+    }
+
 }

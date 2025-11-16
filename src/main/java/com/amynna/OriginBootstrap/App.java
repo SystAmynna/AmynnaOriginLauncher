@@ -143,6 +143,8 @@ public final class App {
 
         FileManager.createDirectoriesIfNotExist(AppProperties.LAUNCHER_ROOT.getPath()); // Assure que le répertoire racine existe
 
+        FileManager.deleteFileIfExists(AppProperties.TEMP_DIR); // Nettoie le répertoire temporaire
+
         if (args.length == 0) {
             app.launch();
             return;
@@ -161,8 +163,6 @@ public final class App {
             case "version" -> app.version();
             default -> Logger.log("Commande inconnue. Utilisez 'help' pour voir les commandes disponibles.");
         }
-
-        FileManager.deleteFileIfExists(AppProperties.TEMP_DIR); // Nettoie le répertoire temporaire après l'exécution
 
     }
 

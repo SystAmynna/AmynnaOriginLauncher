@@ -27,6 +27,9 @@ public class GameSetup {
     /** Gestionnaire du lancement du jeu. */
     private final LaunchHandler launchHandler;
 
+
+    private final JdkManager jdkManager;
+
     /** Manifeste de la version spécifique de Minecraft au format JSON. */
     private JSONObject mcVersionManifest;
 
@@ -35,6 +38,11 @@ public class GameSetup {
 
     /** Constructeur */
     public GameSetup() {
+
+        // ----[ INSTALLATION JDK ]----
+
+        // Initialisation du gestionnaire JDK
+        jdkManager = new JdkManager();
 
         // ----[ VANILLA ]----
 
@@ -84,24 +92,29 @@ public class GameSetup {
      */
     public void setup() {
 
+        // ----[ INSTALLATION JDK ]----
+
+        Logger.log(Logger.GREEN + Logger.BOLD + "Gestion du JDK...");
+        jdkManager.jdkSetup();
+
         // ----[ INSTALLATION VANILLA ]----
 
         // Installation des bibliothèques Minecraft
-        Logger.log(Logger.GREEN + Logger.BOLD + "Installation des bibliothèques Minecraft...");
+        Logger.log(Logger.GREEN + Logger.BOLD + "Gestion des bibliothèques Minecraft...");
         libManager.downloadAllLibraries();
 
         // Installation des assets Minecraft
-        Logger.log(Logger.GREEN + Logger.BOLD + "Installation des assets Minecraft...");
+        Logger.log(Logger.GREEN + Logger.BOLD + "Gestion des assets Minecraft...");
         assetManager.downloadAllAssets();
 
         // Installation du client Minecraft
-        Logger.log(Logger.GREEN + Logger.BOLD + "Installation du client Minecraft...");
+        Logger.log(Logger.GREEN + Logger.BOLD + "Gestion du client Minecraft...");
         clientManager.downloadMcClient();
 
         // ----[ INSTALLATION FORGE ]----
 
         // Installation de Forge
-        Logger.log(Logger.GREEN + Logger.BOLD + "Installation de Forge...");
+        Logger.log(Logger.GREEN + Logger.BOLD + "Gestion de Forge...");
         installForge();
         forgeSetup();
 
@@ -222,7 +235,7 @@ public class GameSetup {
 
         List<String> command = new LinkedList<>();
 
-        command.add(AppProperties.foundJava()); // 1. Exécutable Java
+        command.add(JdkManager.getJava()); // 1. Exécutable Java
         command.add("-jar");             // 2. Argument -jar
 
         command.add(installerFile.getAbsolutePath()); // 3. Chemin de l'installeur

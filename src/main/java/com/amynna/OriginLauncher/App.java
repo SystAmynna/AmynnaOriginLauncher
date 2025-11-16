@@ -69,6 +69,7 @@ public final class App {
      */
     private void setupDirs() {
         FileManager.createDirectoriesIfNotExist(AppProperties.LAUNCHER_ROOT.getAbsolutePath());
+        FileManager.deleteFileIfExists(AppProperties.TEMP_DIR); // Nettoie le répertoire
         FileManager.createDirectoriesIfNotExist(AppProperties.TEMP_DIR.getAbsolutePath());
         FileManager.createDirectoriesIfNotExist(AppProperties.SIGNATURE_DIR.getAbsolutePath());
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_DIR.getAbsolutePath());
@@ -164,8 +165,6 @@ public final class App {
         if (args[0].equals("version")) Logger.version();
         // Lance le launcher si demandé
         else if (args[0].equals("launch")) App.get().launch();
-
-        FileManager.deleteFileIfExists(AppProperties.TEMP_DIR); // Nettoie le répertoire temporaire après l'exécution
 
     }
 

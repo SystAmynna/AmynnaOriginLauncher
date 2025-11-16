@@ -259,7 +259,7 @@ public class LaunchHandler {
         List<String> cmd = new LinkedList<>();
 
         // Java exécutable
-        cmd.add(AppProperties.foundJava());
+        cmd.add(JdkManager.getJava());
 
 
 
