@@ -289,11 +289,12 @@ public class LaunchHandler {
         pb.directory(AppProperties.MINECRAFT_DIR);
         pb.inheritIO(); // redirige la sortie du jeu vers la console
 
-        Logger.log(Logger.PURPLE + Logger.BOLD + "Démarrage de Minecraft avec Forge...");
+        Logger.log(Logger.PURPLE + Logger.BOLD + Logger.UNDERLINE + "Lancement de Minecraft (avec Forge)...");
         try {
             Process mc = pb.start();
 
             int exitCode = mc.waitFor();
+            Logger.log(Logger.PURPLE + Logger.BOLD + Logger.UNDERLINE + "Arrêt de Minecraft.");
             if (exitCode != 0) Logger.error("Minecraft s'est arrêté avec le code de sortie : " + exitCode);
             else Logger.log(Logger.PURPLE + Logger.BOLD + "Minecraft s'est arrêté correctement.");
         } catch (IOException | InterruptedException e) {

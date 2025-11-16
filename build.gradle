@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.amynna'
-version = '0.1.2'
+version = '0.2.3'
 
 repositories {
     mavenCentral()
@@ -131,6 +131,14 @@ tasks.register(launcherName, ShadowJar) { // <-- Changé en ShadowJar
         launcherDeps.each { depString ->
             include(dependency(depGA(depString)))
         }
+        // TODO : SUPPRIMER JAVAFX QUAND OPENAUTH SERA MIS À JOUR
+        include(dependency('org.openjfx:javafx-swing'))
+        include(dependency('org.openjfx:javafx-web'))
+        include(dependency('org.openjfx:javafx-controls'))
+        include(dependency('org.openjfx:javafx-graphics'))
+        include(dependency('org.openjfx:javafx-base'))
+        include(dependency('org.openjfx:javafx-media'))
+        // TODO ------------------------------
         // ShadowJar exclura automatiquement tout ce qui n'est pas inclus
     }
 

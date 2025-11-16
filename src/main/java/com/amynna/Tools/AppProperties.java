@@ -15,7 +15,7 @@ public final class AppProperties {
     /**
      * Version de l'application.
      */
-    public static final String APP_VERSION = "0.1.2";
+    public static final String APP_VERSION = "0.2.3";
     /**
      * Auteur de l'application.
      */

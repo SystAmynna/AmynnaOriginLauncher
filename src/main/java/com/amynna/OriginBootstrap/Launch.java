@@ -47,9 +47,12 @@ public final class Launch {
 
 
         ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+        processBuilder.inheritIO();
         try {
+            Logger.log(Logger.PURPLE + Logger.BOLD + Logger.UNDERLINE + "Lancement du launcher...");
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
+            Logger.log(Logger.PURPLE + Logger.BOLD + Logger.UNDERLINE + "Fin du launcher.");
             if (exitCode != 0) {
                 Logger.fatal("Erreur lors du lancement du launcher.");
             }

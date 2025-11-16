@@ -15,6 +15,8 @@ public final class Logger {
     public static final String RESET = "\u001B[0m";
     /** Code ANSI pour le texte en BOLD */
     public static final String BOLD = "\u001B[1m";
+    /** Code ANSI pour le texte en UNDERLINE */
+    public static final String UNDERLINE = "\u001B[4m";
 
     /** Codes ANSI pour la couleur BLEU */
     public static final String BLUE = "\u001B[34m";
