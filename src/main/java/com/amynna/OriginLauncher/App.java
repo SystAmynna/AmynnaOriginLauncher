@@ -37,11 +37,12 @@ public final class App {
      * Constructeur privé pour empêcher l'instanciation externe.
      */
     private App () {
+        // Configuration des répertoires
+        setupDirs();
         // Initialisation du singleton
         auth = new Auth();
         gameSetup = new GameSetup();
-        // Configuration des répertoires
-        setupDirs();
+
     }
 
     // −−−-[ GETTERS ]----

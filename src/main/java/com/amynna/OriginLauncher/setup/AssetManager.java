@@ -16,6 +16,7 @@ public class AssetManager {
 
     // ----[ ATTRIBUTS ]----
 
+    /** Base URL pour le téléchargement des assets */
     public static final String ASSETS_URL_BASE = "https://resources.download.minecraft.net/";
 
     /** Valeur des assets (pour le lancement) */
