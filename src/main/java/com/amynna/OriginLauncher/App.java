@@ -7,7 +7,8 @@ import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
 
 /**
- * la classe principale {@code App} du Launcher.
+ * la classe principale {@code App} du Launcher. Elle gère le cycle de vie de l'application,
+ * et orchestre que tous les modules principaux.
  */
 public final class App {
 
@@ -19,7 +20,7 @@ public final class App {
     private final static App INSTANCE = new App();
 
     /**
-     * Indicateur pour quitter l'application.
+     * Indicateur pour quitter l'application. Si vrai, le processus principal s'arrête.
      */
     private boolean shouldExit = false;
 
@@ -27,7 +28,6 @@ public final class App {
      * Instance de l'authentification.
      */
     private final Auth auth;
-
     /**
      * Instance du gestionnaire de l'installation du jeu.
      */
@@ -66,7 +66,8 @@ public final class App {
     // -−−−-[ MÉTHODES ]----
 
     /**
-     * Configure les répertoires nécessaires au fonctionnement de l'application.
+     * Créer les répertoires nécessaires au fonctionnement de l'application,
+     * et nettoie le répertoire temporaire.
      */
     private void setupDirs() {
         FileManager.createDirectoriesIfNotExist(AppProperties.LAUNCHER_ROOT.getAbsolutePath());
@@ -85,9 +86,12 @@ public final class App {
     // −−−-[ PROCESSUS PRINCIPAL ]----
 
     /**
-     * Démarre le processus principal de l'application.
+     * Démarre le processus principal de l'application, accède aux actions de l'utilisateur via le menu.
      */
     public void launch() {
+
+        // TODO : Remplacer avec une interface graphique
+
         while (!shouldExit) {
             int choice = Asker.askMenu();
 
@@ -102,9 +106,10 @@ public final class App {
         }
     }
 
+    // −−−-[ ACTIONS ]----
 
     /**
-     * Lance le processus d'authentification.
+     * Lance l'action principale d'authentification.
      */
     private void authentifie() {
         Logger.log(Logger.PURPLE + "[CALL] Authentification de l'utilisateur...");
@@ -112,34 +117,44 @@ public final class App {
     }
 
     /**
-     * Lance le jeu.
+     * Lance l'action principale de démarrage du jeu.
      */
     private void startGame() {
         Logger.log(Logger.PURPLE + "[CALL] Démarrage du jeu...");
+        // S'assure que l'utilisateur est authentifié avant de lancer le jeu
         if (!auth.isAuthenticated()) auth.authentifie();
+        // Prépare et démarre le jeu
         gameSetup.setup();
+        // Lance le jeu
         gameSetup.startGame();
+        // Permet l'arrêt du launcher après le lancement du jeu
         shouldExit = true;
     }
 
     /**
-     * Affiche les paramètres de l'application.
+     * Lance l'action principale des paramètres.
      */
     private void showSettings() {
         Logger.log(Logger.PURPLE + "[CALL] Settings...");
 
+        // TODO : Implémenter les paramètres
+
     }
 
     /**
-     * Vérifie l'installation du jeu.
+     * Lance l'action principale de vérification de l'installation du jeu.
      */
     private void verifyInstallation() {
         Logger.log(Logger.PURPLE + "[CALL] Vérification de l'installation du jeu...");
         gameSetup.checkInstallation();
     }
 
+    /**
+     * Lance l'action principale de désinstallation du jeu.
+     */
     private void uninstallGame() {
         Logger.log(Logger.PURPLE + "[CALL] Désinstallation du jeu...");
+        // TODO : déplacer dans les paramètres
         //gameSetup.uninstallGame();
     }
 

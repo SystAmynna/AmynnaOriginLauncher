@@ -113,7 +113,6 @@ public class Asker {
      *
      * @return un tableau de chaînes contenant l'email et le mot de passe, ou null si l'utilisateur annule.
      */
-    @Deprecated
     public static String[] askAuthentication() {
         String titre = "Authentification Launcher Origin";
         String message = "Veuillez entrer vos identifiants Microsoft pour vous connecter.";

@@ -9,7 +9,7 @@ import java.io.File;
 import java.time.LocalDate;
 
 /**
- * La classe {@code Auth} gère l'authentification avec Microsoft.
+ * La classe {@code Auth} gère l'authentification avec Mojang / Microsoft.
  */
 public final class Auth {
 
@@ -23,17 +23,17 @@ public final class Auth {
     private MicrosoftAuthResult msAuthResult;
 
     /**
-     * Méthode principale qui gère l'authentification avec Microsoft.
+     * Méthode principale qui gère l'authentification avec Mojang / Microsoft.
      */
     public void authentifie() {
 
-        // gestion des jetons de rafraîchissement
+        // Instanciation de l'authentificateur Microsoft
         MicrosoftAuthenticator authenticator = new MicrosoftAuthenticator();
         msAuthResult = null;
 
         try {
-
-            if (haveSavedToken() && restaureToken()) { // Si un jeton de rafraîchissement est sauvegardé
+            // Si un jeton de rafraîchissement est sauvegardé
+            if (haveSavedToken() && restaureToken()) {
                 // restaure le jeton de rafraîchissement sauvegardé
                 msAuthResult = authenticator.loginWithRefreshToken(token);
             } else {
@@ -53,6 +53,7 @@ public final class Auth {
             return;
         }
 
+        // Affiche les informations de l'utilisateur connecté
         Logger.log("Connecté en tant que " + msAuthResult.getProfile().getName() + " (UUID : " + msAuthResult.getProfile().getId() + ")");
 
     }
@@ -60,12 +61,17 @@ public final class Auth {
     /**
      * Vérifie si l'utilisateur est authentifié.
      *
-     * @return true si l'utilisateur est authentifié, false sinon.
+     * @return {@code boolean} true si l'utilisateur est authentifié, false sinon.
      */
     public boolean isAuthenticated() {
         return msAuthResult != null;
     }
 
+    /**
+     * Récupère le résultat de l'authentification Microsoft.
+     *
+     * @return {@code MicrosoftAuthResult} Le résultat de l'authentification.
+     */
     public MicrosoftAuthResult getMsAuthResult() {
         return msAuthResult;
     }
@@ -74,24 +80,24 @@ public final class Auth {
     /**
      * Vérifie si un jeton de rafraîchissement est déjà sauvegardé.
      *
-     * @return true si un jeton est trouvé, false sinon.
+     * @return {@code boolean} true si un jeton est trouvé, false sinon.
      */
     private boolean haveSavedToken() {
 
+        // Instancie le fichier de sauvegarde du jeton
         File tokenFile = AppProperties.MS_AUTH_TOKEN;
 
+        // Vérifie l'existence du fichier
         if (!tokenFile.exists()) return false;
 
+        // Vérifie que le fichier est lisible
         if (!tokenFile.isFile() || !tokenFile.canRead()) {
-            Logger.error("Le fichier de jeton de rafraîchissement n'est pas lisible.");
-            try {
-                tokenFile.delete();
-            } catch (Exception e) {
-                Logger.error("Impossible de supprimer le fichier de jeton corrompu.");
-            }
+            Logger.error("Le fichier de jeton de rafraîchissement n'est pas lisible, suppression...");
+            FileManager.deleteFileIfExists(tokenFile);
             return false;
         }
 
+        // Atteste que le fichier est valide
         return true;
 
     }
@@ -99,15 +105,19 @@ public final class Auth {
     /**
      * Restaure le jeton de rafraîchissement depuis un fichier.
      *
-     * @return true si la restauration a réussi, false sinon.
+     * @return {@code boolean} true si la restauration a réussi, false sinon.
      */
     private boolean restaureToken() {
+        // Récupère le mot de passe et l'alias pour le déchiffrement
         String password = getTokenPwd();
+        // Récupère l'alias du jeton
         String alias = AppProperties.MS_TOKEN_ALIAS;
 
+        // Tente de charger le jeton chiffré
         token = Encrypter.loadToken(alias, password);
         boolean result = token != null;
 
+        // Log le résultat de la restauration
         if (result) {
             Logger.log("🔐 Jeton de rafraîchissement restauré.");
         } else {
@@ -118,6 +128,8 @@ public final class Auth {
                 Logger.error("Impossible de supprimer le fichier de jeton obselète.");
             }
         }
+
+        // Retourne le résultat de la tentative de restauration
         return result;
     }
 
@@ -127,38 +139,31 @@ public final class Auth {
      * @param token Le jeton de rafraîchissement à sauvegarder.
      */
     private void saveToken(String token) {
+        // Récupère le mot de passe et l'alias pour le chiffrement
         String password = getTokenPwd();
+        // Récupère l'alias du jeton
         String alias = AppProperties.MS_TOKEN_ALIAS;
 
+        // Sauvegarde le jeton chiffré
         Encrypter.saveToken(alias, token, password);
     }
 
     /**
      * Génère un mot de passe pour le stockage du jeton de rafraîchissement.
      * Le mot de passe est basé sur des informations spécifiques à l'application et au système.
-     * (change tous les mois)
+     * (Permanant entre les sessions, mais unique pour chaque utilisateur et installation)
      *
-     * @return Le mot de passe généré.
+     * @return {@code String} Le mot de passe généré.
      */
     private String getTokenPwd() {
-        StringBuilder builder = new StringBuilder();
 
-        builder.append(AppProperties.APP_NAME);
+        String builder = AppProperties.APP_NAME +
+                AppProperties.APP_VERSION +
+                System.getProperty("user.name") +
+                "token" +
+                System.getProperty("os.name") +
+                System.getProperty("os.version");
 
-        LocalDate now = LocalDate.now();
-        int year = now.getYear();
-        int month = now.getMonthValue();
-        builder.append(year*12 + month);
-
-        builder.append(AppProperties.APP_VERSION);
-
-        builder.append(System.getProperty("user.name"));
-
-        builder.append("token");
-
-        builder.append(System.getProperty("os.name"));
-        builder.append(System.getProperty("os.version"));
-
-        return Encrypter.sha512(builder.toString());
+        return Encrypter.sha512(builder);
     }
 }
