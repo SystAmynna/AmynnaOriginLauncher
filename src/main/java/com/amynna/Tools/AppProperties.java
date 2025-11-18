@@ -1,6 +1,8 @@
 package com.amynna.Tools;
 
 import java.io.File;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Paths;
 
 /**
@@ -174,6 +176,36 @@ public final class AppProperties {
     public static String getCpSeparator() {
         // En Java, le séparateur de classpath est stocké dans la propriété du système.
         return File.pathSeparator;
+    }
+
+    /**
+     * Vérifie si le serveur distant est accessible.
+     *
+     * @return true si le serveur répond, false sinon
+     */
+    public static boolean pingServer() {
+        try {
+            URL url = new URL(AppProperties.REPO_SERVER_URL);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Configuration de la requête
+            connection.setRequestMethod("HEAD");
+            connection.setConnectTimeout(5000); // Timeout de 5 secondes
+            connection.setReadTimeout(5000);
+
+            // Tente la connexion
+            connection.connect();
+
+            // Vérifie le code de réponse HTTP
+            int responseCode = connection.getResponseCode();
+            connection.disconnect();
+
+            // Codes 2xx = succès
+            return responseCode >= 200 && responseCode < 300;
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }

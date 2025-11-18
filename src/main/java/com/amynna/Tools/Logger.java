@@ -48,10 +48,15 @@ public final class Logger {
     }
 
     /** Log un message fatal et quitte l'application */
-    public static void fatal(String message) {
+    public static void fatal(String message, int statusCode) {
         error(message);
         saveLogToFile();
-        System.exit(1);
+        System.exit(statusCode);
+    }
+
+    /** Log un message fatal et quitte l'application avec le code de statut 1 */
+    public static void fatal(String message) {
+        fatal(message, 1);
     }
 
     /** Affiche la version de l'application */

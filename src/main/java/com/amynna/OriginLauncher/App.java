@@ -37,6 +37,12 @@ public final class App {
      * Constructeur privé pour empêcher l'instanciation externe.
      */
     private App () {
+
+        if (!AppProperties.pingServer()) {
+            Logger.fatal("Impossible de contacter le serveur.", 0);
+        }
+        Logger.log(Logger.BLUE + Logger.BOLD + "Connexion au serveur réussie.");
+
         // Configuration des répertoires
         setupDirs();
         // Initialisation du singleton
