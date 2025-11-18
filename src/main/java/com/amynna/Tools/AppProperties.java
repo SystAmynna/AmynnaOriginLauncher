@@ -23,6 +23,8 @@ public final class AppProperties {
     public static final String REPO_SERVER_URL = "http://localhost:8000/v1/";
     /** Emplacement du côté serveur des signatures des fichiers. */
     public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + "signatures" + File.separator;
+
+    public static final String MODS_DIR_ON_SERVER = REPO_SERVER_URL + "modpack/mods/";
     /** Valeur par défaut pour le mode multijoueur en jeu rapide. */
     public static final String QUICK_PLAY_MULTIPLAYER_VALUE = "...";
 

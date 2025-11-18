@@ -12,19 +12,19 @@
             },
             {
                 "name" : "Amendments",
-                "version" : "2.2.2"
+                "version" : "1.20-2.2.2"
             },
             {
                 "name" : "Apex Core",
                 "version" : "10.0.0"
             },
             {
-                "name" : "Architectury",
-                "version" : "v9.2.14"
+                "name" : "Architectury API",
+                "version" : "9.2.14+forge"
             },
             {
                 "name" : "astikorcarts",
-                "version" : "v1.1.8b"
+                "version" : "1.1.8b"
             },
             {
                 "name" : "Bendy lib",
@@ -40,19 +40,19 @@
             },
             {
                 "name" : "Born in Chaos",
-                "version" : "1.7.2"
+                "onServer" : true
             },
             {
                 "name" : "Camera Mod",
-                "version" : "1.0.20"
+                "version" : "forge-1.20.1-1.0.20"
             },
             {
                 "name" : "chimes",
-                "version" : "2.0.1"
+                "onServer" : true
             },
             {
                 "name" : "Chunk loaders",
-                "version" : "1.2.9"
+                "version" : "1.2.9-forge-mc1.20.1"
             },
             {
                 "name" : "Citadel",
@@ -60,15 +60,15 @@
             },
             {
                 "name" : "Cloth Config",
-                "version" : "11.1.136"
+                "version" : "11.1.136+forge"
             },
             {
                 "name" : "Connectible Chains",
-                "version" : "1.1.1"
+                "onServer" : true
             },
             {
                 "name" : "Connectivity",
-                "version" : "7.2"
+                "onServer" : true
             },
             {
                 "name" : "connector",

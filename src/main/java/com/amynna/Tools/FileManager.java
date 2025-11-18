@@ -133,7 +133,7 @@ public final class FileManager {
      * @param destinationPath Chemin de destination (fichier ou répertoire)
      * @return Le fichier téléchargé et validé, ou null en cas d'erreur ou de validation échouée
      */
-    public static File downloadAndValidateFile(String onServerPath, String destinationPath) {
+    public static SignedFile downloadAndValidateFile(String onServerPath, String destinationPath) {
 
         // Chemin du fichier et de sa signature sur le serveur
         String fileOnServerPath = AppProperties.REPO_SERVER_URL + onServerPath;
@@ -162,7 +162,7 @@ public final class FileManager {
             signedFile.delete();
             return null;
         }
-        return file;
+        return signedFile;
     }
 
     /**

@@ -63,14 +63,14 @@ public final class KeyUtil {
 
         // Télécharger le fichier des clés publiques de confiance
         final String trustedKeysFileName = "trusted-keys.json";
-        File trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
+        SignedFile trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
         if (trustedKeysFile == null) {
             Logger.error("⚠️  Impossible de charger le fichier des clés publiques de confiance.");
             return;
         }
 
         // Lire le fichier des clés publiques de confiance et extraire les clés publiques
-        final JSONObject trustedKeysJson = FileManager.openJsonFile(trustedKeysFile);
+        final JSONObject trustedKeysJson = FileManager.openJsonFile(trustedKeysFile.file());
         if (trustedKeysJson == null || !trustedKeysJson.has("trusted_keys")) {
             Logger.error("⚠️  Le fichier des clés publiques de confiance est invalide.");
             return;

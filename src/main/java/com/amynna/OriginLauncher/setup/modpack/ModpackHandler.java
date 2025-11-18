@@ -4,6 +4,7 @@ import com.amynna.OriginLauncher.AdminIdentificator;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
+import com.amynna.Tools.SignedFile;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -22,9 +23,9 @@ public class ModpackHandler {
 
         // Téléchargement et ouverture du manifeste du modpack
         String onServerUrl = "modpack/modpack_manifest.json";
-        File modpackFile = FileManager.downloadAndValidateFile(onServerUrl, AppProperties.TEMP_DIR.getPath());
+        SignedFile modpackFile = FileManager.downloadAndValidateFile(onServerUrl, AppProperties.TEMP_DIR.getPath());
         assert modpackFile != null;
-        modpackManifest = FileManager.openJsonFile(modpackFile);
+        modpackManifest = FileManager.openJsonFile(modpackFile.file());
         assert modpackManifest != null;
 
         // Initialisation du gestionnaire de mods
@@ -42,9 +43,9 @@ public class ModpackHandler {
         }
 
         String adminUrl = "modpack/modpack_admin_manifest.json";
-        File adminModpackFile = FileManager.downloadAndValidateFile(adminUrl, AppProperties.TEMP_DIR.getPath());
+        SignedFile adminModpackFile = FileManager.downloadAndValidateFile(adminUrl, AppProperties.TEMP_DIR.getPath());
         assert adminModpackFile != null;
-        modpackAdminManifest = FileManager.openJsonFile(adminModpackFile);
+        modpackAdminManifest = FileManager.openJsonFile(adminModpackFile.file());
         assert modpackAdminManifest != null;
 
         // Ajout des mods admin au gestionnaire de mods

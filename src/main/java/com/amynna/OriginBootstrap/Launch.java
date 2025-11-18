@@ -101,11 +101,11 @@ public final class Launch {
 
         // Télécharger le fichier de propriétés depuis le serveur
         String onServerFileName = AppProperties.APP_NAME + ".json";
-        File propertiesFile = FileManager.downloadAndValidateFile(onServerFileName, AppProperties.TEMP_DIR.getPath() + File.separator + onServerFileName);
+        SignedFile propertiesFile = FileManager.downloadAndValidateFile(onServerFileName, AppProperties.TEMP_DIR.getPath() + File.separator + onServerFileName);
         assert propertiesFile != null;
 
         // Lire le fichier de propriétés
-        JSONObject properties = FileManager.openJsonFile(propertiesFile);
+        JSONObject properties = FileManager.openJsonFile(propertiesFile.file());
         assert properties != null;
 
         // Récupérer la dernière version du launcher

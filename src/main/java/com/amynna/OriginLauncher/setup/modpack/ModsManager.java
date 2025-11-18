@@ -3,6 +3,7 @@ package com.amynna.OriginLauncher.setup.modpack;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
+import com.amynna.Tools.SignedFile;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,6 +35,8 @@ public class ModsManager {
         /** Hash SHA-512 du fichier du mod pour vérification d'intégrité. */
         private String sha512;
 
+        private SignedFile signedFile;
+
         /** Fichier local où le mod sera stocké. */
         public final File file;
 
@@ -43,8 +46,6 @@ public class ModsManager {
             this.version = version;
             this.onServer = onServer;
             this.modloader = modloader;
-
-            //setDetails();
 
             final String dlName = name + "-" + version + ".jar";
             String pathToDownload = AppProperties.MODS_DIR.getAbsolutePath();
@@ -60,7 +61,14 @@ public class ModsManager {
         }
 
         protected void setDetails() {
-            // Récupère les détails du mod via l'API Modrinth
+
+            if (onServer) {
+                url = AppProperties.MODS_DIR_ON_SERVER + file.getName();
+                size = file.length();
+                sha512 = null; // La vérification devra être faite via le serveur
+                return;
+            }
+
             JSONObject details = modrinthAPI.getJarDetails(name, version, modloader);
             if (details != null) {
                 this.url = details.getString("url");
@@ -69,7 +77,6 @@ public class ModsManager {
                 return;
             }
 
-            // TODO : implémenter l'API de CurseForge ici
 
             // Si aucun détail n'a pu être récupéré, initialise avec des valeurs par défaut
             this.url = null;
@@ -86,16 +93,22 @@ public class ModsManager {
                 Logger.error("Impossible de télécharger le mod " + name + " : URL invalide.");
                 return;
             }
-            FileManager.downloadFileAndVerifySha(url, file.getPath(), sha512, FileManager.SHA512);
+
+            if (onServer) {
+                signedFile = FileManager.downloadAndValidateFile(url, file.getPath());
+            }
+            else FileManager.downloadFileAndVerifySha(url, file.getPath(), sha512, FileManager.SHA512);
         }
 
         /** Vérifie si le fichier existe et si sa taille correspond. */
         protected boolean lightCheck() {
+            if (onServer) return signedFile != null && signedFile.valid();
             return file != null && file.exists() && file.length() == size;
         }
 
         /** Vérifie l'intégrité du mod en comparant le SHA-512. */
         protected boolean check() {
+            if (onServer) return lightCheck();
             if (!lightCheck()) return false;
             String sha512 = FileManager.calculSHA(file, FileManager.SHA512);
             return this.sha512.equals(sha512);
@@ -247,9 +260,12 @@ public class ModsManager {
 
             // Récupération des informations du mod
             final String modName = modJson.getString("name"); //Nom du mod
-            final String modVersion = modJson.getString("version"); // Version du mod
 
             // Propriétés optionnelles avec valeurs par défaut
+            // Version du mod
+            String modVersion;
+            try {modVersion = modJson.getString("version");}
+            catch (JSONException e) {modVersion = "latest";}
             // onServer (false par défaut)
             boolean modOnServer;
             try {modOnServer = modJson.getBoolean("onServer");}
