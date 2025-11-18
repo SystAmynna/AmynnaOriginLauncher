@@ -44,7 +44,7 @@ public class ModsManager {
             this.onServer = onServer;
             this.modloader = modloader;
 
-            setDetails();
+            //setDetails();
 
             final String dlName = name + "-" + version + ".jar";
             String pathToDownload = AppProperties.MODS_DIR.getAbsolutePath();
@@ -59,7 +59,7 @@ public class ModsManager {
 
         }
 
-        private void setDetails() {
+        protected void setDetails() {
             // Récupère les détails du mod via l'API Modrinth
             JSONObject details = modrinthAPI.getJarDetails(name, version, modloader);
             if (details != null) {
@@ -82,6 +82,10 @@ public class ModsManager {
 
         /** Télécharge le mod à partir de son URL. */
         protected void download() {
+            if (url == null || url.isEmpty()) {
+                Logger.error("Impossible de télécharger le mod " + name + " : URL invalide.");
+                return;
+            }
             FileManager.downloadFileAndVerifySha(url, file.getPath(), sha512, FileManager.SHA512);
         }
 
@@ -179,6 +183,16 @@ public class ModsManager {
             optionalModsList.add((OptionalMod) mod);
         }
         this.optionalMods.addAll(optionalModsList);
+    }
+
+
+    protected void setupMods() {
+        for (Mod mod : mods) {
+            mod.setDetails();
+        }
+        for (OptionalMod mod : optionalMods) {
+            mod.setDetails();
+        }
     }
 
 

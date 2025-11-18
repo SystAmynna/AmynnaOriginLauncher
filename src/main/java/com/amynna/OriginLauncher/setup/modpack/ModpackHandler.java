@@ -58,6 +58,7 @@ public class ModpackHandler {
     public void setupModpack() {
 
         Logger.log(Logger.GREEN + Logger.BOLD + "Gestion des mods...");
+        modsManager.setupMods();
         modsManager.downloadAll();
 
     }

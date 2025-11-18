@@ -149,7 +149,7 @@ public class ModrinthAPI {
 
             if (versionsArray.isEmpty()) {
                 // Si le tableau est vide après les filtres, il n'y a pas de version
-                Logger.log("Aucune version de mod trouvée pour les critères spécifiés.");
+                //Logger.error("Aucune version du mod " + modSlug + " trouvée pour les critères spécifiés.");
                 return null;
             }
 

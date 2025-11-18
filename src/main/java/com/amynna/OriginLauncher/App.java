@@ -105,7 +105,7 @@ public final class App {
                 case 1 -> verifyInstallation();
                 case 2 -> authentifie();
                 case 3 -> showSettings();
-                case 4 -> uninstallGame();
+                case 4 -> AdminIdentificator.checkAdmin();
                 default -> System.exit(0);
             }
         }
@@ -152,15 +152,6 @@ public final class App {
     private void verifyInstallation() {
         Logger.log(Logger.PURPLE + "[CALL] Vérification de l'installation du jeu...");
         gameSetup.checkInstallation();
-    }
-
-    /**
-     * Lance l'action principale de désinstallation du jeu.
-     */
-    private void uninstallGame() {
-        Logger.log(Logger.PURPLE + "[CALL] Désinstallation du jeu...");
-        // TODO : déplacer dans les paramètres
-        //gameSetup.uninstallGame();
     }
 
     // −−−-[ MAIN ]----

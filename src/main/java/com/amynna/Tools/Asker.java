@@ -165,7 +165,7 @@ public class Asker {
      *         1 pour "Vérifier installation",
      *         2 pour "Se connecter",
      *         3 pour "Paramètres",
-     *         4 pour "Supprimer le jeu",
+     *         4 pour "Admin mode",
      *         -1 si la boîte de dialogue est fermée.
      */
     public static int askMenu() {
@@ -174,7 +174,7 @@ public class Asker {
                 "Vérifier installation",
                 "Se connecter",
                 "Paramètres",
-                "Supprimer le jeu"
+                "Admin mode"
         };
 
         String msg = "Bienvenue dans le Launcher Origin !\n" +

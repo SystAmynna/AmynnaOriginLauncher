@@ -213,8 +213,9 @@ public final class KeyUtil {
      * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
      * @param filePath Le chemin vers le fichier à signer.
      * @param privateKey La clé privée.
+     * @return Le fichier de signature généré.
      */
-    public static void signFile(String filePath, PrivateKey privateKey) {
+    public static File signFile(String filePath, PrivateKey privateKey) {
 
         try {
             byte[] data = Files.readAllBytes(Paths.get(filePath));
@@ -228,9 +229,11 @@ public final class KeyUtil {
             Files.write(Paths.get(sigFile), Base64.getEncoder().encode(sigBytes));
 
             Logger.log("✅ Signature générée : " + sigFile);
+            return new File(sigFile);
         } catch (Exception e) {
             Logger.error("Erreur lors de la signature du fichier : " + e.getMessage());
         }
+        return null;
     }
 
     /**
@@ -377,14 +380,18 @@ public final class KeyUtil {
      * @param password Le mot de passe pour accéder au KeyStore.
      * @return true si la liste a été affichée, false sinon.
      */
-    public static boolean listKeys(String password) {
+    public static List<String> listKeys(String password) {
+
+        List<String> keys = new LinkedList<>();
+
+
         try {
             KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
             File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
 
             if (!ksFile.exists()) {
                 Logger.error("❌ KeyStore introuvable.");
-                return false;
+                return null;
             }
 
             // Charger le KeyStore
@@ -397,7 +404,7 @@ public final class KeyUtil {
 
             if (!aliases.hasMoreElements()) {
                 Logger.log("ℹ️  Aucune clé stockée dans le KeyStore.");
-                return true;
+                return keys;
             }
 
             Logger.log("🔑 Clés stockées dans le KeyStore :");
@@ -405,6 +412,7 @@ public final class KeyUtil {
 
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
+                keys.add(alias);
 
                 if (keyStore.isKeyEntry(alias)) {
                     // C'est une clé privée
@@ -426,11 +434,11 @@ public final class KeyUtil {
                 }
             }
 
-            return true;
+            return keys;
 
         } catch (Exception e) {
             Logger.error("❌ Erreur lors de la liste des clés : " + e.getMessage());
-            return false;
+            return null;
         }
     }
 
