@@ -12,10 +12,13 @@ import java.io.File;
 /** La classe {@code ModpackHandler} gère les opérations liées aux modpacks dans le lanceur. */
 public class ModpackHandler {
 
+    /** Gestionnaire de mods */
     private ModsManager modsManager;
 
+    /** Manifeste du modpack */
     private final JSONObject modpackManifest;
 
+    /** Manifeste admin du modpack */
     private final JSONObject modpackAdminManifest;
 
 
@@ -59,7 +62,6 @@ public class ModpackHandler {
     public void setupModpack() {
 
         Logger.log(Logger.GREEN + Logger.BOLD + "Gestion des mods...");
-        modsManager.setupMods();
         modsManager.downloadAll();
 
     }

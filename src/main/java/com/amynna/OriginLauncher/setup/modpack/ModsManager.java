@@ -20,89 +20,71 @@ public class ModsManager {
     /** Classe interne représentant un mod individuel. */
     private static class Mod {
 
-        /** Instance de l'API Modrinth pour récupérer les URLs de téléchargement. */
-        private static final ModrinthAPI modrinthAPI = new ModrinthAPI();
+        // ---[ ATTRIBUTS PRINCIPAUX ]----
 
-        public final String name;
-        public final String version;
+        /** Nom du mod. */
+        public final String slug;
+        /** Présence du mod sur le dépôt */
         public final boolean onServer;
-        public final String modloader;
-
+        /** Chemin dans le répertoire des mods. */
+        public final String path;
         /** URL de téléchargement direct du .jar du mod. */
-        private String url;
-        /** Taille du fichier du mod en octets. */
-        private long size;
-        /** Hash SHA-512 du fichier du mod pour vérification d'intégrité. */
-        private String sha512;
+        private final String url;
 
-        private SignedFile signedFile;
+        // ---[ ATTRIBUTS SECONDAIRES ]----
+
+        /** Taille du fichier du mod en octets. */
+        private final long size;
+        /** Hash SHA-512 du fichier du mod pour vérification d'intégrité. */
+        private final String sha512;
+
+        // ---[ FICHIERS ]----
 
         /** Fichier local où le mod sera stocké. */
         public final File file;
 
-        /** Constructeur privé pour initialiser un mod avec ses propriétés. */
-        protected Mod(String name, String version, boolean onServer, String path, String modloader) {
-            this.name = name;
-            this.version = version;
-            this.onServer = onServer;
-            this.modloader = modloader;
+        /** Fichier signé si le mod est téléchargé depuis le serveur. */
+        private SignedFile signedFile;
 
-            final String dlName = name + "-" + version + ".jar";
+        /** Constructeur privé pour initialiser un mod avec ses propriétés. */
+        protected Mod(String slug, boolean onServer, String path, String url, long size, String sha512) {
+            // PRINCIPAUX
+            this.slug = slug;
+            this.onServer = onServer;
+            this.path = path;
+
+            // SECONDAIRES
+            this.url = url;
+            this.size = size;
+            this.sha512 = sha512;
+
+            // FICHIERS
             String pathToDownload = AppProperties.MODS_DIR.getAbsolutePath();
             if (path == null || path.isEmpty()) {
-                pathToDownload += File.separator + dlName;
+                pathToDownload += File.separator + slug;
             } else {
                 pathToDownload += File.separator + path;
                 if (!path.endsWith(File.separator)) pathToDownload += File.separator;
-                pathToDownload += dlName;
+                pathToDownload += slug;
             }
             this.file = new File(pathToDownload);
 
         }
 
-        protected void setDetails() {
-
-            if (onServer) {
-                url = AppProperties.MODS_DIR_ON_SERVER + file.getName();
-                size = file.length();
-                sha512 = null; // La vérification devra être faite via le serveur
-                return;
-            }
-
-            JSONObject details = modrinthAPI.getJarDetails(name, version, modloader);
-            if (details != null) {
-                this.url = details.getString("url");
-                this.size = details.getLong("size");
-                this.sha512 = details.getString("sha512");
-                return;
-            }
-
-
-            // Si aucun détail n'a pu être récupéré, initialise avec des valeurs par défaut
-            this.url = null;
-            this.size = 0;
-            this.sha512 = null;
-            //Logger.error("Impossible de récupérer les détails du mod : " + name + " version " + version);
-        }
-
-
-
         /** Télécharge le mod à partir de son URL. */
         protected void download() {
             if (url == null || url.isEmpty()) {
-                Logger.error("Impossible de télécharger le mod " + name + " : URL invalide.");
+                Logger.error("Impossible de télécharger le mod " + slug + " : URL invalide.");
                 return;
             }
 
-            if (onServer) {
-                signedFile = FileManager.downloadAndValidateFile(url, file.getPath());
-            }
+            if (onServer) signedFile = FileManager.downloadAndValidateFile(url, file.getPath());
             else FileManager.downloadFileAndVerifySha(url, file.getPath(), sha512, FileManager.SHA512);
         }
 
         /** Vérifie si le fichier existe et si sa taille correspond. */
         protected boolean lightCheck() {
-            if (onServer) return signedFile != null && signedFile.valid();
+            if (onServer) return signedFile != null && signedFile.exists() && signedFile.valid();
             return file != null && file.exists() && file.length() == size;
         }
 
@@ -122,19 +104,21 @@ public class ModsManager {
         /** Indique si le mod optionnel est activé ou non. */
         private boolean enabled;
 
+        /** Suffixe ajouté au nom du fichier pour indiquer qu'il est désactivé. */
         private static final String DISABLED_TAG = ".disabled";
 
         /**
          * Constructeur privé pour initialiser un mod avec ses propriétés.
          *
-         * @param name
-         * @param version
-         * @param onServer
-         * @param path
-         * @param modloader
+         * @param slug     Nom du mod.
+         * @param onServer Présence du mod sur le dépôt.
+         * @param path     Chemin dans le répertoire des mods.
+         * @param url      URL de téléchargement direct du .jar du mod.
+         * @param size     Taille du fichier du mod en octets.
+         * @param sha512   Hash SHA-512 du fichier du mod pour vérification d'intégrité.
          */
-        private OptionalMod(String name, String version, boolean onServer, String path, String modloader) {
-            super(name, version, onServer, path, modloader);
+        private OptionalMod(String slug, boolean onServer, String path, String url, long size, String sha512) {
+            super(slug, onServer, path, url, size, sha512);
             this.enabled = file.exists();
         }
 
@@ -197,17 +181,6 @@ public class ModsManager {
         }
         this.optionalMods.addAll(optionalModsList);
     }
-
-
-    protected void setupMods() {
-        for (Mod mod : mods) {
-            mod.setDetails();
-        }
-        for (OptionalMod mod : optionalMods) {
-            mod.setDetails();
-        }
-    }
-
 
     protected void downloadAll() {
         // Téléchargement des mods principaux
