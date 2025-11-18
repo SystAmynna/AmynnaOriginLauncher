@@ -92,6 +92,8 @@ public final class AppProperties {
 
     // FORGE
 
+    /** Type de modloader utilisé. */
+    public static final String MODLOADER = "forge";
     /** Version de Forge à utiliser. */
     public static final String FORGE_VERSION = "47.4.0";
     /** Identifiant complet de la version Forge. */
@@ -102,6 +104,11 @@ public final class AppProperties {
     public static final File FORGE_VERSION_DIR = new File(MINECRAFT_DIR + File.separator + "versions" + File.separator + FORGE_ID + File.separator);
     /** Emplacement du manifeste de Forge. */
     public static final File FORGE_MANIFEST = new File(FORGE_VERSION_DIR + File.separator + FORGE_ID + ".json");
+
+    // MODPACK
+
+    /** Répertoire des mods Minecraft. */
+    public static final File MODS_DIR = new File(MINECRAFT_DIR + File.separator + "mods" + File.separator);
 
     // OS
 

@@ -158,7 +158,7 @@ public class JdkManager {
         final long fileSize = packageInfo.getLong("size");
 
         // télécharger le JDK
-        FileManager.downloadFileAndVerifySha256(downloadLink, jdkArchive.getPath(), expectedChecksum);
+        FileManager.downloadFileAndVerifySha(downloadLink, jdkArchive.getPath(), expectedChecksum, FileManager.SHA256);
         if (!jdkArchive.exists()) Logger.fatal("Le téléchargement du JDK a échoué.");
         else if (!(jdkArchive.length() == fileSize)) Logger.fatal("Le téléchargement du JDK est invalide (taille incorrecte).");
 

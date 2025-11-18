@@ -84,6 +84,8 @@ public final class App {
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_ASSETS_OBJECTS_DIR.getAbsolutePath());
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_ASSETS_INDEX_DIR.getAbsolutePath());
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_NATIVES_DIR.getAbsolutePath());
+
+        FileManager.createDirectoriesIfNotExist(AppProperties.MODS_DIR.getAbsolutePath());
     }
 
     // −−−-[ PROCESSUS PRINCIPAL ]----

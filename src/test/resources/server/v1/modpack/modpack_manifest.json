@@ -1,0 +1,39 @@
+{
+    "mods" :  {
+        "main" :  [
+
+            {
+                "name" : "Alex's Caves",
+                "version" : "2.0.2"
+            },
+            {
+                "name" : "AmbientSounds",
+                "version" : "6.1.11"
+            },
+            {
+                "name" : "ferritecore",
+                "version" : "6.0.1"
+            },
+            {
+                "name" : "Citadel",
+                "version" : "lastest"
+            },
+            {
+                "name" : "creativecore",
+                "version" : "2.12.14"
+            },
+
+
+
+        ],
+        "optional" : [
+
+        ]
+    },
+    "configs" : [
+
+    ],
+    "resourcepacks" : [
+
+    ]
+}

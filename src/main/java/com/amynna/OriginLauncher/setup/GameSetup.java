@@ -1,5 +1,6 @@
 package com.amynna.OriginLauncher.setup;
 
+import com.amynna.OriginLauncher.setup.modpack.ModpackHandler;
 import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
@@ -18,6 +19,9 @@ import java.util.List;
  */
 public class GameSetup {
 
+    /** Gestionnaire du JDK. */
+    private final JdkManager jdkManager;
+
     /** Gestionnaire des bibliothèques Minecraft. */
     private final LibManager libManager;
     /** Gestionnaire des assets Minecraft. */
@@ -27,8 +31,9 @@ public class GameSetup {
     /** Gestionnaire du lancement du jeu. */
     private final LaunchHandler launchHandler;
 
+    /** Gestionnaire du modpack. */
+    private final ModpackHandler modpackHandler;
 
-    private final JdkManager jdkManager;
 
     /** Manifeste de la version spécifique de Minecraft au format JSON. */
     private JSONObject mcVersionManifest;
@@ -84,6 +89,10 @@ public class GameSetup {
         final String assetIndexName = assetIndex.getString("id");
         launchHandler.setAssetIndexName(assetIndexName);
 
+        // ----[ MODPACK ]----
+
+        modpackHandler = new ModpackHandler();
+
     }
 
 
@@ -125,6 +134,10 @@ public class GameSetup {
         Logger.log(Logger.GREEN + Logger.BOLD + "Décompression des bibliothèques natives...");
         libManager.extractNatives();
 
+        // ----[ INSTALLATION MODPACK ]----
+
+        modpackHandler.setupModpack();
+
     }
 
     /**
@@ -143,6 +156,8 @@ public class GameSetup {
 
         Logger.log(Logger.GREEN + Logger.BOLD + "Vérification du client...");
         clientManager.checkMcClient();
+
+        modpackHandler.verifModpack();
 
     }
 
@@ -195,7 +210,7 @@ public class GameSetup {
         assert versionUrl != null && versionSha1 != null;
 
         // Téléchargement du fichier version.json de la version spécifique de Minecraft
-        File versionFile = FileManager.downloadFileAndVerifySha1(versionUrl, AppProperties.VERSION_MANIFEST.getPath(), versionSha1);
+        File versionFile = FileManager.downloadFileAndVerifySha(versionUrl, AppProperties.VERSION_MANIFEST.getPath(), versionSha1, FileManager.SHA1);
         assert versionFile != null;
 
         // Lecture et analyse du fichier version.json vers JSON

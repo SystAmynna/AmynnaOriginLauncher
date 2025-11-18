@@ -23,6 +23,11 @@ import java.util.zip.ZipInputStream;
  */
 public final class FileManager {
 
+    public static final String SHA1 = "SHA-1";;
+    public static final String SHA256 = "SHA-256";
+    public static final String SHA512 = "SHA-512";
+
+
     private FileManager() {
         // Constructeur privé pour empêcher l'instanciation
         Logger.fatal("FileManager ne peut pas être instancié.");
@@ -98,30 +103,6 @@ public final class FileManager {
         }
 
 
-    }
-
-    /**
-     * Lit un fichier texte contenant des paires clé:valeur et les retourne dans une Map.
-     * Les lignes vides ou sans ':' sont ignorées.
-     * @param file Le fichier texte à lire
-     * @return Une Map contenant les paires clé:valeur
-     */
-    public static Map<String, String> readKeyValueTextFile(File file) {
-        Map<String, String> map = new HashMap<>();
-        try {
-            List<String> lines = Files.readAllLines(file.toPath());
-            for (String line : lines) {
-                line = line.trim();
-                if (!line.contains(":")) continue;
-                String[] parts = line.split(":", 2);
-                String key = parts[0].trim();
-                String value = parts[1].trim();
-                map.put(key, value);
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
-        }
-        return map;
     }
 
     /**
@@ -210,12 +191,11 @@ public final class FileManager {
      * Calcule et vérifie le hachage SHA-1 d'un fichier.
      *
      * @return Le hachage SHA-1 calculé ou null en cas d'erreur
-     * @throws IOException En cas d'erreur de lecture
      */
-    public static String calculSHA1(File file) {
+    public static String calculSHA(File file, String shaType) {
 
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            MessageDigest digest = MessageDigest.getInstance(shaType);
 
             try (InputStream fis = new FileInputStream(file);
                  BufferedInputStream bis = new BufferedInputStream(fis)) {
@@ -227,7 +207,7 @@ public final class FileManager {
                     digest.update(buffer, 0, bytesRead);
                 }
             } catch (IOException e) {
-                Logger.error("Erreur de lecture du fichier pour le calcul SHA-1 : " + e.getMessage());
+                Logger.error("Erreur de lecture du fichier pour le calcul " + shaType + " : " + e.getMessage());
                 return null;
             }
 
@@ -245,50 +225,7 @@ public final class FileManager {
             return hexString.toString();
 
         } catch (NoSuchAlgorithmException e) {
-            Logger.fatal("Algorithme SHA-1 non trouvé : " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Calcule le hachage SHA-256 d'un fichier.
-     *
-     * @param file Fichier à hasher
-     * @return Le hachage SHA-256 en hexadécimal ou null en cas d'erreur
-     */
-    public static String calculSHA256(File file) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
-            try (InputStream fis = new FileInputStream(file);
-                 BufferedInputStream bis = new BufferedInputStream(fis)) {
-
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-
-                while ((bytesRead = bis.read(buffer)) != -1) {
-                    digest.update(buffer, 0, bytesRead);
-                }
-            } catch (IOException e) {
-                Logger.error("Erreur de lecture du fichier pour le calcul SHA-256 : " + e.getMessage());
-                return null;
-            }
-
-            // Convertir le hachage en hexadécimal
-            byte[] hashBytes = digest.digest();
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-
-        } catch (NoSuchAlgorithmException e) {
-            Logger.fatal("Algorithme SHA-256 non trouvé : " + e.getMessage());
+            Logger.fatal("Algorithme " + shaType + " non trouvé : " + e.getMessage());
             return null;
         }
     }
@@ -298,50 +235,22 @@ public final class FileManager {
      *
      * @param url URL du fichier à télécharger
      * @param destinationPath Chemin local où enregistrer le fichier
-     * @param expectedSha1 Hachage SHA-1 attendu pour le fichier
+     * @param expectedSha Hachage SHA-1 attendu pour le fichier
      * @return true si le téléchargement et la vérification réussissent, false sinon
      */
-    public static File downloadFileAndVerifySha1(String url, String destinationPath, String expectedSha1) {
+    public static File downloadFileAndVerifySha(String url, String destinationPath, String expectedSha, String shaType) {
         File downloadedFile = downloadFile(url, destinationPath);
         if (downloadedFile == null) {
             return null; // Échec du téléchargement
         }
 
         try {
-            String calculatedSha1 = calculSHA1(downloadedFile);
-            if (calculatedSha1 != null && calculatedSha1.equals(expectedSha1)) {
+            String calculatedSha1 = calculSHA(downloadedFile, shaType);
+            if (calculatedSha1 != null && calculatedSha1.equals(expectedSha)) {
                 return downloadedFile; // Vérification réussie
             }
         } catch (SecurityException e) {
-            Logger.error("Erreur de sécurité lors de la vérification SHA-1 : " + e.getMessage());
-        }
-
-        deleteFileIfExists(downloadedFile);
-        return null;
-
-    }
-
-    /**
-     * Télécharge un fichier depuis une URL et vérifie son hachage SHA-256.
-     *
-     * @param url URL du fichier à télécharger
-     * @param destinationPath Chemin local où enregistrer le fichier
-     * @param expectedSha256 Hachage SHA-256 attendu pour le fichier
-     * @return true si le téléchargement et la vérification réussissent, false sinon
-     */
-    public static File downloadFileAndVerifySha256(String url, String destinationPath, String expectedSha256) {
-        File downloadedFile = downloadFile(url, destinationPath);
-        if (downloadedFile == null) {
-            return null; // Échec du téléchargement
-        }
-
-        try {
-            String calculatedSha256 = calculSHA256(downloadedFile);
-            if (calculatedSha256 != null && calculatedSha256.equals(expectedSha256)) {
-                return downloadedFile; // Vérification réussie
-            }
-        } catch (SecurityException e) {
-            Logger.error("Erreur de sécurité lors de la vérification SHA-256 : " + e.getMessage());
+            Logger.error("Erreur de sécurité lors de la vérification " + shaType + " : " + e.getMessage());
         }
 
         deleteFileIfExists(downloadedFile);
@@ -512,6 +421,17 @@ public static void deleteFileIfExists(File file) {
         }
 
         return null; // Fichier non trouvé
+    }
+
+
+    public static void renameFile(File oldFile, File newFile) {
+        if (oldFile.exists()) {
+            if (!oldFile.renameTo(newFile)) {
+                Logger.error("Échec du renommage de " + oldFile.getPath() + " vers " + newFile.getPath());
+            }
+        } else {
+            Logger.error("Le fichier à renommer n'existe pas : " + oldFile.getPath());
+        }
     }
 
 

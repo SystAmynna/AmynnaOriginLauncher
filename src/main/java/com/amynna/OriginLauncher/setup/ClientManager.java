@@ -52,10 +52,11 @@ public class ClientManager {
         if (lightCheckMcClient()) return;
 
         // Téléchargement du client Minecraft
-        FileManager.downloadFileAndVerifySha1(
+        FileManager.downloadFileAndVerifySha(
                 mcClient.url,
                 mcClient.file.getPath(),
-                mcClient.sha1
+                mcClient.sha1,
+                FileManager.SHA1
         );
     }
 
@@ -71,7 +72,7 @@ public class ClientManager {
         lightCheckMcClient();
 
         // Vérification du SHA1
-        String fileSha1 = FileManager.calculSHA1(mcClient.file);
+        String fileSha1 = FileManager.calculSHA(mcClient.file, FileManager.SHA1);
         if (fileSha1 != null && fileSha1.equals(mcClient.sha1)) {
             Logger.log(Logger.GREEN + "[OK]");
             return;

@@ -47,14 +47,14 @@ public class AssetManager {
         /** Télécharge l'asset et vérifie son SHA-1 (hash). */
         public void download() {
             String downloadUrl = getDownloadUrl();
-            FileManager.downloadFileAndVerifySha1(downloadUrl, file.getPath(), hash);
+            FileManager.downloadFileAndVerifySha(downloadUrl, file.getPath(), hash, FileManager.SHA1);
         }
 
         /** Vérifie l'intégrité de l'asset en comparant le hash (SHA-1). */
         public boolean check() {
             if (!lightCheck()) return false;
             // Le hash des assets est bien un SHA-1
-            String fileSha1 = FileManager.calculSHA1(file);
+            String fileSha1 = FileManager.calculSHA(file, FileManager.SHA1);
             assert fileSha1 != null;
             return fileSha1.equals(hash);
         }
@@ -88,7 +88,7 @@ public class AssetManager {
 
         // téléchargement du fichier index des assets
         String assetsManifestPath = AppProperties.MINECRAFT_ASSETS_INDEX_DIR.getPath();
-        File assetIndexFile = FileManager.downloadFileAndVerifySha1(url, assetsManifestPath, sha1);
+        File assetIndexFile = FileManager.downloadFileAndVerifySha(url, assetsManifestPath, sha1, FileManager.SHA1);
         assert assetIndexFile != null;
         assert assetIndexFile.exists();
         assert assetIndexFile.length() == size;
