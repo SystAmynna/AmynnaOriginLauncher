@@ -26,7 +26,7 @@ public final class AppProperties {
     /** Emplacement du côté serveur des signatures des fichiers. */
     public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + "signatures" + File.separator;
 
-    public static final String MODS_DIR_ON_SERVER = REPO_SERVER_URL + "modpack/mods/";
+    public static final String MODS_DIR_ON_SERVER = "modpack/mods/";
     /** Valeur par défaut pour le mode multijoueur en jeu rapide. */
     public static final String QUICK_PLAY_MULTIPLAYER_VALUE = "...";
 

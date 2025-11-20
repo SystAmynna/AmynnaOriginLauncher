@@ -23,7 +23,7 @@ public class ModsManager {
         // ---[ ATTRIBUTS PRINCIPAUX ]----
 
         /** Nom du mod. */
-        public final String slug;
+        public final String name;
         /** Présence du mod sur le dépôt */
         public final boolean onServer;
         /** Chemin dans le répertoire des mods. */
@@ -47,34 +47,33 @@ public class ModsManager {
         private SignedFile signedFile;
 
         /** Constructeur privé pour initialiser un mod avec ses propriétés. */
-        protected Mod(String slug, boolean onServer, String path, String url, long size, String sha512) {
+        protected Mod(String name, boolean onServer, String path, String url, long size, String sha512) {
             // PRINCIPAUX
-            this.slug = slug;
+            this.name = name;
             this.onServer = onServer;
             this.path = path;
 
             // SECONDAIRES
-            this.url = url;
+            this.url = onServer ? AppProperties.MODS_DIR_ON_SERVER + url : url;
             this.size = size;
             this.sha512 = sha512;
 
             // FICHIERS
             String pathToDownload = AppProperties.MODS_DIR.getAbsolutePath();
             if (path == null || path.isEmpty()) {
-                pathToDownload += File.separator + slug;
+                pathToDownload += File.separator + name;
             } else {
                 pathToDownload += File.separator + path;
                 if (!path.endsWith(File.separator)) pathToDownload += File.separator;
-                pathToDownload += slug;
+                pathToDownload += name;
             }
             this.file = new File(pathToDownload);
-
         }
 
         /** Télécharge le mod à partir de son URL. */
         protected void download() {
             if (url == null || url.isEmpty()) {
-                Logger.error("Impossible de télécharger le mod " + slug + " : URL invalide.");
+                Logger.error("Impossible de télécharger le mod " + name + " : URL invalide.");
                 return;
             }
 
@@ -110,15 +109,15 @@ public class ModsManager {
         /**
          * Constructeur privé pour initialiser un mod avec ses propriétés.
          *
-         * @param slug     Nom du mod.
+         * @param name     Nom du mod.
          * @param onServer Présence du mod sur le dépôt.
          * @param path     Chemin dans le répertoire des mods.
          * @param url      URL de téléchargement direct du .jar du mod.
          * @param size     Taille du fichier du mod en octets.
          * @param sha512   Hash SHA-512 du fichier du mod pour vérification d'intégrité.
          */
-        private OptionalMod(String slug, boolean onServer, String path, String url, long size, String sha512) {
-            super(slug, onServer, path, url, size, sha512);
+        private OptionalMod(String name, boolean onServer, String path, String url, long size, String sha512) {
+            super(name, onServer, path, url, size, sha512);
             this.enabled = file.exists();
         }
 
@@ -231,33 +230,55 @@ public class ModsManager {
         for (Object obj : mods) {
             JSONObject modJson = (JSONObject) obj;
 
-            // Récupération des informations du mod
-            final String modName = modJson.getString("name"); //Nom du mod
+            String path;
+            try {path = modJson.getString("path");}
+            catch (JSONException e) {path = "";}
 
-            // Propriétés optionnelles avec valeurs par défaut
-            // Version du mod
-            String modVersion;
-            try {modVersion = modJson.getString("version");}
-            catch (JSONException e) {modVersion = "latest";}
-            // onServer (false par défaut)
-            boolean modOnServer;
-            try {modOnServer = modJson.getBoolean("onServer");}
-            catch (JSONException e) {modOnServer = false;}
-            // path ("" par défaut)
-            String modPath;
-            try {modPath = modJson.getString("path");}
-            catch (JSONException e) {modPath = "";}
-            // modloader (AppProperties.MODLOADER par défaut)
-            String modLoader;
-            try {modLoader = modJson.getString("modloader");}
-            catch (JSONException e) {modLoader = AppProperties.MODLOADER;}
+            String url;
+            long size;
+            String sha512;
+            boolean onServer;
+            try {
+                url = modJson.getString("url");
+                size = modJson.getLong("size");
+                sha512 = modJson.getString("sha512");
+                onServer = false;
+            }
+            catch (JSONException e) {
+                url = path;
+                if (!url.isEmpty() && !url.endsWith("/")) url += "/";
+                size = 0;
+                sha512 = "";
+                onServer = true;
+            }
+
+            // Récupération du nom du mod
+            String name;
+            if (onServer) {
+                try {
+                    name = modJson.getString("name");
+                } catch (JSONException e) {
+                    Logger.error("Mod JSON invalide : " + modJson);
+                    continue;
+                }
+            } else {
+                // récupérer le nom à partir de l'URL
+                String [] parts = url.split("/");
+                name = parts[parts.length - 1];
+            }
+            // vérifier que le nom finit bien par .jar
+            if (!name.endsWith(".jar")) name += ".jar";
+
+
+            if (onServer) url += name;
 
             Mod mod = new Mod(
-                    modName,
-                    modVersion,
-                    modOnServer,
-                    modPath,
-                    modLoader
+                    name,
+                    onServer,
+                    path,
+                    url,
+                    size,
+                    sha512
             );
             modsList.add(mod);
         }
@@ -265,11 +286,6 @@ public class ModsManager {
         // Retourne la liste des mods
         return modsList;
     }
-
-
-
-
-
 
 
 
