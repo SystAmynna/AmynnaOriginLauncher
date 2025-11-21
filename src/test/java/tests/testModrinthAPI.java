@@ -9,7 +9,7 @@ public class testModrinthAPI {
     @Test
     public void testExample() {
         ModrinthAPI api = new ModrinthAPI();
-        JSONObject json = api.getJarDetails("Citadel", "2.6.2", "forge");
+        JSONObject json = api.getJarDetails("Chat Plus", "2.7.0", "forge");
         System.out.println(json.toString());
     }
 

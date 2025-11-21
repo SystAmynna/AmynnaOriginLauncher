@@ -147,7 +147,7 @@ public final class App {
      */
     private void showSettings() {
         Logger.log(Logger.PURPLE + "[CALL] Settings...");
-
+        gameSetup.selectOptionnalMods();
         // TODO : Implémenter les paramètres
 
     }

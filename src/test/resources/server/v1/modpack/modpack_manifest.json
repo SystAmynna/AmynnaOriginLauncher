@@ -22,6 +22,22 @@
         ],
         "optional" : [
 
+            {
+                "sweat_name" : "Chat Plus",
+                "description" : "Permet de personnaliser son interface de chat.",
+                "mod" : {
+                  "url" : "https://cdn.modrinth.com/data/cJlZ132G/versions/wVepTMOm/chatplus-forge-2.7.0.jar",
+                  "size" : 27054150,
+                  "sha512" : "3200f498defa4487f64420ca8937a6e132b10f39f679ff953e5d6402a1fd85b4f8e7d40eaca1f73b97ca5663477e0db9b0802bc7543d4a3fbf2feef9370030f0"
+                }
+            },
+            {
+                "sweat_name" : "Falling Leaves",
+                "description" : "Ajoute des feuilles qui tombent des arbres.",
+                "mod" : {
+                  "name" : "fallingleaves-1.20.1-2.1.2.jar"
+                }
+            }
         ]
     },
     "configs" : [

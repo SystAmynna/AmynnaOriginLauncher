@@ -73,7 +73,9 @@ public class ModpackHandler {
 
     }
 
-
+    public void selectOptionalMods() {
+        modsManager.selectOptionnalMods();
+    }
 
 
 

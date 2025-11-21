@@ -180,6 +180,10 @@ public class GameSetup {
 
     }
 
+    public void selectOptionnalMods() {
+        modpackHandler.selectOptionalMods();
+    }
+
     // ----[ MÉTHODES PRIVÉES ]----
 
     /**
