@@ -112,7 +112,9 @@ public final class AppProperties {
     // MODPACK
 
     /** Répertoire des mods Minecraft. */
-    public static final File MODS_DIR = new File(MINECRAFT_DIR + File.separator + "mods" + File.separator);
+    public static final File MINECRAFT_MODS_DIR = new File(MINECRAFT_DIR + File.separator + "mods" + File.separator);
+    /** Répertoire de configuration de Minecraft. */
+    public static final File MINECRAFT_CONFIG_DIR = new File(MINECRAFT_DIR + File.separator + "config" + File.separator);
 
     // OS
 

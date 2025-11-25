@@ -56,7 +56,7 @@ public class ModsManager {
             this.sha512 = sha512;
 
             // FICHIERS
-            String pathToDownload = AppProperties.MODS_DIR.getAbsolutePath();
+            String pathToDownload = AppProperties.MINECRAFT_MODS_DIR.getAbsolutePath();
             if (path == null || path.isEmpty()) {
                 pathToDownload += File.separator + name;
             } else {
