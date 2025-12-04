@@ -12,4 +12,9 @@ public record SignedFile(File file, File signature) {
         return exists() && KeyUtil.validateSignature(this);
     }
 
+    public void delete() {
+        FileManager.deleteFileIfExists(file);
+        FileManager.deleteFileIfExists(signature);
+    }
+
 }

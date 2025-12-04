@@ -35,7 +35,7 @@ public class LibManager {
          * Télécharge la bibliothèque et vérifie son SHA1.
          */
         public void download() {
-            FileManager.downloadFileAndVerifySha1(url, file.getPath(), sha1);
+            FileManager.downloadFileAndVerifySha(url, file.getPath(), sha1, FileManager.SHA1);
         }
 
         /**
@@ -43,7 +43,7 @@ public class LibManager {
          */
         public boolean check() {
             if (!lightCheck()) return  false;
-            String fileSha1 = FileManager.calculSHA1(file);
+            String fileSha1 = FileManager.calculSHA(file, FileManager.SHA1);
             return fileSha1 != null && fileSha1.equals(sha1);
         }
 

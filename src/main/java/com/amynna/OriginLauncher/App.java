@@ -17,7 +17,7 @@ public final class App {
     /**
      * Instance unique de l'application (singleton).
      */
-    private final static App INSTANCE = new App();
+    private static App instance;
 
     /**
      * Indicateur pour quitter l'application. Si vrai, le processus principal s'arrête.
@@ -37,6 +37,12 @@ public final class App {
      * Constructeur privé pour empêcher l'instanciation externe.
      */
     private App () {
+
+        if (!AppProperties.pingServer()) {
+            Logger.fatal("Impossible de contacter le serveur.", 0);
+        }
+        Logger.log(Logger.BLUE + Logger.BOLD + "Connexion au serveur réussie.");
+
         // Configuration des répertoires
         setupDirs();
         // Initialisation du singleton
@@ -52,7 +58,10 @@ public final class App {
      * @return {@code App} L'instance de l'application.
      */
     public static App get() {
-        return INSTANCE;
+        if (instance == null) {
+            instance = new App();
+        }
+        return instance;
     }
 
     /**
@@ -81,6 +90,8 @@ public final class App {
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_ASSETS_OBJECTS_DIR.getAbsolutePath());
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_ASSETS_INDEX_DIR.getAbsolutePath());
         FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_NATIVES_DIR.getAbsolutePath());
+
+        FileManager.createDirectoriesIfNotExist(AppProperties.MINECRAFT_MODS_DIR.getAbsolutePath());
     }
 
     // −−−-[ PROCESSUS PRINCIPAL ]----
@@ -100,7 +111,7 @@ public final class App {
                 case 1 -> verifyInstallation();
                 case 2 -> authentifie();
                 case 3 -> showSettings();
-                case 4 -> uninstallGame();
+                case 4 -> AdminIdentificator.checkAdmin();
                 default -> System.exit(0);
             }
         }
@@ -136,7 +147,7 @@ public final class App {
      */
     private void showSettings() {
         Logger.log(Logger.PURPLE + "[CALL] Settings...");
-
+        gameSetup.selectOptionnalMods();
         // TODO : Implémenter les paramètres
 
     }
@@ -147,15 +158,6 @@ public final class App {
     private void verifyInstallation() {
         Logger.log(Logger.PURPLE + "[CALL] Vérification de l'installation du jeu...");
         gameSetup.checkInstallation();
-    }
-
-    /**
-     * Lance l'action principale de désinstallation du jeu.
-     */
-    private void uninstallGame() {
-        Logger.log(Logger.PURPLE + "[CALL] Désinstallation du jeu...");
-        // TODO : déplacer dans les paramètres
-        //gameSetup.uninstallGame();
     }
 
     // −−−-[ MAIN ]----

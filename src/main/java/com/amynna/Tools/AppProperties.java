@@ -1,6 +1,8 @@
 package com.amynna.Tools;
 
 import java.io.File;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Paths;
 
 /**
@@ -20,9 +22,11 @@ public final class AppProperties {
     // SERVEUR
 
     /** URL du serveur distant pour les mises à jour et la récupération des clés publiques. */
-    public static final String REPO_SERVER_URL = "http://localhost:8000/v1";
+    public static final String REPO_SERVER_URL = "http://localhost:8000/v1/";
     /** Emplacement du côté serveur des signatures des fichiers. */
-    public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + File.separator + "signatures" + File.separator;
+    public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + "signatures" + File.separator;
+
+    public static final String MODS_DIR_ON_SERVER = "modpack/mods/";
     /** Valeur par défaut pour le mode multijoueur en jeu rapide. */
     public static final String QUICK_PLAY_MULTIPLAYER_VALUE = "...";
 
@@ -92,6 +96,8 @@ public final class AppProperties {
 
     // FORGE
 
+    /** Type de modloader utilisé. */
+    public static final String MODLOADER = "forge";
     /** Version de Forge à utiliser. */
     public static final String FORGE_VERSION = "47.4.0";
     /** Identifiant complet de la version Forge. */
@@ -102,6 +108,13 @@ public final class AppProperties {
     public static final File FORGE_VERSION_DIR = new File(MINECRAFT_DIR + File.separator + "versions" + File.separator + FORGE_ID + File.separator);
     /** Emplacement du manifeste de Forge. */
     public static final File FORGE_MANIFEST = new File(FORGE_VERSION_DIR + File.separator + FORGE_ID + ".json");
+
+    // MODPACK
+
+    /** Répertoire des mods Minecraft. */
+    public static final File MINECRAFT_MODS_DIR = new File(MINECRAFT_DIR + File.separator + "mods" + File.separator);
+    /** Répertoire de configuration de Minecraft. */
+    public static final File MINECRAFT_CONFIG_DIR = new File(MINECRAFT_DIR + File.separator + "config" + File.separator);
 
     // OS
 
@@ -165,6 +178,36 @@ public final class AppProperties {
     public static String getCpSeparator() {
         // En Java, le séparateur de classpath est stocké dans la propriété du système.
         return File.pathSeparator;
+    }
+
+    /**
+     * Vérifie si le serveur distant est accessible.
+     *
+     * @return true si le serveur répond, false sinon
+     */
+    public static boolean pingServer() {
+        try {
+            URL url = new URL(AppProperties.REPO_SERVER_URL);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Configuration de la requête
+            connection.setRequestMethod("HEAD");
+            connection.setConnectTimeout(5000); // Timeout de 5 secondes
+            connection.setReadTimeout(5000);
+
+            // Tente la connexion
+            connection.connect();
+
+            // Vérifie le code de réponse HTTP
+            int responseCode = connection.getResponseCode();
+            connection.disconnect();
+
+            // Codes 2xx = succès
+            return responseCode >= 200 && responseCode < 300;
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }

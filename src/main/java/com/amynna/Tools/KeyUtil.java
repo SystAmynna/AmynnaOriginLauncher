@@ -63,14 +63,14 @@ public final class KeyUtil {
 
         // Télécharger le fichier des clés publiques de confiance
         final String trustedKeysFileName = "trusted-keys.json";
-        File trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
+        SignedFile trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
         if (trustedKeysFile == null) {
             Logger.error("⚠️  Impossible de charger le fichier des clés publiques de confiance.");
             return;
         }
 
         // Lire le fichier des clés publiques de confiance et extraire les clés publiques
-        final JSONObject trustedKeysJson = FileManager.openJsonFile(trustedKeysFile);
+        final JSONObject trustedKeysJson = FileManager.openJsonFile(trustedKeysFile.file());
         if (trustedKeysJson == null || !trustedKeysJson.has("trusted_keys")) {
             Logger.error("⚠️  Le fichier des clés publiques de confiance est invalide.");
             return;
@@ -450,14 +450,18 @@ public final class KeyUtil {
      * @param password Le mot de passe pour accéder au KeyStore.
      * @return true si la liste a été affichée, false sinon.
      */
-    public static boolean listKeys(String password) {
+    public static List<String> listKeys(String password) {
+
+        List<String> keys = new LinkedList<>();
+
+
         try {
             KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
             File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
 
             if (!ksFile.exists()) {
                 Logger.error("❌ KeyStore introuvable.");
-                return false;
+                return null;
             }
 
             // Charger le KeyStore
@@ -470,7 +474,7 @@ public final class KeyUtil {
 
             if (!aliases.hasMoreElements()) {
                 Logger.log("ℹ️  Aucune clé stockée dans le KeyStore.");
-                return true;
+                return keys;
             }
 
             Logger.log("🔑 Clés stockées dans le KeyStore :");
@@ -478,6 +482,7 @@ public final class KeyUtil {
 
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
+                keys.add(alias);
 
                 if (keyStore.isKeyEntry(alias)) {
                     // C'est une clé privée
@@ -499,11 +504,11 @@ public final class KeyUtil {
                 }
             }
 
-            return true;
+            return keys;
 
         } catch (Exception e) {
             Logger.error("❌ Erreur lors de la liste des clés : " + e.getMessage());
-            return false;
+            return null;
         }
     }
 
@@ -638,7 +643,16 @@ public final class KeyUtil {
      * @return Le chemin complet du fichier de signature.
      */
     public static String getSignaturePath(String filename) {
-        return AppProperties.SIGNATURE_DIR + filename + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        String signName = filename + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        File signFile = FileManager.searchFileInDirectory(AppProperties.SIGNATURE_DIR, signName);
+        if (signFile != null) {
+            return signFile.getAbsolutePath();
+        } else {
+            return null;
+        }
+
     }
 
     /**

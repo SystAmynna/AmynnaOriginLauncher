@@ -23,6 +23,11 @@ import java.util.zip.ZipInputStream;
  */
 public final class FileManager {
 
+    public static final String SHA1 = "SHA-1";;
+    public static final String SHA256 = "SHA-256";
+    public static final String SHA512 = "SHA-512";
+
+
     private FileManager() {
         // Constructeur privé pour empêcher l'instanciation
         Logger.fatal("FileManager ne peut pas être instancié.");
@@ -101,30 +106,6 @@ public final class FileManager {
     }
 
     /**
-     * Lit un fichier texte contenant des paires clé:valeur et les retourne dans une Map.
-     * Les lignes vides ou sans ':' sont ignorées.
-     * @param file Le fichier texte à lire
-     * @return Une Map contenant les paires clé:valeur
-     */
-    public static Map<String, String> readKeyValueTextFile(File file) {
-        Map<String, String> map = new HashMap<>();
-        try {
-            List<String> lines = Files.readAllLines(file.toPath());
-            for (String line : lines) {
-                line = line.trim();
-                if (!line.contains(":")) continue;
-                String[] parts = line.split(":", 2);
-                String key = parts[0].trim();
-                String value = parts[1].trim();
-                map.put(key, value);
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
-        }
-        return map;
-    }
-
-    /**
      * Crée les répertoires spécifiés dans le chemin s'ils n'existent pas.
      * Si un fichier existe déjà à cet emplacement, il est supprimé et remplacé par un répertoire.
      * @param directoryPath Le chemin du répertoire à créer
@@ -152,35 +133,36 @@ public final class FileManager {
      * @param destinationPath Chemin de destination (fichier ou répertoire)
      * @return Le fichier téléchargé et validé, ou null en cas d'erreur ou de validation échouée
      */
-    public static File downloadAndValidateFile(String onServerPath, String destinationPath) {
+    public static SignedFile downloadAndValidateFile(String onServerPath, String destinationPath) {
 
-        onServerPath = AppProperties.REPO_SERVER_URL + File.separator + onServerPath;
+        // Chemin du fichier et de sa signature sur le serveur
+        String fileOnServerPath = AppProperties.REPO_SERVER_URL + onServerPath;
+        String signOnServerPath = AppProperties.SIGNATURE_LOCATION_ON_SERVER + onServerPath + AppProperties.SIGNATURE_FILE_EXTENSION;
 
-        File file = downloadFile(onServerPath, destinationPath);
-
+        // Télécharger le fichier principal
+        File file = downloadFile(fileOnServerPath, destinationPath);
         if (file == null || !file.exists()) {
             Logger.error("Erreur lors du téléchargement du fichier...");
             return null;
         }
 
-        String onServerSignPath = AppProperties.SIGNATURE_LOCATION_ON_SERVER + file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
-        String localSignPath = AppProperties.SIGNATURE_DIR.getPath() + File.separator + file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+        // Emplacement local du fichier de signature
+        String localSignPath = AppProperties.SIGNATURE_DIR.getPath() + File.separator + onServerPath + AppProperties.SIGNATURE_FILE_EXTENSION;
 
-        File signatureFile = downloadFile(onServerSignPath, localSignPath);
-
+        // Télécharger le fichier de signature
+        File signatureFile = downloadFile(signOnServerPath, localSignPath);
         if (signatureFile == null || !signatureFile.exists()) {
             Logger.error("Erreur lors du téléchargement du fichier de signature...");
         }
 
         SignedFile signedFile = new SignedFile(file, signatureFile);
 
-        if (!KeyUtil.validateSignature(signedFile)) {
+        if (!signedFile.valid()) {
             Logger.error("Le fichier téléchargé n'est pas signé avec une clé publique de confiance.");
-            file.delete();
-            signatureFile.delete();
+            signedFile.delete();
             return null;
         }
-        return file;
+        return signedFile;
     }
 
     /**
@@ -209,12 +191,11 @@ public final class FileManager {
      * Calcule et vérifie le hachage SHA-1 d'un fichier.
      *
      * @return Le hachage SHA-1 calculé ou null en cas d'erreur
-     * @throws IOException En cas d'erreur de lecture
      */
-    public static String calculSHA1(File file) {
+    public static String calculSHA(File file, String shaType) {
 
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            MessageDigest digest = MessageDigest.getInstance(shaType);
 
             try (InputStream fis = new FileInputStream(file);
                  BufferedInputStream bis = new BufferedInputStream(fis)) {
@@ -226,7 +207,7 @@ public final class FileManager {
                     digest.update(buffer, 0, bytesRead);
                 }
             } catch (IOException e) {
-                Logger.error("Erreur de lecture du fichier pour le calcul SHA-1 : " + e.getMessage());
+                Logger.error("Erreur de lecture du fichier pour le calcul " + shaType + " : " + e.getMessage());
                 return null;
             }
 
@@ -244,50 +225,7 @@ public final class FileManager {
             return hexString.toString();
 
         } catch (NoSuchAlgorithmException e) {
-            Logger.fatal("Algorithme SHA-1 non trouvé : " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Calcule le hachage SHA-256 d'un fichier.
-     *
-     * @param file Fichier à hasher
-     * @return Le hachage SHA-256 en hexadécimal ou null en cas d'erreur
-     */
-    public static String calculSHA256(File file) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
-            try (InputStream fis = new FileInputStream(file);
-                 BufferedInputStream bis = new BufferedInputStream(fis)) {
-
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-
-                while ((bytesRead = bis.read(buffer)) != -1) {
-                    digest.update(buffer, 0, bytesRead);
-                }
-            } catch (IOException e) {
-                Logger.error("Erreur de lecture du fichier pour le calcul SHA-256 : " + e.getMessage());
-                return null;
-            }
-
-            // Convertir le hachage en hexadécimal
-            byte[] hashBytes = digest.digest();
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-
-        } catch (NoSuchAlgorithmException e) {
-            Logger.fatal("Algorithme SHA-256 non trouvé : " + e.getMessage());
+            Logger.fatal("Algorithme " + shaType + " non trouvé : " + e.getMessage());
             return null;
         }
     }
@@ -297,50 +235,22 @@ public final class FileManager {
      *
      * @param url URL du fichier à télécharger
      * @param destinationPath Chemin local où enregistrer le fichier
-     * @param expectedSha1 Hachage SHA-1 attendu pour le fichier
+     * @param expectedSha Hachage SHA-1 attendu pour le fichier
      * @return true si le téléchargement et la vérification réussissent, false sinon
      */
-    public static File downloadFileAndVerifySha1(String url, String destinationPath, String expectedSha1) {
+    public static File downloadFileAndVerifySha(String url, String destinationPath, String expectedSha, String shaType) {
         File downloadedFile = downloadFile(url, destinationPath);
         if (downloadedFile == null) {
             return null; // Échec du téléchargement
         }
 
         try {
-            String calculatedSha1 = calculSHA1(downloadedFile);
-            if (calculatedSha1 != null && calculatedSha1.equals(expectedSha1)) {
+            String calculatedSha1 = calculSHA(downloadedFile, shaType);
+            if (calculatedSha1 != null && calculatedSha1.equals(expectedSha)) {
                 return downloadedFile; // Vérification réussie
             }
         } catch (SecurityException e) {
-            Logger.error("Erreur de sécurité lors de la vérification SHA-1 : " + e.getMessage());
-        }
-
-        deleteFileIfExists(downloadedFile);
-        return null;
-
-    }
-
-    /**
-     * Télécharge un fichier depuis une URL et vérifie son hachage SHA-256.
-     *
-     * @param url URL du fichier à télécharger
-     * @param destinationPath Chemin local où enregistrer le fichier
-     * @param expectedSha256 Hachage SHA-256 attendu pour le fichier
-     * @return true si le téléchargement et la vérification réussissent, false sinon
-     */
-    public static File downloadFileAndVerifySha256(String url, String destinationPath, String expectedSha256) {
-        File downloadedFile = downloadFile(url, destinationPath);
-        if (downloadedFile == null) {
-            return null; // Échec du téléchargement
-        }
-
-        try {
-            String calculatedSha256 = calculSHA256(downloadedFile);
-            if (calculatedSha256 != null && calculatedSha256.equals(expectedSha256)) {
-                return downloadedFile; // Vérification réussie
-            }
-        } catch (SecurityException e) {
-            Logger.error("Erreur de sécurité lors de la vérification SHA-256 : " + e.getMessage());
+            Logger.error("Erreur de sécurité lors de la vérification " + shaType + " : " + e.getMessage());
         }
 
         deleteFileIfExists(downloadedFile);
@@ -349,28 +259,6 @@ public final class FileManager {
     }
 
 
-    /**
-     * Vérifie la taille d'un fichier sur le disque.
-     * @param file Le fichier à vérifier.
-     * @param expectedSize La taille attendue en octets.
-     * @return true si la taille correspond, false sinon.
-     * @throws IOException Si le fichier n'existe pas ou ne peut pas être lu.
-     */
-    public static boolean verifyFileSize(File file, long expectedSize){
-        if (!file.exists()) {
-            return false;
-        }
-        long actualSize = 0;
-        try {
-            actualSize = Files.size(file.toPath());
-        } catch (IOException e) {
-            Logger.error("Erreur lors de la vérification de la taille du fichier : " + e.getMessage());
-            return false;
-        }
-        // Une tolérance de 100 octets est ajoutée pour compenser les différences potentielles de métadonnées,
-        // mais le SHA1 reste la méthode de vérification principale.
-        return Math.abs(actualSize - expectedSize) <= 100;
-    }
 
 /**
  * Supprime un fichier ou un répertoire (et son contenu) s'il existe.
@@ -501,5 +389,50 @@ public static void deleteFileIfExists(File file) {
             Logger.error("Décompression TAR.GZ interrompue : " + e.getMessage());
         }
     }
+
+    /**
+     * Recherche un fichier par nom dans un répertoire et ses sous-répertoires.
+     *
+     * @param directory Répertoire de départ pour la recherche
+     * @param fileName  Nom du fichier à rechercher
+     * @return Le fichier trouvé, ou null si non trouvé
+     */
+    public static File searchFileInDirectory(File directory, String fileName) {
+        if (!directory.isDirectory()) {
+            Logger.error("Le chemin spécifié n'est pas un répertoire : " + directory.getPath());
+            return null;
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            Logger.error("Impossible de lister les fichiers dans le répertoire : " + directory.getPath());
+            return null;
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                File found = searchFileInDirectory(file, fileName);
+                if (found != null) {
+                    return found;
+                }
+            } else if (file.getName().equals(fileName)) {
+                return file;
+            }
+        }
+
+        return null; // Fichier non trouvé
+    }
+
+
+    public static void renameFile(File oldFile, File newFile) {
+        if (oldFile.exists()) {
+            if (!oldFile.renameTo(newFile)) {
+                Logger.error("Échec du renommage de " + oldFile.getPath() + " vers " + newFile.getPath());
+            }
+        } else {
+            Logger.error("Le fichier à renommer n'existe pas : " + oldFile.getPath());
+        }
+    }
+
 
 }

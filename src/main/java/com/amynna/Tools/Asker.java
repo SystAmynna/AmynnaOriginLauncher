@@ -1,7 +1,10 @@
 package com.amynna.Tools;
 
+import com.amynna.OriginLauncher.setup.modpack.ModsManager;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * Classe utilitaire pour afficher des boîtes de dialogue et demander des informations à l'utilisateur.
@@ -165,7 +168,7 @@ public class Asker {
      *         1 pour "Vérifier installation",
      *         2 pour "Se connecter",
      *         3 pour "Paramètres",
-     *         4 pour "Supprimer le jeu",
+     *         4 pour "Admin mode",
      *         -1 si la boîte de dialogue est fermée.
      */
     public static int askMenu() {
@@ -174,7 +177,7 @@ public class Asker {
                 "Vérifier installation",
                 "Se connecter",
                 "Paramètres",
-                "Supprimer le jeu"
+                "Admin mode"
         };
 
         String msg = "Bienvenue dans le Launcher Origin !\n" +
@@ -192,6 +195,88 @@ public class Asker {
         );
     }
 
+    public static void askOptionnalMods(List<ModsManager.OptionalMod> list) {
+        if (list == null || list.isEmpty()) return;
 
+        final java.util.LinkedHashMap<ModsManager.OptionalMod, javax.swing.JCheckBox> map = new java.util.LinkedHashMap<>();
+
+        Runnable showDialog = () -> {
+            javax.swing.JDialog dialog = new javax.swing.JDialog((java.awt.Frame) null, "Mods optionnels", true);
+            javax.swing.JPanel content = new javax.swing.JPanel();
+            content.setLayout(new javax.swing.BoxLayout(content, javax.swing.BoxLayout.Y_AXIS));
+            content.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            for (ModsManager.OptionalMod mod : list) {
+                String display = mod.sweatName + " : " + mod.description;
+                javax.swing.JCheckBox cb = new javax.swing.JCheckBox(display, mod.isEnabled());
+                map.put(mod, cb);
+                content.add(cb);
+            }
+
+            javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(content);
+            scroll.setPreferredSize(new java.awt.Dimension(500, Math.min(400, 30 * map.size()) + 30));
+
+            // Ajouter un léger espace
+
+
+            javax.swing.JPanel buttons = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+            javax.swing.JButton ok = new javax.swing.JButton("OK");
+            javax.swing.JButton cancel = new javax.swing.JButton("Annuler");
+            buttons.add(cancel);
+            buttons.add(ok);
+
+            javax.swing.JPanel main = new javax.swing.JPanel(new java.awt.BorderLayout());
+            main.add(scroll, java.awt.BorderLayout.CENTER);
+            main.add(buttons, java.awt.BorderLayout.SOUTH);
+
+            dialog.getContentPane().add(main);
+            dialog.pack();
+            dialog.setLocationRelativeTo(null);
+
+            ok.addActionListener(e -> {
+                // Récupère l'état souhaité puis ferme la boîte
+                java.util.Map<ModsManager.OptionalMod, Boolean> desired = new java.util.HashMap<>();
+                for (java.util.Map.Entry<ModsManager.OptionalMod, javax.swing.JCheckBox> entry : map.entrySet()) {
+                    desired.put(entry.getKey(), entry.getValue().isSelected());
+                }
+                dialog.dispose();
+
+                Thread updater = new Thread(() -> {
+                    for (java.util.Map.Entry<ModsManager.OptionalMod, Boolean> entry : desired.entrySet()) {
+                        ModsManager.OptionalMod mod = entry.getKey();
+                        boolean wantEnabled = entry.getValue();
+                        try {
+                            if (wantEnabled && !mod.isEnabled()) mod.enable();
+                            else if (!wantEnabled && mod.isEnabled()) mod.disable();
+                        } catch (Exception ex) {
+                            Logger.error("Erreur lors de la mise à jour du mod " + mod.name + " : " + ex.getMessage());
+                        }
+                    }
+                }, "ModsUpdater");
+                updater.setDaemon(true);
+
+                // Si on est sur l'EDT, on lance sans bloquer; sinon on attend la fin pour rester synchrone.
+                if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                    updater.start();
+                } else {
+                    updater.start();
+                    try { updater.join(); } catch (InterruptedException ignored) {}
+                }
+            });
+
+            cancel.addActionListener(e -> dialog.dispose());
+            dialog.setVisible(true);
+        };
+
+        try {
+            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                showDialog.run();
+            } else {
+                javax.swing.SwingUtilities.invokeAndWait(showDialog);
+            }
+        } catch (Exception ex) {
+            Logger.error("Impossible d'afficher la fenêtre des mods optionnels : " + ex.getMessage());
+        }
+    }
 
 }
