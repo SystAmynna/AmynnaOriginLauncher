@@ -211,27 +211,100 @@ public final class KeyUtil {
 
     /**
      * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
-     * @param filePath Le chemin vers le fichier à signer.
+     * @param file Le fichier à signer.
+     * @param signPath Le chemin où sauvegarder le fichier de signature.
      * @param privateKey La clé privée.
      */
-    public static void signFile(String filePath, PrivateKey privateKey) {
+    public static void signFile(File file, String signPath, PrivateKey privateKey) {
 
+        // Vérifier que le fichier existe
+        if (file == null || !file.exists() || !file.isFile()) {
+            Logger.error("Erreur : Le fichier à signer est introuvable.");
+            return;
+        }
+
+        // vérifier le chemin de sauvegarde
+        String signFilePath = signPath;
+        if (!(signFilePath == null || signFilePath.isEmpty()) && !signFilePath.endsWith("/")) signFilePath += File.separator;
+        signFilePath += file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        // Supprimer l'ancien fichier de signature s'il existe
+        File signFile = new File(signFilePath);
+        FileManager.deleteFileIfExists(signFile);
+
+        // Signer le fichier
         try {
-            byte[] data = Files.readAllBytes(Paths.get(filePath));
+            // Lire le contenu du fichier
+            byte[] data = Files.readAllBytes(file.toPath());
 
+            // Signer les données
             Signature sig = Signature.getInstance(KEY_ALGORITHM);
             sig.initSign(privateKey);
             sig.update(data);
             byte[] sigBytes = sig.sign();
 
-            String sigFile = filePath + AppProperties.SIGNATURE_FILE_EXTENSION;
-            Files.write(Paths.get(sigFile), Base64.getEncoder().encode(sigBytes));
+            // Sauvegarder la signature dans un fichier (encodée en Base64)
+            Files.write(signFile.toPath(), Base64.getEncoder().encode(sigBytes));
 
-            Logger.log("✅ Signature générée : " + sigFile);
+            Logger.log("Signature générée : " + signFilePath);
         } catch (Exception e) {
             Logger.error("Erreur lors de la signature du fichier : " + e.getMessage());
         }
     }
+    /**
+     * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
+     * @param file Le fichier à signer.
+     * @param privateKey La clé privée.
+     */
+    public static void signFile(File file, PrivateKey privateKey) {
+        signFile(file, "", privateKey);
+    }
+
+    /**
+     * Signe tous les fichiers d'un répertoire avec une clé privée.
+     * @param dirPath Le chemin vers le répertoire à signer.
+     * @param signDir Le répertoire où sauvegarder les fichiers de signature.
+     * @param privateKey La clé privée.
+     */
+    public static void signDirectory(File dir, String signDirectoryPath, PrivateKey privateKey) {
+
+        // Vérifier que le répertoire existe
+        if (dir == null || !dir.exists() || !dir.isDirectory()) {
+            Logger.error("Erreur : Le répertoire à signer est introuvable.");
+            return;
+        }
+
+        // Vérifier le chemin de sauvegarde
+        if (!(signDirectoryPath == null || signDirectoryPath.isEmpty()) && !signDirectoryPath.endsWith("/")) signDirectoryPath += File.separator;
+        signDirectoryPath += dir.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        // Supprimer l'ancien répertoire de signatures s'il existe
+        File signDirectory = new File(signDirectoryPath);
+        FileManager.deleteFileIfExists(signDirectory);
+
+        // Créer le répertoire de signatures
+        FileManager.createDirectoriesIfNotExist(signDirectory.getPath());
+
+        // Lister tous les fichiers du répertoire
+        File[] files = dir.listFiles();
+        if (files == null || files.length == 0) {
+            Logger.error("Erreur : Le répertoire à signer est vide.");
+            return;
+        }
+
+        // Signer chaque fichier
+        for (File file : files) {
+            if (file.isFile()) signFile(file, signDirectoryPath, privateKey);
+            else if (file.isDirectory()) signDirectory(file, signDirectoryPath, privateKey);
+            else Logger.log("Ignoré (ni fichier ni répertoire) : " + file.getName());
+        }
+
+    }
+
+    public static void signDirectory(File dir, PrivateKey privateKey) {
+        signDirectory(dir, "", privateKey);
+    }
+
 
     /**
      * Vérifie la signature d'un fichier avec une clé publique donnée.
@@ -568,7 +641,11 @@ public final class KeyUtil {
         return AppProperties.SIGNATURE_DIR + filename + AppProperties.SIGNATURE_FILE_EXTENSION;
     }
 
-
+    /**
+     * Affiche les informations d'une clé publique.
+     * @param alias L'alias de la clé.
+     * @param publicKey La clé publique.
+     */
     public static void printKeyInfo(String alias, PublicKey publicKey) {
         Logger.log("📌 Alias : " + Logger.BOLD + alias);
         Logger.log("   Clé publique : " + getPublicKeyAsString(publicKey));
