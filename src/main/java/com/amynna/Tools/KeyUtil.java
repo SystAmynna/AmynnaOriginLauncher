@@ -26,6 +26,8 @@ import java.util.*;
  */
 public final class KeyUtil {
 
+    // ---- [ ATTRIBUTS ] ----
+
     /**
      * Liste des clés publiques de confiance pour valider les signatures des fichiers.
      * Sous format: Alias - clé publique
@@ -46,6 +48,8 @@ public final class KeyUtil {
      * Indicateur si le gestionnaire de clés a été initialisé.
      */
     private static boolean initialized = false;
+
+    // ---- [ INITIALISATION ] ----
 
     /**
      * Initialise le gestionnaire de clés avec l'application donnée.
@@ -96,6 +100,8 @@ public final class KeyUtil {
         Logger.log("🔑 Clés publiques de confiance (Certifiées par la Master Key) : " + Logger.BOLD + keysList + Logger.RESET);
     }
 
+    // ---- [ MÉTHODES PUBLIQUES ] ----
+
     /**
      * Valide la signature d'un fichier en utilisant les clés publiques de confiance.
      * @param signedFile Le fichier à valider.
@@ -107,7 +113,7 @@ public final class KeyUtil {
 
         // Vérifier la signature avec chaque clé publique de confiance
         for (String iPublicKey : TRUSTED_PUBLIC_KEYS.keySet()) {
-            if (verifyFile(signedFile, TRUSTED_PUBLIC_KEYS.get(iPublicKey))) {
+            if (verify(signedFile, TRUSTED_PUBLIC_KEYS.get(iPublicKey))) {
                 Logger.log("✅ Fichier [" + signedFile.file().getName() +
                         "] signé par [" + signedFile.signature().getName() +
                         "] validé avec la clé publique de confiance : " + iPublicKey);
@@ -118,6 +124,51 @@ public final class KeyUtil {
                 "] non signé par [" + signedFile.signature().getName() +
                 "] avec aucune clé publique de confiance.");
         return false;
+    }
+
+
+
+    /**
+     * Signe un fichier ou un répertoire avec une clé privée.
+     * @param file Le fichier ou répertoire à signer.
+     * @param signPath Le chemin où sauvegarder les signatures.
+     * @param privateKey La clé privée.
+     */
+    public static SignedFile sign(File file, String signPath, PrivateKey privateKey) {
+
+        if (file.isFile()) return signFile(file, signPath, privateKey);
+        else if (file.isDirectory()) return signDirectory(file, signPath, privateKey);
+        else {
+            Logger.error("Erreur : Le chemin spécifié n'est ni un fichier ni un répertoire valide.");
+            return null;
+        }
+
+    }
+    /**
+     * Signe un fichier ou un répertoire avec une clé privée.
+     * @param file Le fichier ou répertoire à signer.
+     * @param privateKey La clé privée.
+     */
+    public static SignedFile sign(File file, PrivateKey privateKey) {
+        return sign(file, "", privateKey);
+    }
+
+    /**
+     * Vérifie la signature d'un fichier ou répertoire avec une clé publique donnée.
+     * @param signedFile Fichier ou répertoire signé.
+     * @param publicKey La clé publique.
+     * @return true si la signature est valide, false sinon.
+     */
+    public static boolean verify(SignedFile signedFile, PublicKey publicKey) {
+
+        if (signedFile == null) return false;
+        if (signedFile.file().isFile()) return verifyFile(signedFile, publicKey);
+        else if (signedFile.file().isDirectory()) return verifyDirectory(signedFile, publicKey);
+        else {
+            Logger.error("Erreur : Le chemin spécifié n'est ni un fichier ni un répertoire valide.");
+            return false;
+        }
+
     }
 
     /**
@@ -159,192 +210,19 @@ public final class KeyUtil {
     }
 
     /**
-     * Sauvegarde une paire de clés (privée + publique) dans un KeyStore PKCS12.
-     * @param privateKey La clé privée à sauvegarder.
-     * @param publicKey La clé publique à sauvegarder.
-     * @param alias L'alias sous lequel sauvegarder les clés.
-     * @param password Le mot de passe pour protéger le KeyStore.
-     */
-    private static void saveKeys(PrivateKey privateKey, PublicKey publicKey, String alias, String password) {
-        try {
-            // Créer ou charger le KeyStore
-            KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
-
-            File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
-            if (ksFile.exists()) {
-                try (FileInputStream fis = new FileInputStream(ksFile)) {
-                    keyStore.load(fis, password.toCharArray());
-                }
-            } else {
-                keyStore.load(null, null);
-                FileManager.createDirectoriesIfNotExist(ksFile.getParentFile().getPath());
-            }
-
-            // Vérifier si l'alias existe déjà
-            if (keyStore.containsAlias(alias)) {
-                Logger.error("❌ Alias déjà utilisé. Choisissez un autre alias.");
-                return;
-            }
-
-            // Créer le certificat factice avec la vraie clé publique
-            Certificate cert = createCertificateWithPublicKey(privateKey, publicKey);
-
-            // Sauvegarder la clé privée avec le certificat
-            keyStore.setKeyEntry(
-                    alias,
-                    privateKey,
-                    password.toCharArray(),
-                    new Certificate[]{cert}
-            );
-
-            // Écrire le KeyStore sur disque
-            try (FileOutputStream fos = new FileOutputStream(ksFile)) {
-                keyStore.store(fos, password.toCharArray());
-            }
-
-            Logger.log("🔒 Clés privée et publique sauvegardées, alias : " + alias);
-
-        } catch (Exception e) {
-            Logger.error("Erreur lors de la sauvegarde : " + e.getMessage());
-        }
-    }
-
-    /**
-     * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
-     * @param file Le fichier à signer.
-     * @param signPath Le chemin où sauvegarder le fichier de signature.
-     * @param privateKey La clé privée.
-     */
-    public static void signFile(File file, String signPath, PrivateKey privateKey) {
-
-        // Vérifier que le fichier existe
-        if (file == null || !file.exists() || !file.isFile()) {
-            Logger.error("Erreur : Le fichier à signer est introuvable.");
-            return;
-        }
-
-        // vérifier le chemin de sauvegarde
-        String signFilePath = signPath;
-        if (!(signFilePath == null || signFilePath.isEmpty()) && !signFilePath.endsWith("/")) signFilePath += File.separator;
-        signFilePath += file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
-
-        // Supprimer l'ancien fichier de signature s'il existe
-        File signFile = new File(signFilePath);
-        FileManager.deleteFileIfExists(signFile);
-
-        // Signer le fichier
-        try {
-            // Lire le contenu du fichier
-            byte[] data = Files.readAllBytes(file.toPath());
-
-            // Signer les données
-            Signature sig = Signature.getInstance(KEY_ALGORITHM);
-            sig.initSign(privateKey);
-            sig.update(data);
-            byte[] sigBytes = sig.sign();
-
-            // Sauvegarder la signature dans un fichier (encodée en Base64)
-            Files.write(signFile.toPath(), Base64.getEncoder().encode(sigBytes));
-
-            Logger.log("Signature générée : " + signFilePath);
-        } catch (Exception e) {
-            Logger.error("Erreur lors de la signature du fichier : " + e.getMessage());
-        }
-    }
-    /**
-     * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
-     * @param file Le fichier à signer.
-     * @param privateKey La clé privée.
-     */
-    public static void signFile(File file, PrivateKey privateKey) {
-        signFile(file, "", privateKey);
-    }
-
-    /**
-     * Signe tous les fichiers d'un répertoire avec une clé privée.
-     * @param dirPath Le chemin vers le répertoire à signer.
-     * @param signDir Le répertoire où sauvegarder les fichiers de signature.
-     * @param privateKey La clé privée.
-     */
-    public static void signDirectory(File dir, String signDirectoryPath, PrivateKey privateKey) {
-
-        // Vérifier que le répertoire existe
-        if (dir == null || !dir.exists() || !dir.isDirectory()) {
-            Logger.error("Erreur : Le répertoire à signer est introuvable.");
-            return;
-        }
-
-        // Vérifier le chemin de sauvegarde
-        if (!(signDirectoryPath == null || signDirectoryPath.isEmpty()) && !signDirectoryPath.endsWith("/")) signDirectoryPath += File.separator;
-        signDirectoryPath += dir.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
-
-        // Supprimer l'ancien répertoire de signatures s'il existe
-        File signDirectory = new File(signDirectoryPath);
-        FileManager.deleteFileIfExists(signDirectory);
-
-        // Créer le répertoire de signatures
-        FileManager.createDirectoriesIfNotExist(signDirectory.getPath());
-
-        // Lister tous les fichiers du répertoire
-        File[] files = dir.listFiles();
-        if (files == null || files.length == 0) {
-            Logger.error("Erreur : Le répertoire à signer est vide.");
-            return;
-        }
-
-        // Signer chaque fichier
-        for (File file : files) {
-            if (file.isFile()) signFile(file, signDirectoryPath, privateKey);
-            else if (file.isDirectory()) signDirectory(file, signDirectoryPath, privateKey);
-            else Logger.log("Ignoré (ni fichier ni répertoire) : " + file.getName());
-        }
-
-    }
-
-    public static void signDirectory(File dir, PrivateKey privateKey) {
-        signDirectory(dir, "", privateKey);
-    }
-
-
-    /**
-     * Vérifie la signature d'un fichier avec une clé publique donnée.
-     * @param signedFile Le fichier signé.
-     * @param publicKey La clé publique.
-     * @return true si la signature est valide, false sinon.
-     */
-    public static boolean verifyFile(SignedFile signedFile, PublicKey publicKey) {
-
-        try {
-            // data du fichier
-            byte[] data = Files.readAllBytes(signedFile.file().toPath());
-            // data de la signature
-            byte[] sigBytes = Base64.getDecoder().decode(Files.readAllBytes(signedFile.signature().toPath()));
-
-            Signature sig = Signature.getInstance(KEY_ALGORITHM);
-            sig.initVerify(publicKey);
-            sig.update(data);
-
-            return sig.verify(sigBytes);
-        } catch (Exception e) {
-            Logger.error("Erreur lors de la vérification de la signature : " + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
      * Supprime une paire de clés (privée + publique) du KeyStore.
      * @param alias L'alias de la clé à supprimer.
      * @param password Le mot de passe pour accéder au KeyStore.
      * @return true si la suppression a réussi, false sinon.
      */
-    public static boolean deleteKeys(String alias, String password) {
+    public static void deleteKeys(String alias, String password) {
         try {
             KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
             File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
 
             if (!ksFile.exists()) {
                 Logger.error("❌ KeyStore introuvable.");
-                return false;
+                return;
             }
 
             // Charger le KeyStore
@@ -355,12 +233,12 @@ public final class KeyUtil {
             // Vérifier que l'alias existe
             if (!keyStore.containsAlias(alias)) {
                 Logger.error("❌ Aucune clé trouvée pour l'alias : " + alias);
-                return false;
+                return;
             }
 
             if (!Asker.confirmAction("Confirmer la suppression de la clé '" + alias + "' ?")) {
                 Logger.log("Suppression annulée par l'utilisateur.");
-                return false;
+                return;
             }
 
             // Supprimer l'entrée
@@ -372,11 +250,9 @@ public final class KeyUtil {
             }
 
             Logger.log("🗑️  Clé supprimée : " + alias);
-            return true;
 
         } catch (Exception e) {
             Logger.error("❌ Erreur lors de la suppression : " + e.getMessage());
-            return false;
         }
     }
 
@@ -385,14 +261,14 @@ public final class KeyUtil {
      * @param oldPassword L'ancien mot de passe du KeyStore.
      * @return true si le changement a réussi, false sinon.
      */
-    public static boolean changeKeyStorePassword(String oldPassword) {
+    public static void changeKeyStorePassword(String oldPassword) {
         try {
             KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
             File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
 
             if (!ksFile.exists()) {
                 Logger.error("❌ KeyStore introuvable.");
-                return false;
+                return;
             }
 
             // Charger le KeyStore avec l'ancien mot de passe
@@ -437,11 +313,9 @@ public final class KeyUtil {
             }
 
             Logger.log("🔐 Mot de passe du KeyStore changé avec succès");
-            return true;
 
         } catch (Exception e) {
             Logger.error("❌ Erreur lors du changement de mot de passe : " + e.getMessage());
-            return false;
         }
     }
 
@@ -512,35 +386,6 @@ public final class KeyUtil {
         }
     }
 
-
-    /**
-     * Crée un certificat X.509 contenant la clé publique fournie.
-     * @param privateKey La clé privée pour signer le certificat.
-     * @param publicKey La clé publique à inclure dans le certificat.
-     * @return Le certificat X.509 auto-signé.
-     * @throws Exception En cas d'erreur lors de la création du certificat.
-     */
-    private static Certificate createCertificateWithPublicKey(PrivateKey privateKey, PublicKey publicKey) throws Exception {
-        X500Name issuer = new X500Name("CN=" + AppProperties.APP_NAME + "-LocalKey");
-        BigInteger serialNumber = new BigInteger(64, new SecureRandom());
-        Date notBefore = new Date();
-        Date notAfter = new Date(notBefore.getTime() + 365L * 24 * 60 * 60 * 1000 * 10); // 10 ans
-
-        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
-                issuer,
-                serialNumber,
-                notBefore,
-                notAfter,
-                issuer,
-                publicKey  // Utiliser la vraie clé publique
-        );
-
-        ContentSigner signer = new JcaContentSignerBuilder(KEY_ALGORITHM).build(privateKey);
-
-        return new JcaX509CertificateConverter().getCertificate(certBuilder.build(signer));
-    }
-
-
     /**
      * Charge une clé privée depuis un KeyStore protégé par mot de passe.
      * @param alias L'alias de la clé à charger.
@@ -575,7 +420,6 @@ public final class KeyUtil {
             return null;
         }
     }
-
     /**
      * Charge la clé publique associée à une clé privée depuis le KeyStore.
      * @param alias L'alias de la clé.
@@ -663,6 +507,255 @@ public final class KeyUtil {
     public static void printKeyInfo(String alias, PublicKey publicKey) {
         Logger.log("📌 Alias : " + Logger.BOLD + alias);
         Logger.log("   Clé publique : " + getPublicKeyAsString(publicKey));
+    }
+
+    // ---- [ MÉTHODES PRIVÉES ] ----
+
+    /**
+     * Sauvegarde une paire de clés (privée + publique) dans un KeyStore PKCS12.
+     * @param privateKey La clé privée à sauvegarder.
+     * @param publicKey La clé publique à sauvegarder.
+     * @param alias L'alias sous lequel sauvegarder les clés.
+     * @param password Le mot de passe pour protéger le KeyStore.
+     */
+    private static void saveKeys(PrivateKey privateKey, PublicKey publicKey, String alias, String password) {
+        try {
+            // Créer ou charger le KeyStore
+            KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
+
+            File ksFile = AppProperties.LOCAL_PRIVATE_KEYS_LOCATION;
+            if (ksFile.exists()) {
+                try (FileInputStream fis = new FileInputStream(ksFile)) {
+                    keyStore.load(fis, password.toCharArray());
+                }
+            } else {
+                keyStore.load(null, null);
+                FileManager.createDirectoriesIfNotExist(ksFile.getParentFile().getPath());
+            }
+
+            // Vérifier si l'alias existe déjà
+            if (keyStore.containsAlias(alias)) {
+                Logger.error("❌ Alias déjà utilisé. Choisissez un autre alias.");
+                return;
+            }
+
+            // Créer le certificat factice avec la vraie clé publique
+            Certificate cert = createCertificateWithPublicKey(privateKey, publicKey);
+
+            // Sauvegarder la clé privée avec le certificat
+            keyStore.setKeyEntry(
+                    alias,
+                    privateKey,
+                    password.toCharArray(),
+                    new Certificate[]{cert}
+            );
+
+            // Écrire le KeyStore sur disque
+            try (FileOutputStream fos = new FileOutputStream(ksFile)) {
+                keyStore.store(fos, password.toCharArray());
+            }
+
+            Logger.log("🔒 Clés privée et publique sauvegardées, alias : " + alias);
+
+        } catch (Exception e) {
+            Logger.error("Erreur lors de la sauvegarde : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
+     * @param file Le fichier à signer.
+     * @param signPath Le chemin où sauvegarder le fichier de signature.
+     * @param privateKey La clé privée.
+     */
+    private static SignedFile signFile(File file, String signPath, PrivateKey privateKey) {
+
+        // Vérifier que le fichier existe
+        if (file == null || !file.exists() || !file.isFile()) {
+            Logger.error("Erreur : Le fichier à signer est introuvable.");
+            return null;
+        }
+
+        // vérifier le chemin de sauvegarde
+        String signFilePath = signPath;
+        if (!(signFilePath == null || signFilePath.isEmpty()) && !signFilePath.endsWith("/")) signFilePath += File.separator;
+        signFilePath += file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        // Supprimer l'ancien fichier de signature s'il existe
+        File signFile = new File(signFilePath);
+        FileManager.deleteFileIfExists(signFile);
+
+        // Signer le fichier
+        try {
+            // Lire le contenu du fichier
+            byte[] data = Files.readAllBytes(file.toPath());
+
+            // Signer les données
+            Signature sig = Signature.getInstance(KEY_ALGORITHM);
+            sig.initSign(privateKey);
+            sig.update(data);
+            byte[] sigBytes = sig.sign();
+
+            // Sauvegarder la signature dans un fichier (encodée en Base64)
+            Files.write(signFile.toPath(), Base64.getEncoder().encode(sigBytes));
+
+            Logger.log("Signature générée : " + signFilePath);
+            return new SignedFile(file, signFile);
+        } catch (Exception e) {
+            Logger.error("Erreur lors de la signature du fichier : " + e.getMessage());
+            return null;
+        }
+    }
+    /**
+     * Signe un fichier avec une clé privée et sauvegarde la signature dans un fichier séparé.
+     * @param file Le fichier à signer.
+     * @param privateKey La clé privée.
+     */
+    private static SignedFile signFile(File file, PrivateKey privateKey) {
+        return signFile(file, "", privateKey);
+    }
+
+    /**
+     * Signe tous les fichiers d'un répertoire avec une clé privée.
+     * @param dir Le répertoire à signer.
+     * @param signDirectoryPath Le chemin où sauvegarder le répertoire de signatures.
+     * @param privateKey La clé privée.
+     */
+    private static SignedFile signDirectory(File dir, String signDirectoryPath, PrivateKey privateKey) {
+
+        // Vérifier que le répertoire existe
+        if (dir == null || !dir.exists() || !dir.isDirectory()) {
+            Logger.error("Erreur : Le répertoire à signer est introuvable.");
+            return null;
+        }
+
+        // Vérifier le chemin de sauvegarde
+        if (!(signDirectoryPath == null || signDirectoryPath.isEmpty()) && !signDirectoryPath.endsWith("/")) signDirectoryPath += File.separator;
+        signDirectoryPath += dir.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        // Supprimer l'ancien répertoire de signatures s'il existe
+        File signDirectory = new File(signDirectoryPath);
+        FileManager.deleteFileIfExists(signDirectory);
+
+        // Créer le répertoire de signatures
+        FileManager.createDirectoriesIfNotExist(signDirectory.getPath());
+
+        // Lister tous les fichiers du répertoire
+        File[] files = dir.listFiles();
+        if (files == null || files.length == 0) {
+            Logger.error("Erreur : Le répertoire à signer est vide.");
+            return null;
+        }
+
+        // Signer chaque fichier
+        for (File file : files) {
+            if (file.isFile()) signFile(file, signDirectoryPath, privateKey);
+            else if (file.isDirectory()) signDirectory(file, signDirectoryPath, privateKey);
+            else Logger.log("Ignoré (ni fichier ni répertoire) : " + file.getName());
+        }
+
+        return new SignedFile(dir, signDirectory);
+    }
+    /**
+     * Signe tous les fichiers d'un répertoire avec une clé privée.
+     * @param dir Le répertoire à signer.
+     * @param privateKey La clé privée.
+     */
+    private static SignedFile signDirectory(File dir, PrivateKey privateKey) {
+        return signDirectory(dir, "", privateKey);
+    }
+
+    /**
+     * Vérifie la signature d'un fichier avec une clé publique donnée.
+     * @param signedFile Le fichier signé.
+     * @param publicKey La clé publique.
+     * @return true si la signature est valide, false sinon.
+     */
+    public static boolean verifyFile(SignedFile signedFile, PublicKey publicKey) {
+
+        try {
+            // data du fichier
+            byte[] data = Files.readAllBytes(signedFile.file().toPath());
+            // data de la signature
+            byte[] sigBytes = Base64.getDecoder().decode(Files.readAllBytes(signedFile.signature().toPath()));
+
+            Signature sig = Signature.getInstance(KEY_ALGORITHM);
+            sig.initVerify(publicKey);
+            sig.update(data);
+
+            return sig.verify(sigBytes);
+        } catch (Exception e) {
+            Logger.error("Erreur lors de la vérification de la signature : " + e.getMessage());
+            return false;
+        }
+    }
+    /**
+     * Vérifie la signature de tous les fichiers d'un répertoire avec une clé publique donnée.
+     * @param signedDir Le répertoire signé.
+     * @param publicKey La clé publique.
+     * @return true si toutes les signatures sont valides, false sinon.
+     */
+    public static boolean verifyDirectory(SignedFile signedDir, PublicKey publicKey) {
+
+        File[] files = signedDir.file().listFiles();
+        if (files == null || files.length == 0) {
+            Logger.error("Erreur : Le répertoire signé est vide.");
+            return false;
+        }
+
+        File[] signFiles = signedDir.signature().listFiles();
+        if (signFiles == null || signFiles.length == 0) {
+            Logger.error("Erreur : Le répertoire de signatures est vide.");
+            return false;
+        }
+
+        if (files.length != signFiles.length) {
+            Logger.error("Erreur : Le nombre de fichiers et de signatures ne correspond pas.");
+            return false;
+        }
+
+        for (File file : files) {
+            File signFile = FileManager.searchFileInDirectory(signedDir.signature(), file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION);
+            if (signFile == null) {
+                Logger.error("Erreur : Fichier de signature introuvable pour " + file.getName());
+                return false;
+            }
+            SignedFile sf = new SignedFile(file, signFile);
+            if (!verify(sf, publicKey)) {
+                Logger.error("Erreur : Signature invalide pour " + file.getName());
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
+    /**
+     * Crée un certificat X.509 contenant la clé publique fournie.
+     * @param privateKey La clé privée pour signer le certificat.
+     * @param publicKey La clé publique à inclure dans le certificat.
+     * @return Le certificat X.509 auto-signé.
+     * @throws Exception En cas d'erreur lors de la création du certificat.
+     */
+    private static Certificate createCertificateWithPublicKey(PrivateKey privateKey, PublicKey publicKey) throws Exception {
+        X500Name issuer = new X500Name("CN=" + AppProperties.APP_NAME + "-LocalKey");
+        BigInteger serialNumber = new BigInteger(64, new SecureRandom());
+        Date notBefore = new Date();
+        Date notAfter = new Date(notBefore.getTime() + 365L * 24 * 60 * 60 * 1000 * 10); // 10 ans
+
+        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+                issuer,
+                serialNumber,
+                notBefore,
+                notAfter,
+                issuer,
+                publicKey  // Utiliser la vraie clé publique
+        );
+
+        ContentSigner signer = new JcaContentSignerBuilder(KEY_ALGORITHM).build(privateKey);
+
+        return new JcaX509CertificateConverter().getCertificate(certBuilder.build(signer));
     }
 
 }

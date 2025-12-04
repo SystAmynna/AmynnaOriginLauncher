@@ -23,7 +23,7 @@ public class ModConfigManager {
 
         protected ConfigFile(String link) {
             this.link = link;
-            this.file = new File(AppProperties.);
+            this.file = new File(link);
         }
 
 
@@ -69,6 +69,8 @@ public class ModConfigManager {
 
         return new ModConfig(
                 path,
+                "" // TODO URL
+
 
         );
 
@@ -83,6 +85,7 @@ public class ModConfigManager {
 
         String finalPath = AppProperties.MINECRAFT_CONFIG_DIR.getAbsolutePath() + File.separator + path + fileName;
 
+        return null; // TODO new ConfigFile(finalPath);
     }
 
 

@@ -48,9 +48,7 @@ public final class App {
 
         File file = new File(filePath);
 
-        if (file.isFile()) KeyUtil.signFile(file, privateKey);
-        else if (file.isDirectory()) KeyUtil.signDirectory(file, privateKey);
-        else Logger.log("Le chemin spécifié n'est ni un fichier ni un répertoire valide.");
+        KeyUtil.sign(file, privateKey);
     }
 
     /**
@@ -61,7 +59,7 @@ public final class App {
         SignedFile signedFile;
         if (args.length == 3) {
             signedFile = new SignedFile(new File(args[1]), new File(args[2]));
-            KeyUtil.validateSignature(signedFile);
+            signedFile.valid();
         } else Logger.log("Le chemin du fichier et le chemin de la signature sont requis. Usage: verify <filePath> <signaturePath>");
     }
 

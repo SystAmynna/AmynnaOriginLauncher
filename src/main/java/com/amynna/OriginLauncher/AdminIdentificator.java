@@ -51,11 +51,9 @@ public class AdminIdentificator {
             // Charger la clé privée
             PrivateKey privateKey = KeyUtil.loadPrivateKey(keyAlias, pwd);
             // Signer le fichier de test
-            File signatureFile = KeyUtil.signFile(testFile.getPath(), privateKey);
+            SignedFile signedFile = KeyUtil.sign(testFile, privateKey);
             // Vérifier la signature
-            if (signatureFile == null) continue;
-            // Créer l'objet SignedFile pour la vérification
-            SignedFile signedFile = new SignedFile(testFile, signatureFile);
+            if (signedFile == null) continue;
             // Vérifier la validité de la signature
             if (signedFile.valid()) {
                 admin = true;
