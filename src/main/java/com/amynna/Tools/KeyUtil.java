@@ -115,7 +115,6 @@ public final class KeyUtil {
         init();
 
         if (signedFile.isDirectory()) {
-            space += " ";
 
             File[] subFiles = signedFile.file().listFiles();
             if (subFiles == null || subFiles.length == 0) {
@@ -150,7 +149,7 @@ public final class KeyUtil {
             // Vérifier chaque sous-fichier
             boolean valid = true;
             for (SignedFile sf : signedSubFiles) {
-                boolean subValid = validateSignature(sf, space);
+                boolean subValid = validateSignature(sf, space + "   ");
                 if (valid) valid = subValid;
             }
             if (valid) {
