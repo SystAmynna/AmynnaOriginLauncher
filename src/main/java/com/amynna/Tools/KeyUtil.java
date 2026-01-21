@@ -107,22 +107,80 @@ public final class KeyUtil {
      * @return true si la signature est valide avec au moins une clé publique de confiance, false sinon.
      */
     public static boolean validateSignature(SignedFile signedFile) {
+        return validateSignature(signedFile, "");
+    }
+
+    public static boolean validateSignature(SignedFile signedFile, String space) {
         // Initialiser le gestionnaire de clés si nécessaire
         init();
 
-        // Vérifier la signature avec chaque clé publique de confiance
-        for (String iPublicKey : TRUSTED_PUBLIC_KEYS.keySet()) {
-            if (verify(signedFile, TRUSTED_PUBLIC_KEYS.get(iPublicKey))) {
-                Logger.log("✅ Fichier [" + signedFile.file().getName() +
+        if (signedFile.isDirectory()) {
+            space += " ";
+
+            File[] subFiles = signedFile.file().listFiles();
+            if (subFiles == null || subFiles.length == 0) {
+                Logger.error("Erreur : Le répertoire signé est vide.");
+                return false;
+            }
+
+            File[] subSignFiles = signedFile.signature().listFiles();
+            if (subSignFiles == null || subSignFiles.length == 0) {
+                Logger.error("Erreur : Le répertoire de signatures est vide.");
+                return false;
+            }
+
+            if (subFiles.length != subSignFiles.length) {
+                Logger.error("Erreur : Le nombre de fichiers dans [" + signedFile.file().getName() +
+                        "] et de signatures dans ["+ signedFile.signature().getName() + "] ne correspond pas.");
+                return false;
+            }
+
+            SignedFile[] signedSubFiles = new SignedFile[subFiles.length];
+            int index = 0;
+            for (File file : subFiles) {
+                for (File signFile : subSignFiles) {
+                    if (signFile.getName().equals(file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION)) {
+                        signedSubFiles[index] = new SignedFile(file, signFile);
+                        index++;
+                        break;
+                    }
+                }
+            }
+
+            // Vérifier chaque sous-fichier
+            boolean valid = true;
+            for (SignedFile sf : signedSubFiles) {
+                boolean subValid = validateSignature(sf, space);
+                if (valid) valid = subValid;
+            }
+            if (valid) {
+                Logger.log(space + "✅ Répertoire [" + signedFile.file().getName() +
                         "] signé par [" + signedFile.signature().getName() +
-                        "] validé avec la clé publique de confiance : " + iPublicKey);
+                        "] validé avec les clés publiques de confiance.");
                 return true;
             }
+            Logger.log(space + "❌ Répertoire [" + signedFile.file().getName() +
+                    "] non signé par [" + signedFile.signature().getName() +
+                    "] avec les clés publiques de confiance.");
+            return false;
+
         }
-        Logger.log("❌ Fichier [" + signedFile.file().getName() +
-                "] non signé par [" + signedFile.signature().getName() +
-                "] avec aucune clé publique de confiance.");
-        return false;
+        else {
+            // Vérifier la signature avec chaque clé publique de confiance
+            for (String iPublicKey : TRUSTED_PUBLIC_KEYS.keySet()) {
+                if (verifyFile(signedFile, TRUSTED_PUBLIC_KEYS.get(iPublicKey))) {
+                    Logger.log(space + "✅ Fichier [" + signedFile.file().getName() +
+                            "] signé par [" + signedFile.signature().getName() +
+                            "] validé avec la clé publique de confiance : " + iPublicKey);
+                    return true;
+                }
+            }
+            Logger.log(space + "❌ Fichier [" + signedFile.file().getName() +
+                    "] non signé par [" + signedFile.signature().getName() +
+                    "] avec aucune clé publique de confiance.");
+            return false;
+        }
+
     }
 
 
@@ -150,24 +208,6 @@ public final class KeyUtil {
      */
     public static SignedFile sign(File file, PrivateKey privateKey) {
         return sign(file, "", privateKey);
-    }
-
-    /**
-     * Vérifie la signature d'un fichier ou répertoire avec une clé publique donnée.
-     * @param signedFile Fichier ou répertoire signé.
-     * @param publicKey La clé publique.
-     * @return true si la signature est valide, false sinon.
-     */
-    public static boolean verify(SignedFile signedFile, PublicKey publicKey) {
-
-        if (signedFile == null) return false;
-        if (signedFile.file().isFile()) return verifyFile(signedFile, publicKey);
-        else if (signedFile.file().isDirectory()) return verifyDirectory(signedFile, publicKey);
-        else {
-            Logger.error("Erreur : Le chemin spécifié n'est ni un fichier ni un répertoire valide.");
-            return false;
-        }
-
     }
 
     /**
@@ -682,47 +722,6 @@ public final class KeyUtil {
             Logger.error("Erreur lors de la vérification de la signature : " + e.getMessage());
             return false;
         }
-    }
-    /**
-     * Vérifie la signature de tous les fichiers d'un répertoire avec une clé publique donnée.
-     * @param signedDir Le répertoire signé.
-     * @param publicKey La clé publique.
-     * @return true si toutes les signatures sont valides, false sinon.
-     */
-    public static boolean verifyDirectory(SignedFile signedDir, PublicKey publicKey) {
-
-        File[] files = signedDir.file().listFiles();
-        if (files == null || files.length == 0) {
-            Logger.error("Erreur : Le répertoire signé est vide.");
-            return false;
-        }
-
-        File[] signFiles = signedDir.signature().listFiles();
-        if (signFiles == null || signFiles.length == 0) {
-            Logger.error("Erreur : Le répertoire de signatures est vide.");
-            return false;
-        }
-
-        if (files.length != signFiles.length) {
-            Logger.error("Erreur : Le nombre de fichiers et de signatures ne correspond pas.");
-            return false;
-        }
-
-        for (File file : files) {
-            File signFile = FileManager.searchFileInDirectory(signedDir.signature(), file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION);
-            if (signFile == null) {
-                Logger.error("Erreur : Fichier de signature introuvable pour " + file.getName());
-                return false;
-            }
-            SignedFile sf = new SignedFile(file, signFile);
-            if (!verify(sf, publicKey)) {
-                Logger.error("Erreur : Signature invalide pour " + file.getName());
-                return false;
-            }
-        }
-
-        return true;
-
     }
 
     /**

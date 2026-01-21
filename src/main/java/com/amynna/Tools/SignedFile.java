@@ -17,4 +17,8 @@ public record SignedFile(File file, File signature) {
         FileManager.deleteFileIfExists(signature);
     }
 
+    public boolean isDirectory() {
+        return file.isDirectory() && signature.isDirectory();
+    }
+
 }
