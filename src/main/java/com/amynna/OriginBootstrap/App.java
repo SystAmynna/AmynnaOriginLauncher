@@ -141,6 +141,11 @@ public final class App {
      */
     public static void main(String[] args) {
 
+        if (!FileManager.pingServer(AppProperties.REPO_SERVER_URL)) {
+            Logger.log("Le serveur n'est pas accessible. Veuillez vérifier votre connexion internet.");
+            return;
+        }
+
         App app = new App(); // Instance de l'application pour accéder aux méthodes non statiques
 
         FileManager.createDirectoriesIfNotExist(AppProperties.LAUNCHER_ROOT.getPath()); // Assure que le répertoire racine existe

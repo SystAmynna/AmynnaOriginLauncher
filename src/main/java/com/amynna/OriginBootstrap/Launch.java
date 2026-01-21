@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -80,7 +79,8 @@ public final class Launch {
     private boolean checkLauncher() {
         // déclarer les fichiers
         File launcherFile = new File(AppProperties.LAUNCHER_ROOT.getPath() + File.separator + launcherName);
-        File signatureFile = new File(Objects.requireNonNull(KeyUtil.getSignaturePath(launcherName)));
+        File signatureFile = KeyUtil.getSignatureFile(launcherName);
+
         SignedFile signedLauncher = new SignedFile(launcherFile, signatureFile);
 
         // vérifier l'existence des fichiers
@@ -138,7 +138,14 @@ public final class Launch {
     private void installLauncher() {
         FileManager.deleteFileIfExists(new File(AppProperties.LAUNCHER_ROOT + launcherName));
 
-        FileManager.downloadAndValidateFile(launcherName, AppProperties.LAUNCHER_ROOT.getPath() + File.separator + launcherName);
+        SignedFile launcher = FileManager.downloadAndValidateFile(launcherName, AppProperties.LAUNCHER_ROOT.getPath() + File.separator + launcherName);
+
+        if (launcher == null || !launcher.exists()) {
+            Logger.fatal("Le téléchargement du launcher a échoué.");
+        } else {
+            Logger.log("Le launcher a été téléchargé avec succès.");
+        }
+
     }
 
 

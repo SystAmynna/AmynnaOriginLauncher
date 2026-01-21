@@ -14,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.cert.Certificate;
 import java.security.*;
 import java.util.Date;
@@ -486,16 +485,11 @@ public final class KeyUtil {
      * @param filename Le nom du fichier (sans extension).
      * @return Le chemin complet du fichier de signature.
      */
-    public static String getSignaturePath(String filename) {
+    public static File getSignatureFile(String filename) {
 
         String signName = filename + AppProperties.SIGNATURE_FILE_EXTENSION;
 
-        File signFile = FileManager.searchFileInDirectory(AppProperties.SIGNATURE_DIR, signName);
-        if (signFile != null) {
-            return signFile.getAbsolutePath();
-        } else {
-            return null;
-        }
+        return FileManager.searchFileInDirectory(AppProperties.SIGNATURE_DIR, signName);
 
     }
 
