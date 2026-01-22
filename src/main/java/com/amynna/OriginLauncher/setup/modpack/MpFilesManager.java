@@ -243,7 +243,7 @@ public class MpFilesManager {
         }
         // Téléchargement des mods optionnels
         for (OptionalMpFile optionalMpFile : optionalMpFiles) {
-            if (!optionalMpFile.lightCheck()) optionalMpFile.download();
+            if (optionalMpFile.isEnabled() && !optionalMpFile.lightCheck()) optionalMpFile.download();
         }
     }
 

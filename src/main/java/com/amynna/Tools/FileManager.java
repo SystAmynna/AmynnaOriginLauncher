@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,9 +43,17 @@ public final class FileManager {
      */
     public static File downloadFile(String url, String destinationPath) {
 
+        int lastSlashIndex = url.lastIndexOf('/');
+        String baseUrl = url.substring(0, lastSlashIndex + 1);
+        String fileNameURL = url.substring(lastSlashIndex + 1);
+
+        // Encoder uniquement le nom du fichier
+        String encodedFileName = URLEncoder.encode(fileNameURL, StandardCharsets.UTF_8);
+        String encodedUrl = baseUrl + encodedFileName;
+
         try {
 
-            URL website = new URL(url);
+            URL website = new URL(encodedUrl);
 
             // Ouvrir la connexion HTTP
             HttpURLConnection connection = (HttpURLConnection) website.openConnection();
@@ -93,12 +102,12 @@ public final class FileManager {
             }
 
             File downloadedFile = destination.toFile();
-            Logger.log(Logger.BLUE + "\uD83D\uDCE5 Fichier téléchargé : " + url + " ➔ " + downloadedFile.getAbsolutePath());
+            Logger.log(Logger.BLUE + "\uD83D\uDCE5 Fichier téléchargé : " + encodedUrl + " ➔ " + downloadedFile.getAbsolutePath());
 
             return downloadedFile;
 
         } catch (Exception e) {
-            Logger.error("Erreur lors du téléchargement du fichier " + url + " : " + e.getMessage());
+            Logger.error("Erreur lors du téléchargement du fichier " + encodedUrl + " : " + e.getMessage());
             return null;
         }
 
