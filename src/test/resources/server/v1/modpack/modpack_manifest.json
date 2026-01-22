@@ -1,49 +1,60 @@
 {
-    "mods" :  {
-        "main" :  [
 
-            {
-                "url" : "https://cdn.modrinth.com/data/U6GY0xp0/versions/lC8HHXOF/alexscaves-2.0.2.jar",
-                "size" : 74871657,
-                "sha512" : "d23092cf507f4cf66ead45d7b393393ea83a9002056962ee6c341e91323ae39e10f2aefbbbc9f5e54409eb3ee522ad0c2dd5661077b09f1e37d034cfdd4333a0"
-            },
-            {
-                "url" : "https://cdn.modrinth.com/data/jJfV67b1/versions/oD1qDb1C/citadel-2.6.2-1.20.1.jar",
-                "size" : 3185379,
-                "sha512" : "67f0d800157a807447ebf92e822bef8e3e441e471eba03592cd0c06541ae44130fef6c842764a4fb732b97dc4a5ff92210c39dd242b87106712d20ac976c5ba7"
-            },
-            {
-                "name" : "create-1.20.1-6.0.8"
-            },
-            {
-                "name" : "ferritecore-6.0.1-forge.jar"
-            }
+    "main": [
 
-        ],
-        "optional" : [
+        {
+            "path" : "mods/create-1.20.1-6.0.8.jar"
+        },
+        {
+            "path" : "mods/ferritecore-6.0.1-forge.jar"
+        },
+        {
+            "path" : "mods/%name%",
+            "url" : "https://cdn.modrinth.com/data/U6GY0xp0/versions/lC8HHXOF/alexscaves-2.0.2.jar",
+            "size" : 74871657,
+            "sha512" : "d23092cf507f4cf66ead45d7b393393ea83a9002056962ee6c341e91323ae39e10f2aefbbbc9f5e54409eb3ee522ad0c2dd5661077b09f1e37d034cfdd4333a0"
+        },
+        {
+            "path" : "mods/%name%",
+            "url" : "https://cdn.modrinth.com/data/jJfV67b1/versions/oD1qDb1C/citadel-2.6.2-1.20.1.jar",
+            "size" : 3185379,
+            "sha512" : "67f0d800157a807447ebf92e822bef8e3e441e471eba03592cd0c06541ae44130fef6c842764a4fb732b97dc4a5ff92210c39dd242b87106712d20ac976c5ba7"
+        },
 
-            {
-                "sweat_name" : "Chat Plus",
-                "description" : "Permet de personnaliser son interface de chat.",
-                "mod" : {
-                  "url" : "https://cdn.modrinth.com/data/cJlZ132G/versions/wVepTMOm/chatplus-forge-2.7.0.jar",
-                  "size" : 27054150,
-                  "sha512" : "3200f498defa4487f64420ca8937a6e132b10f39f679ff953e5d6402a1fd85b4f8e7d40eaca1f73b97ca5663477e0db9b0802bc7543d4a3fbf2feef9370030f0"
-                }
-            },
-            {
-                "sweat_name" : "Falling Leaves",
-                "description" : "Ajoute des feuilles qui tombent des arbres.",
-                "mod" : {
-                  "name" : "fallingleaves-1.20.1-2.1.2.jar"
-                }
-            }
-        ]
-    },
-    "configs" : [
 
     ],
-    "resourcepacks" : [
+    "optional" : [
+
+        {
+            "name" : "Chat Plus",
+            "description" : "Permet de personnaliser son interface de chat.",
+            "path" : "mods/%name%",
+            "url" : "https://cdn.modrinth.com/data/cJlZ132G/versions/wVepTMOm/chatplus-forge-2.7.0.jar",
+            "size" : 27054150,
+            "sha512" : "3200f498defa4487f64420ca8937a6e132b10f39f679ff953e5d6402a1fd85b4f8e7d40eaca1f73b97ca5663477e0db9b0802bc7543d4a3fbf2feef9370030f0",
+            "subfiles" : [
+
+                {
+                    "path" : "mods/%name%",
+                    "url" : "https://cdn.modrinth.com/data/ordsPcFz/versions/Zsh14XeQ/kotlinforforge-4.12.0-all.jar",
+                    "size" : 7442998,
+                    "sha512" : "767f40030ed4b370a3838fa65ae1b79974f31979342fff7cc834a0d5f39eb28612642519352ff2a1dd5226ce1f745f8b3156ee3625ffde01219137d064c1ee40"
+                },
+                {
+                    "path" : "mods/%name%",
+                    "url" : "https://cdn.modrinth.com/data/lhGA9TYQ/versions/1MKTLiiG/architectury-9.2.14-forge.jar",
+                    "size" : 580602,
+                    "sha512" : "cf67f2050cafa00f0bee42e6d7bef77fdb808ac4f71742f7b4d6d5c1e6ffb49561a5a252f332d2b78a9767bdb5faa284611790dba303fbdc736ae36d794f61c7"
+                }
+
+            ]
+        },
+        {
+            "name" : "Falling Leaves",
+            "description" : "Ajoute des feuilles qui tombent des arbres.",
+            "path" : "mods/fallingleaves-1.20.1-2.1.2.jar"
+        }
 
     ]
+
 }

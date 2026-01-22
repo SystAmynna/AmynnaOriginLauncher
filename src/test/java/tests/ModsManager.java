@@ -1,4 +1,4 @@
-package com.amynna.OriginLauncher.setup.modpack;
+package tests;
 
 import com.amynna.Tools.*;
 import org.json.JSONArray;
@@ -218,7 +218,7 @@ public class ModsManager {
     }
 
     protected void selectOptionnalMods() {
-        Asker.askOptionnalMods(optionalMods);
+        //Asker.askOptionnalMods(optionalMods);
     }
 
     // ----[ MÉTHODES PRIVÉES ]----
@@ -329,7 +329,7 @@ public class ModsManager {
 
         if (onServer) {
             url += name;
-            url = AppProperties.MODS_DIR_ON_SERVER + url;
+            url = AppProperties.MODPACK_DIR_ON_SERVER + url;
         }
 
         return new Mod(

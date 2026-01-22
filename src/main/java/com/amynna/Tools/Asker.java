@@ -1,6 +1,6 @@
 package com.amynna.Tools;
 
-import com.amynna.OriginLauncher.setup.modpack.ModsManager;
+import com.amynna.OriginLauncher.setup.modpack.MpFilesManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -195,21 +195,21 @@ public class Asker {
         );
     }
 
-    public static void askOptionnalMods(List<ModsManager.OptionalMod> list) {
+    public static void askOptionnalMods(List<MpFilesManager.OptionalMpFile> list) {
         if (list == null || list.isEmpty()) return;
 
-        final java.util.LinkedHashMap<ModsManager.OptionalMod, javax.swing.JCheckBox> map = new java.util.LinkedHashMap<>();
+        final java.util.LinkedHashMap<MpFilesManager.OptionalMpFile, javax.swing.JCheckBox> map = new java.util.LinkedHashMap<>();
 
         Runnable showDialog = () -> {
-            javax.swing.JDialog dialog = new javax.swing.JDialog((java.awt.Frame) null, "Mods optionnels", true);
+            javax.swing.JDialog dialog = new javax.swing.JDialog((java.awt.Frame) null, "Fichiers optionnels", true);
             javax.swing.JPanel content = new javax.swing.JPanel();
             content.setLayout(new javax.swing.BoxLayout(content, javax.swing.BoxLayout.Y_AXIS));
             content.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-            for (ModsManager.OptionalMod mod : list) {
-                String display = mod.sweatName + " : " + mod.description;
-                javax.swing.JCheckBox cb = new javax.swing.JCheckBox(display, mod.isEnabled());
-                map.put(mod, cb);
+            for (MpFilesManager.OptionalMpFile mpFile : list) {
+                String display = mpFile.getName() + " : " + mpFile.getDescription();
+                javax.swing.JCheckBox cb = new javax.swing.JCheckBox(display, mpFile.isEnabled());
+                map.put(mpFile, cb);
                 content.add(cb);
             }
 
@@ -235,21 +235,21 @@ public class Asker {
 
             ok.addActionListener(e -> {
                 // Récupère l'état souhaité puis ferme la boîte
-                java.util.Map<ModsManager.OptionalMod, Boolean> desired = new java.util.HashMap<>();
-                for (java.util.Map.Entry<ModsManager.OptionalMod, javax.swing.JCheckBox> entry : map.entrySet()) {
+                java.util.Map<MpFilesManager.OptionalMpFile, Boolean> desired = new java.util.HashMap<>();
+                for (java.util.Map.Entry<MpFilesManager.OptionalMpFile, javax.swing.JCheckBox> entry : map.entrySet()) {
                     desired.put(entry.getKey(), entry.getValue().isSelected());
                 }
                 dialog.dispose();
 
                 Thread updater = new Thread(() -> {
-                    for (java.util.Map.Entry<ModsManager.OptionalMod, Boolean> entry : desired.entrySet()) {
-                        ModsManager.OptionalMod mod = entry.getKey();
+                    for (java.util.Map.Entry<MpFilesManager.OptionalMpFile, Boolean> entry : desired.entrySet()) {
+                        MpFilesManager.OptionalMpFile mpFile = entry.getKey();
                         boolean wantEnabled = entry.getValue();
                         try {
-                            if (wantEnabled && !mod.isEnabled()) mod.enable();
-                            else if (!wantEnabled && mod.isEnabled()) mod.disable();
+                            if (wantEnabled && !mpFile.isEnabled()) mpFile.enable();
+                            else if (!wantEnabled && mpFile.isEnabled()) mpFile.disable();
                         } catch (Exception ex) {
-                            Logger.error("Erreur lors de la mise à jour du mod " + mod.name + " : " + ex.getMessage());
+                            Logger.error("Erreur lors de la mise à jour du mod " + mpFile.getName() + " : " + ex.getMessage());
                         }
                     }
                 }, "ModsUpdater");

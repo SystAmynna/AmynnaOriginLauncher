@@ -1,4 +1,4 @@
-package com.amynna.OriginLauncher.setup.modpack;
+package tests;
 
 import java.net.URI;
 import java.net.URLEncoder;

@@ -137,7 +137,6 @@ public final class FileManager {
 
         // Chemin du fichier et de sa signature sur le serveur
         String fileOnServerPath = AppProperties.REPO_SERVER_URL + onServerPath;
-        String signOnServerPath = AppProperties.SIGNATURE_LOCATION_ON_SERVER + onServerPath + AppProperties.SIGNATURE_FILE_EXTENSION;
 
         // Télécharger le fichier principal
         File file = downloadFile(fileOnServerPath, destinationPath);
@@ -146,14 +145,8 @@ public final class FileManager {
             return null;
         }
 
-        // Emplacement local du fichier de signature
-        String localSignPath = AppProperties.SIGNATURE_DIR.getPath() + File.separator + onServerPath + AppProperties.SIGNATURE_FILE_EXTENSION;
-
         // Télécharger le fichier de signature
-        File signatureFile = downloadFile(signOnServerPath, localSignPath);
-        if (signatureFile == null || !signatureFile.exists()) {
-            Logger.error("Erreur lors du téléchargement du fichier de signature...");
-        }
+        File signatureFile = downloadSignatureFile(onServerPath);
 
         SignedFile signedFile = new SignedFile(file, signatureFile);
 
@@ -163,6 +156,24 @@ public final class FileManager {
             return null;
         }
         return signedFile;
+    }
+
+    public static File downloadSignatureFile(String originalOnServerPath) {
+
+        // Chemin du fichier de signature sur le serveur
+        String signOnServerPath = AppProperties.SIGNATURE_LOCATION_ON_SERVER + originalOnServerPath + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        // Emplacement local du fichier de signature
+        String localSignPath = AppProperties.SIGNATURE_DIR.getPath() + File.separator + originalOnServerPath + AppProperties.SIGNATURE_FILE_EXTENSION;
+
+        // Télécharger le fichier de signature
+        File signatureFile = downloadFile(signOnServerPath, localSignPath);
+        if (signatureFile == null || !signatureFile.exists()) {
+            Logger.error("Erreur lors du téléchargement du fichier de signature...");
+        }
+
+        // Télécharger le fichier de signature
+        return signatureFile;
     }
 
     /**
