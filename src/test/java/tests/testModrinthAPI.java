@@ -8,7 +8,7 @@ public class testModrinthAPI {
     @Test
     public void testExample() {
         ModrinthAPI api = new ModrinthAPI();
-        JSONObject json = api.getJarDetails("architectury", "lastest", "forge");
+        JSONObject json = api.getJarDetails("lazrs lib", "lastest", "forge");
         System.out.println(json.toString());
     }
 

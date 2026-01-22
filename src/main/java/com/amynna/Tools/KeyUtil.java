@@ -110,35 +110,40 @@ public final class KeyUtil {
         return validateSignature(signedFile, "");
     }
 
-    public static boolean validateSignature(SignedFile signedFile, String space) {
+    private static boolean validateSignature(SignedFile signedFile, String space) {
         // Initialiser le gestionnaire de clés si nécessaire
         init();
+
+        //Logger.log("DEBUG: " + signedFile.file().getName() + " --- " + signedFile.signature().getName());
 
         if (signedFile.isDirectory()) {
 
             File[] subFiles = signedFile.file().listFiles();
-            if (subFiles == null || subFiles.length == 0) {
-                Logger.error("Erreur : Le répertoire signé est vide.");
+            File[] subSignFiles = signedFile.signature().listFiles();
+            if (subFiles == null || subSignFiles == null) {
+                Logger.error("Impossible de lister les fichiers dans le répertoire signé.");
                 return false;
             }
 
-            File[] subSignFiles = signedFile.signature().listFiles();
-            if (subSignFiles == null || subSignFiles.length == 0) {
-                Logger.error("Erreur : Le répertoire de signatures est vide.");
-                return false;
+
+            if (subFiles.length == 0 && subSignFiles.length == 0) {
+                Logger.log(space + "⚠️  Répertoire [" + signedFile.file().getName() +
+                        "] et son répertoire de signatures sont vides. Rien à valider.");
+                return true;
             }
 
             if (subFiles.length != subSignFiles.length) {
-                Logger.error("Erreur : Le nombre de fichiers dans [" + signedFile.file().getName() +
+                Logger.error("Le nombre de fichiers dans [" + signedFile.file().getName() +
                         "] et de signatures dans ["+ signedFile.signature().getName() + "] ne correspond pas.");
                 return false;
             }
 
+            // Associer chaque sous-fichier avec son fichier de signature
             SignedFile[] signedSubFiles = new SignedFile[subFiles.length];
             int index = 0;
             for (File file : subFiles) {
                 for (File signFile : subSignFiles) {
-                    if (signFile.getName().equals(file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION)) {
+                    if (signFile.getName().equals(file.getName()) || signFile.getName().equals(file.getName() + AppProperties.SIGNATURE_FILE_EXTENSION)) { // + AppProperties.SIGNATURE_FILE_EXTENSION
                         signedSubFiles[index] = new SignedFile(file, signFile);
                         index++;
                         break;
@@ -658,13 +663,13 @@ public final class KeyUtil {
 
         // Vérifier que le répertoire existe
         if (dir == null || !dir.exists() || !dir.isDirectory()) {
-            Logger.error("Erreur : Le répertoire à signer est introuvable.");
+            Logger.error("Le répertoire à signer est introuvable.");
             return null;
         }
 
         // Vérifier le chemin de sauvegarde
         if (!(signDirectoryPath == null || signDirectoryPath.isEmpty()) && !signDirectoryPath.endsWith("/")) signDirectoryPath += File.separator;
-        signDirectoryPath += dir.getName() + AppProperties.SIGNATURE_FILE_EXTENSION;
+        signDirectoryPath += dir.getName(); //+ AppProperties.SIGNATURE_FILE_EXTENSION;
 
         // Supprimer l'ancien répertoire de signatures s'il existe
         File signDirectory = new File(signDirectoryPath);
@@ -675,16 +680,20 @@ public final class KeyUtil {
 
         // Lister tous les fichiers du répertoire
         File[] files = dir.listFiles();
-        if (files == null || files.length == 0) {
-            Logger.error("Erreur : Le répertoire à signer est vide.");
+        if (files == null) {
+            Logger.error("Impossible de lister les fichiers dans le répertoire à signer.");
             return null;
+        }
+        if (files.length == 0) {
+            Logger.log("Le répertoire à signer est vide, ignoré.");
+            return new SignedFile(dir, signDirectory);
         }
 
         // Signer chaque fichier
         for (File file : files) {
             if (file.isFile()) signFile(file, signDirectoryPath, privateKey);
             else if (file.isDirectory()) signDirectory(file, signDirectoryPath, privateKey);
-            else Logger.log("Ignoré (ni fichier ni répertoire) : " + file.getName());
+            else Logger.log("Ignoré (fichier ou repertoire invalide) : " + file.getName());
         }
 
         return new SignedFile(dir, signDirectory);

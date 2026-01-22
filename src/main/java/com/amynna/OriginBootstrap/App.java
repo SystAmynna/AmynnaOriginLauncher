@@ -1,6 +1,7 @@
 package com.amynna.OriginBootstrap;
 
 import com.amynna.Tools.*;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.security.PrivateKey;
@@ -116,6 +117,25 @@ public final class App {
         Logger.version();
     }
 
+    private void genManifest(String... args) {
+        if (args.length >= 2) {
+
+            File directory = new File(args[1]);
+            File existingManifest = null;
+            if (args.length >= 3) {
+                existingManifest = new File(args[2]);
+            }
+            ManifestGenerator mg = new ManifestGenerator(directory, existingManifest);
+            File manifestFile = mg.generateManifestFile();
+            if (manifestFile != null) Logger.log("Manifeste généré : " + manifestFile.getAbsolutePath());
+            else Logger.log("Échec de la génération du manifeste.");
+
+        } else {
+            Logger.log("Le chemin du répertoire est requis. Usage: genManifest <directory> <json>");
+        }
+
+    }
+
     /**
      * Affiche l'aide avec les commandes disponibles.
      */
@@ -129,6 +149,7 @@ public final class App {
                 "  delKey <keyAlias>                    : Supprime la paire de clés associée à l'alias donné.\n" +
                 "  listKeys                             : Liste toutes les clés stockées dans le keystore.\n" +
                 "  changePassword                       : Change le mot de passe du keystore.\n" +
+                "  genManifest <directory> <json>       : Génère le manifeste pour un répertoire donné" +
                 "  help                                 : Affiche cette aide."
 
         );
@@ -168,6 +189,7 @@ public final class App {
             case "changePassword", "passwd", "pass" -> app.changePassword();
             case "help" -> app.help();
             case "version" -> app.version();
+            case "genManifest" -> app.genManifest(args);
             default -> Logger.log("Commande inconnue. Utilisez 'help' pour voir les commandes disponibles.");
         }
 

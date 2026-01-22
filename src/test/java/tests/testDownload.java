@@ -19,6 +19,11 @@ public class testDownload {
 
     }
 
+    @Test
+    public void testApostrophe() {
+        String a = "C'est un test" .replace("'", "\'");
+        System.out.println(a);
+    }
 
 
 }

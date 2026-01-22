@@ -199,6 +199,22 @@ public final class FileManager {
     }
 
     /**
+     * Sauvegarde un objet JSONObject dans un fichier JSON.
+     *
+     * @param jsonObject Objet JSONObject à sauvegarder
+     * @param file       Fichier de destination
+     */
+    public static File saveJsontoFile(JSONObject jsonObject, File file) {
+        try {
+            Files.writeString(file.toPath(), jsonObject.toString(4), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return file;
+        } catch (IOException e) {
+            Logger.error("Erreur lors de l'écriture du fichier JSON : " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Calcule et vérifie le hachage SHA-1 d'un fichier.
      *
      * @return Le hachage SHA-1 calculé ou null en cas d'erreur

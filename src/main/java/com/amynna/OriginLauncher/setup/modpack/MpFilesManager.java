@@ -364,7 +364,7 @@ public class MpFilesManager {
 
         JSONArray subFilesJson;
         try {
-            subFilesJson = fileJson.getJSONArray("subfiles");
+            subFilesJson = fileJson.getJSONArray("sub_files");
             List<MpFile> subFiles = getMpFilesFromJson(subFilesJson);
             MpFile [] subFilesArray = new MpFile[subFiles.size()];
             mpFile.setSubMpFiles(subFiles.toArray(subFilesArray));
