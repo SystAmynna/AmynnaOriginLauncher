@@ -15,7 +15,7 @@ public final class AppProperties {
     /** Nom de l'application. */
     public static final String APP_NAME = "OriginRP";
     /** Version de l'application. */
-    public static final String APP_VERSION = "0.2.3";
+    public static final String APP_VERSION = "0.3.1";
     /** Auteur de l'application. */
     public static final String APP_AUTHOR = "SystAmynna";
 
