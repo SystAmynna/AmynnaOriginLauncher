@@ -44,3 +44,4 @@ bin/
 
 ### Projet ###
 *.p12
+src/test/resources/server/v1/modpack/mods/*
