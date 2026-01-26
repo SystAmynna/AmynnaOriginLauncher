@@ -1,0 +1,133 @@
+{
+  "enabled": true,
+  "isClassic": false,
+  "dynamicCrosshair": false,
+  "renderModel": true,
+  "adjustStep": 0.01,
+  "classic": {
+    "adjustMode": "CAMERA",
+    "scale": 8.0,
+    "cameraX": -0.1699999999999997,
+    "cameraY": 0.009999999999999997,
+    "cameraZ": -0.09999999999999999,
+    "centerX": 0.0,
+    "centerY": 0.0,
+    "centerZ": 0.0,
+    "pitch": 3.0,
+    "yaw": -1.0,
+    "roll": 0.0
+  },
+  "binding": {
+    "adjustOffset": true,
+    "renderStuckObjects": true,
+    "disableRenderItems": [
+      "minecraft:filled_map"
+    ],
+    "targetList": [
+      {
+        "name": "skin_head",
+        "textureId": "reskin:skins/-1883159681",
+        "priority": 5,
+        "forwardU": 0.1875,
+        "forwardV": 0.2,
+        "upwardU": 0.6875,
+        "upwardV": 0.0625,
+        "posU": 0.6875,
+        "posV": 0.1875,
+        "disablingDepth": 0.0,
+        "bindX": true,
+        "bindY": true,
+        "bindZ": true,
+        "bindRotation": false,
+        "scale": 1.0,
+        "offsetX": -0.040000000000000036,
+        "offsetY": -0.029999999999999923,
+        "offsetZ": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "roll": 0.0,
+        "disabledTextureIds": [
+          "minecraft:textures/entity/enderdragon/dragon.png"
+        ]
+      },
+      {
+        "name": "minecraft_head",
+        "textureId": "reskin:skins/-1883159681",
+        "priority": 5,
+        "forwardU": 0.1875,
+        "forwardV": 0.2,
+        "upwardU": 0.6875,
+        "upwardV": 0.1875,
+        "posU": 0.6875,
+        "posV": 0.0625,
+        "disablingDepth": 0.0,
+        "bindX": true,
+        "bindY": true,
+        "bindZ": true,
+        "bindRotation": false,
+        "scale": 1.0,
+        "offsetX": -0.008620689655172376,
+        "offsetY": -0.07758620689655171,
+        "offsetZ": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "roll": 0.0,
+        "disabledTextureIds": [
+          "minecraft:textures/entity/enderdragon/dragon.png"
+        ]
+      },
+      {
+        "name": "minecraft_head_2",
+        "textureId": "minecraft:textures/entity/player/",
+        "priority": 0,
+        "forwardU": 0.1875,
+        "forwardV": 0.2,
+        "upwardU": 0.1875,
+        "upwardV": 0.075,
+        "posU": 0.1875,
+        "posV": 0.2,
+        "disablingDepth": 0.2,
+        "bindX": true,
+        "bindY": true,
+        "bindZ": true,
+        "bindRotation": true,
+        "scale": 1.0,
+        "offsetX": -0.09999999999999998,
+        "offsetY": 0.0,
+        "offsetZ": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "roll": 0.0,
+        "disabledTextureIds": [
+          "minecraft:textures/entity/enderdragon/dragon.png"
+        ]
+      },
+      {
+        "name": "skin_head_2",
+        "textureId": "minecraft:skins/",
+        "priority": 0,
+        "forwardU": 0.1875,
+        "forwardV": 0.2,
+        "upwardU": 0.1875,
+        "upwardV": 0.075,
+        "posU": 0.1875,
+        "posV": 0.2,
+        "disablingDepth": 0.2,
+        "bindX": true,
+        "bindY": true,
+        "bindZ": true,
+        "bindRotation": true,
+        "scale": 1.0,
+        "offsetX": -0.09999999999999998,
+        "offsetY": 0.0,
+        "offsetZ": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "roll": 0.0,
+        "disabledTextureIds": [
+          "minecraft:textures/entity/enderdragon/dragon.png"
+        ]
+      }
+    ]
+  }
+}

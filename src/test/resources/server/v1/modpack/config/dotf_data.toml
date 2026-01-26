@@ -1,0 +1,29 @@
+
+["Device Points"]
+	#Default 1000
+	"Sets points that will be added / subtracted by the devices" = 0
+
+[Waves]
+	#Default 2500
+	"Sets points required to enter wave 1" = 2500
+	#Default 12500
+	"Sets points required to enter wave 2" = 12500
+	#Default 100000
+	"Sets points required to enter wave 3" = 100000
+	#Default 1000000
+	"Sets points required to enter wave 4" = 1000000
+	#Default 2000000
+	"Sets points required to enter wave 5" = 2000000
+	#Default 5000000
+	"Sets points required to enter wave 6" = 5000000
+
+["Base Form Equipment"]
+	#Items / chance of spawning with it
+	"Main Hand Slot for the PLAYER FORM ONLY" = []
+	"Head Slot" = []
+	"Chest Slot" = []
+	"Legs Slot" = []
+	"Boots Slot" = []
+	#Default 300
+	"Chance of the flood forms spawning with improved equipment, the bigger the number the smaller the chance" = 0
+

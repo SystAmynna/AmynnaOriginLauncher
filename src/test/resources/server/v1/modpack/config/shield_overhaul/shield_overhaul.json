@@ -1,0 +1,20 @@
+{
+  "enable_instant_shield_use": true,
+  "enable_parrying": true,
+  "enable_bashing": true,
+  "bash_only_on_ground": true,
+  "bosses_immune_to_stun": true,
+  "arrow_deflect_requires_parry": true,
+  "arrow_deflect_velocity_multiplier": 1.0,
+  "parry_duration_secs": 0.5,
+  "parry_cooldown_secs": 0.5,
+  "parry_stun_duration_secs": 1.0,
+  "bash_damage": 3.0,
+  "bash_cooldown_secs": 2.0,
+  "bash_stun_duration_secs": 1.0,
+  "bash_distance_multiplier": 0.65,
+  "stun_immunity_duration_secs": 1.0,
+  "vigor_strength_multiplier_per_level": 0.33,
+  "flameborn_chance_decimal": 0.25,
+  "flameborn_on_fire_time_secs": 3
+}

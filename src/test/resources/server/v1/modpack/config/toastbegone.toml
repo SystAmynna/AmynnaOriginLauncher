@@ -1,0 +1,30 @@
+#Block tutorial toasts
+blockTutorial = true
+#Block recipe toasts
+blockRecipe = true
+#Block advancement toasts
+blockAdvancement = true
+#Block all system toasts
+#This will block all system toasts regardless of the individual options below
+blockAllSystemToasts = false
+#List of toast classes added by mods to block
+blockedClasses = []
+
+#System toast options
+[systemToasts]
+	#Block tutorial hint toasts
+	blockTutorialHint = false
+	#Block narrator toggle toasts
+	blockNarratorToggle = false
+	#Block periodic notification toasts (a.k.a. the "Compliance Notification")
+	blockPeriodicNotification = false
+	#Block pack load failure toasts
+	blockPackLoadFailure = false
+	#Block pack copy failure toasts
+	blockPackCopyFailure = false
+	#Block world access failure toasts
+	blockWorldAccessFailure = false
+	#Block world backup toasts
+	blockWorldBackup = false
+	#Block unsecure server warning toasts
+	blockUnsecureServerWarning = false

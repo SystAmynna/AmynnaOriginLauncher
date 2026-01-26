@@ -1,0 +1,507 @@
+
+["The Blightlands"]
+	#Default 200
+	"The total area which the Flood or moreso the Proto Gravemind can infect for itself, BE AWARE that large numbers tend to create more lag" = 0
+	"List of blocks from other mods that can be infected and corrupted by the blightlands" = ["quark:sturdy_stone"]
+	#Default 3000
+	"The rate in ticks for the general blightland block spreading, the bigger the number, the slower the biome will spread, should be capped at minimum 2000" = 2000
+	"Mods that can have ALL of their blocks infected" = ["the_flesh_that_hates", "spore", "fromanotherworld", "gigeresque", "prion", "sculk_horde"]
+	#Default true
+	"Should the player hear ambience sounds from time to time when as close as 100 blocks to the proto gravemind?" = true
+	"List of blocks that cannot be infected, use this option only if the blocks that can be infected by default are the victims" = ["minecraft:chest"]
+
+[Others]
+	#Default true
+	"If the player allow cutscenes to play on his screen, as this is related to daydreaming, visions and horrors that the player has as the flood arrives" = false
+	#Default 2800
+	"Ticks before the portal spawning" = 2800
+	#Default 1.25
+	#Range: 1.0 ~ 1.7976931348623157E308
+	"Multiplier of the base damage of each creature that will be added when the Flood deals damage to any infection mod mob or any other customly added in the option below non-infection mod" = 1.25
+	#Default true
+	"If the fragment grenade should move & break blocks when detonating" = false
+	#Default 1.0
+	#Range: 0.0 ~ 1.7976931348623157E308
+	"General screenshake factor, lowering this value will ease ALL screenshakes, DO NOT however confuse this with the camerashake factor" = 1.0
+	#Default true
+	"Allows the fog and atmosphere of the world change with the flood progressing" = true
+	#Default false
+	"If the normal minecraft crosshair should be active instead of the custom-made halo style one" = true
+	#Default true
+	"If the player allow jumpscares to play on his screen, as this is related to daydreaming, visions and horrors that the player has as the flood arrives" = true
+	#Default false
+	"If the ship crash should be canceled, the Flood only appearing abruptly" = true
+	#Default 185
+	#Range: 55.0 ~ 1.7976931348623157E308
+	"Fog Factor for the atmosphere change" = 185.0
+	#Default true
+	"When the player has the flood fumes, there's a chance that his main hand item will fall on the ground" = true
+	#Default true
+	"If true, the camera of the player will move realistically like a body cam whenever items are used or in any other circumstances" = true
+	#Default true
+	"If the player should have custom third person animations, VERY GREAT ADDITION BTW" = true
+	#Default 1.0
+	#Range: 0.0 ~ 1.7976931348623157E308
+	"General camerashake factor, lowering this value will ease ALL weapon camera shakes, DO NOT however confuse this with the screenshake factor" = 1.0
+	"Infection Mods that the flood will adapt their damage to, basically dealing more damage to any creature that is from this mod (works with non-infection mods as well)" = ["sculk_horde", "spore", "the_flesh_that_hates", "fromanotherworld", "gigeresque", "prion"]
+	#Default true
+	"If otherworldy portals should spawn from time to time, these portals spawning flood enemies from time to time" = false
+	#Default true
+	"If instead of the boring minecraft messages next to the game title when entering the game, you should have custom halo-inspired messages and quotes" = false
+
+["Mod Structures"]
+	#Default true
+	"Should this config option allow the laboratories to generate as structures?" = false
+
+[PERFORMANCE]
+	#Default false
+	"THIS IS A VALUE THAT SHOULD ONLY BE PUT TO TRUE IF YOU WANT BETTER PERFORMANCE WITH DAWN OF THE FLOOD, SETTING THIS TO TRUE WILL SLIGHTLY REDUCE / ALTER GAME QUALITY, AND I DON'T SUGGEST USING THIS FEATURE AS IT DOES NOT IMPROVE YOUR FRAMERATE CONSTANTLY / TOO MUCH" = false
+
+["Gun Settings"]
+	#Default 1.0
+	#Range: 0.2 ~ 1.7976931348623157E308
+	"Sets the bobbing intensity of the gun, basically how much should the gun move left and right just like in vanilla minecraft" = 1.0
+	#Enables the check for head shots for players. Projectiles that hit the head of a player will have increased damage.
+	enableHeadShots = true
+	#Default true
+	"If enabled, allows guns to shoot out glass and other fragile objects" = true
+	#Default 0.15
+	#Range: 0.01 ~ 1.7976931348623157E308
+	"Sets the knockback that an entity will take after being hit by a bullet" = 0.15
+
+["Mob Stuff"]
+
+	["Mob Stuff".Spawns]
+		"mob|weight|minimum|maximum" = []
+		"Mobs that spawn in laboratory type structures" = []
+		#Default minecraft:is_overworld
+		"Dictates in what biome the flood forms spawn" = []
+		#Default 120
+		MobCap = 60
+
+	["Mob Stuff"."Proto Graveminds / Graveminds"]
+		#Default 8.0
+		#Range: 0.0 ~ 1.7976931348623157E308
+		"Sets the damage of the explosion of the proto gravemind two" = 8.0
+		#Default 300
+		"The intel number that defines how many more intel points need to be accumulated before a milestone is completed from the previous one" = 300
+		#Default 5
+		"The intel a proto gravemind accumulates with a 10% if a flood form kills an enemy within 100 blocks, this value is multiplied by 20 if the enemy creature was a player" = 5
+		#Default 500
+		#Range: 175.0 ~ 1.7976931348623157E308
+		"Sets Proto Gravemind One's Max health" = 500.0
+		#Default true
+		"Should Proto Graveminds have the ability to regenerate?" = true
+		#Default true
+		"Should Proto Graveminds cause screen shakes when certain events fire it to do so?" = true
+		#Default 20
+		"The intel a proto gravemind accumulates everytime the blocks spread some more" = 20
+		#Default 5.0
+		#Range: 0.0 ~ 1.7976931348623157E308
+		"Sets the damage of the explosion of the proto gravemind one" = 5.0
+		#Default 800
+		#Range: 300.0 ~ 1.7976931348623157E308
+		"Sets Proto Gravemind Two's Max health" = 800.0
+
+	["Mob Stuff".Horde]
+		#Default 3
+		"Number of mobs that will be added to the horde each wave" = 0
+		#Default true
+		"Should flood base forms hordes spawn?" = false
+		#Default 2800
+		"Ticks before the horde spawning" = 2500
+		#Default 10
+		"Number of Mobs Spawning in a Horde" = 0
+		#Default 400
+		"Additional horde ticks" = 500
+
+	["Mob Stuff"."Targeting Tasks"]
+		"Mobs Not Targeted" = ["minecraft:squid", "minecraft:bat", "minecraft:armor_stand", "minecraft:creeper", "minecraft:ghast", "minecraft:falling_block", "minecraft:abstract_arrow", "minecraft:arrow", "minecraft:spectral_arrow", "minecraft:trident", "minecraft:zombie", "minecraft:skeleton", "minecraft:iron_golem", "minecraft:spider", "minecraft:cave_spider", "minecraft:witch", "minecraft:drowned", "minecraft:husk", "minecraft:zombie_villager", "minecraft:stray", "minecraft:pillager", "minecraft:enderman", "minecraft:evoker", "minecraft:vindicator", "minecraft:ravager", "minecraft:vex"]
+		"Mobs that TARGET flood forms" = []
+		#Default true
+		"If true, villagers and wandering traders will run from the Flood" = true
+
+	["Mob Stuff"."Pod Infector"]
+		#Default 7
+		#Range: 3.0 ~ 1.7976931348623157E308
+		"Sets Pod Infector's Max health" = 7.0
+		#Default 50
+		"Pod Infector cooldown time in ticks before bursting" = 50
+		#Default true
+		"Should Pod Infectors cause a screen shake when exploding?" = true
+		#Default true
+		"Should Pod Infectors regenerate?" = true
+		#Default 1.25
+		#Range: 0.0 ~ 1.7976931348623157E308
+		"Sets Pod Infector's Explosion's Damage" = 1.25
+		#Default false
+		"Should Pod Infectors instakill the creature when it latches onto it? (Very OP, but canonically accurate to the real Flood)" = false
+		#Default 5
+		#Range: 2.0 ~ 1.7976931348623157E308
+		"Sets Pod Infector's Damage" = 5.0
+
+	["Mob Stuff"."Tyrant Forms"]
+		#Default 225
+		#Range: 100.0 ~ 1.7976931348623157E308
+		"Sets Tyrant Form's Max health" = 225.0
+		#Default true
+		"Should Tyrant Forms regenerate?" = true
+		#Default true
+		"Should Tyrant Forms climb?" = true
+		#Default true
+		"Should Tyrant Forms grief blocks (basically throw them around and such)?" = true
+		#Default 20
+		#Range: 7.0 ~ 1.7976931348623157E308
+		"Sets Tyrant Form's Damage" = 20.0
+		#Default true
+		"Should Tyrant Forms stop and spit acid from time to time / 20 seconds (BEAUTIFULLY ANIMATED BTW)?" = true
+		#Default true
+		"Should Tyrant Forms make your screen tremble when they walk?" = true
+		#Default true
+		"Should Tyrant Forms break blocks?" = false
+
+	["Mob Stuff"."Bomber Forms"]
+		#Default true
+		"Should Bomber Forms cause a screen shake when exploding?" = true
+		#Default true
+		"Should Bomber Forms NOT despawn after they have seen a target for too long?" = true
+		#Default 3.0
+		#Range: 0.0 ~ 1.7976931348623157E308
+		"Sets the damage of the explosion of the bomber form" = 3.0
+		#Default true
+		"Should Bomber Forms lift the player in the air from time to time?" = true
+		#Default 75
+		#Range: 30.0 ~ 1.7976931348623157E308
+		"Sets Bomber Form's Max health" = 75.0
+		#Default true
+		"Should Bomber Forms regenerate?" = true
+		#Default true
+		"Should Bomber Forms break blocks?" = false
+		#Default true
+		"Should Bomber Forms throw bombs?" = true
+		#Default 5
+		#Range: 2.0 ~ 1.7976931348623157E308
+		"Sets Bomber Form's Damage" = 5.0
+		#Default 4000
+		"Sets Bomber's time before it should STOP despawning when it has seen a target for too long" = 7000
+
+	["Mob Stuff".Effects]
+		"Mobs that are immune to the flood virus" = ["minecraft:ghast", "minecraft:magma_cube", "minecraft:phantom", "minecraft:snow_golem", "minecraft:stray", "minecraft:skeleton"]
+
+	["Mob Stuff"."Sangheili Forms"]
+		#Default 65
+		#Range: 20.0 ~ 1.7976931348623157E308
+		"Sets Sangheili Form's Max health" = 65.0
+		#Default true
+		"Should Sangheili Forms break blocks?" = false
+		#Default true
+		"Should Sangheili Forms use Energy Swords?" = true
+		"Guns that can be used by the sangheili forms" = ["mangler", "mk50_sidekick", "m6_magnum", "m90_shotgun", "needler", "m7_smg", "ma5b_rifle"]
+		#Default true
+		"Should Sangheili Forms regenerate?" = true
+		#Default true
+		"Should Sangheili Forms climb?" = true
+		#Default true
+		"Should Sangheili Forms NOT despawn after they have seen a target for too long?" = true
+		#Default true
+		"Should Sangheili Forms use guns?" = true
+		#Default 7500
+		"Sets Sangheili's time before it should STOP despawning when it has seen a target for too long" = 7500
+		#Default true
+		"Should Sangheili Forms make your screen tremble when they walk?" = true
+		#Default true
+		"Should Sangheili Forms glow in the dark? MAY BE OVERWRITTEN WHEN USING SHADERS" = true
+		#Default 15
+		#Range: 5.0 ~ 1.7976931348623157E308
+		"Sets Sangheili Form's Damage" = 15.0
+
+	["Mob Stuff"."Juggernaut Forms"]
+		#Default true
+		"Should Juggernaut Forms break blocks?" = false
+		#Default 275
+		#Range: 125.0 ~ 1.7976931348623157E308
+		"Sets Juggernaut Form's Max health" = 275.0
+		#Default true
+		"Should Juggernaut Forms regenerate?" = true
+		#Default true
+		"Should Juggernaut Forms make your screen tremble when they walk?" = true
+		#Default true
+		"Should Juggernaut Forms climb?" = true
+		#Default 25
+		#Range: 8.0 ~ 1.7976931348623157E308
+		"Sets Juggernaut Form's Damage" = 25.0
+
+	["Mob Stuff"."Marine Forms"]
+		#Default true
+		"Should Marine Forms NOT despawn after they have seen a target for too long?" = true
+		#Default 8000
+		"Sets Marine's time before it should STOP despawning when it has seen a target for too long" = 8000
+		#Default 35
+		#Range: 15.0 ~ 1.7976931348623157E308
+		"Sets Marine Form's Max health" = 35.0
+		#Default true
+		"Should Marine Forms break blocks?" = false
+		"Guns that can be used by the marine forms" = ["mangler", "mk50_sidekick", "m6_magnum", "m90_shotgun", "needler", "m7_smg", "ma5b_rifle"]
+		#Default true
+		"Should Marine Forms climb?" = true
+		#Default true
+		"Should Marine Forms use guns?" = true
+		#Default 12
+		#Range: 4.0 ~ 1.7976931348623157E308
+		"Sets Marine Form's Damage" = 12.0
+		#Default true
+		"Should Marine Forms regenerate?" = true
+
+	["Mob Stuff"."Maw Form"]
+		#Default true
+		"Should Maw Forms regenerate?" = true
+		#Default 3
+		#Range: 0.0 ~ 1.7976931348623157E308
+		"Sets Maw Claw Form's Damage" = 3.0
+		#Default 75
+		#Range: 30.0 ~ 1.7976931348623157E308
+		"Sets Maw Form's Max health" = 75.0
+		#Default 20
+		#Range: 5.0 ~ 1.7976931348623157E308
+		"Sets Maw Form's Damage" = 20.0
+
+	["Mob Stuff"."Base Forms ( Human / Villager / Player )"]
+		#Default true
+		"Should Base Forms regenerate?" = true
+		#Default false
+		"Should ( certain ) Base Forms have the ability to wear chestplates as well?" = false
+		#Default true
+		"Should Pillager Forms use Crossbows?" = true
+		#Default 7
+		#Range: 4.0 ~ 1.7976931348623157E308
+		"Sets Base Form's Damage" = 7.0
+		#Default true
+		"Should Base Forms climb?" = true
+		#Default true
+		"Should Evoker Forms be able to cast spells and spawn pod infectors?" = true
+		#Default 25
+		#Range: 12.0 ~ 1.7976931348623157E308
+		"Sets Base Form's Max health" = 25.0
+		#Default true
+		"Should PLAYER Forms break blocks?" = false
+		#Default 100
+		#Range: > 1
+		"Sets the time before throwing a potion when buffing" = 100
+		#Default 0.15
+		#Range: 0.01 ~ 1.7976931348623157E308
+		"Sets the chance of a creature being infected and turned into it's counterpart by any flood form" = 0.15
+		#Default true
+		"Should Player Forms use Potions?" = true
+		#Default true
+		"Should Player Forms be able to wear armor and take your armor on death ( no restrictions )?" = true
+		#Default true
+		"Should Human Forms be able to wear armor and take armor on death ( wave needs to be atleast 4 )?" = false
+		#Default true
+		"Should Vindicator Forms use iron axes?" = true
+		#Default true
+		"Should Evoker Forms use Totems of Undying?" = true
+		#Default true
+		"Should Base Forms cause a screen shake when roaring?" = true
+		#Default false
+		"Should All Flood Forms be infectious and have a chance to turn players, villagers and zombies and more into their counterparts? For this to work, you also have to specify the conversions and transformations of each creature, just like with a pod infector infection" = false
+		"Potions that are used by the player form to buff the flood forms , NOT effects" = ["minecraft:fire_resistance", "minecraft:regeneration", "minecraft:strength"]
+
+	["Mob Stuff"."Flooded Creeper"]
+		#Default true
+		"Should Flooded Creepers climb?" = true
+		#Default true
+		"Should Flooded Creeper NOT despawn after they have seen a target for too long?" = true
+		#Default true
+		"Should Flooded Creepers have the smart ability to explode and breach walls when it cannot reach the player?" = true
+		#Default 7.0
+		#Range: 3.5 ~ 1.7976931348623157E308
+		"Sets Flooded Creeper's Damage" = 7.0
+		#Default 3000
+		"Sets Flooded Creeper's time before it should STOP despawning when it has seen a target for too long" = 3000
+		#Default 30
+		#Range: 10.0 ~ 1.7976931348623157E308
+		"Sets Flooded Creeper's Max health" = 30.0
+
+	["Mob Stuff"."Flooded Golems"]
+		#Default true
+		"Should Flooded Golems break blocks?" = false
+		#Default true
+		"If the Flooded Golem should perform little screen shakes when walking for a touch of realism, same as sangheili" = true
+		#Default true
+		"If the Flooded Golem should regenerate little by little and cover the biomass with the regenerated and armed shell" = true
+		#Default true
+		"If the Flooded Golem should perform screen shakes" = true
+		#Default 30
+		#Range: 10.0 ~ 1.7976931348623157E308
+		"Sets Flooded Golem's Armor" = 30.0
+		#Default 25
+		#Range: 10.0 ~ 1.7976931348623157E308
+		"Sets Flooded Golem's Damage" = 25.0
+		#Default 120
+		#Range: 50.0 ~ 1.7976931348623157E308
+		"Sets Flooded Golem's Max health" = 120.0
+		#Default true
+		"Should Flooded Golems NOT despawn after they have seen a target for too long?" = true
+		#Default 5000
+		"Sets Flooded Golem's time before it should STOP despawning when it has seen a target for too long" = 5000
+		#Default true
+		"If the Flooded Golem should have a chance to spawn a disarmed version of itself at death, when the armor doesn't die, but the biomass does" = true
+
+	["Mob Stuff"."Tank Forms"]
+		#Default 125
+		#Range: 50.0 ~ 1.7976931348623157E308
+		"Sets Tank Form's Max health" = 125.0
+		#Default true
+		"Should Tank Forms climb?" = true
+		#Default true
+		"Should Tank Forms break blocks?" = false
+		#Default 20
+		#Range: 10.0 ~ 1.7976931348623157E308
+		"Sets Tank Form's Damage" = 20.0
+		#Default true
+		"Should Tank Forms regenerate?" = true
+		#Default true
+		"Should Tank Forms make your screen tremble when they walk?" = true
+
+	["Mob Stuff"."Enderman Form"]
+		#Default true
+		"Should Enderman Forms bring reinforcements with teleportation?" = true
+		#Default 7500
+		"Sets Enderman Form's time before it should STOP despawning when it has seen a target for too long" = 7500
+		#Default true
+		"Should Enderman Forms use teleportation abilities?" = true
+		#Default true
+		"Should Enderman Forms take damage when in contact with water?" = true
+		#Default 11
+		#Range: 3.0 ~ 1.7976931348623157E308
+		"Sets Enderman Form's Damage" = 11.0
+		#Default true
+		"Should Enderman Forms regenerate?" = true
+		#Default true
+		"Should Enderman Forms NOT despawn after they have seen a target for too long?" = true
+		#Default 55
+		#Range: 15.0 ~ 1.7976931348623157E308
+		"Sets Enderman Form's Max health" = 55.0
+
+	["Mob Stuff"."Carrier Forms"]
+		#Default true
+		"Should Carrier Forms NOT despawn after they have seen a target for too long?" = true
+		#Default 2.75
+		#Range: 0.0 ~ 1.7976931348623157E308
+		"Sets the damage of the explosion of the carrier form" = 2.75
+		#Default 35
+		#Range: 10.0 ~ 1.7976931348623157E308
+		"Sets Carrier Form's Max health" = 35.0
+		#Default true
+		"Should Base Forms age and turn into carrier forms?" = true
+		#Default 7000
+		"Sets Carrier's time before it should STOP despawning when it has seen a target for too long" = 9000
+		#Default true
+		"Should Carrier Forms cause a screen shake when exploding?" = true
+		#Default 0
+		#Range: 0.0 ~ 1.7976931348623157E308
+		"Sets Carrier Form's Damage" = 0.0
+		#Default true
+		"Should Carrier Forms regenerate?" = true
+		#Default 10000
+		"Time in ticks until any base form ages and turns into a carrier form" = 20000
+
+	["Mob Stuff"."Flood Tadpoles"]
+		#Default 2400
+		"Time in ticks until any flood tadpole ages and turns into a pod infector" = 2400
+		#Default 4
+		#Range: 1.0 ~ 1.7976931348623157E308
+		"Sets Flood Tadpole's Max health" = 4.0
+
+	["Mob Stuff".Transformations]
+		#Default true
+		"Should Pod Infectors transform villagers?" = false
+		#Default true
+		"Should Tremorsauruses (FROM ALEX'S CAVES) turn into tyrant forms?" = false
+		"Mobs that can turn into Flooded Golems" = []
+		#Default true
+		"Should Pod Infectors transform pillagers?" = false
+		"Mobs that can turn into Human Forms" = []
+		"Mobs that can turn into Evoker Forms" = []
+		"Mobs that can turn into Pillager Forms" = []
+		"Mobs that can turn into Tyrant Forms" = []
+		#Default true
+		"Should Pod Infectors transform players?" = false
+		#Default true
+		"Should Pod Infectors transform iron golems?" = false
+		#Default 500
+		"How many points does the death of a player or iron golem by a flood form add to the flood evolution? This number will be multiplied by the number of the wave" = 0
+		#Default true
+		"Should Pod Infectors transform zombies?" = false
+		"Mobs that can turn into Enderman Forms" = []
+		#Default true
+		"Should Pod Infectors transform evokers?" = false
+		#Default true
+		"Should Pod Infectors transform endermans?" = false
+		"Mobs that can turn into Vindicator Forms" = []
+		#Default true
+		"Should Pod Infectors transform vindicators?" = false
+		"Mobs that can turn into Villager Forms" = []
+
+	["Mob Stuff"."Bodies / Corpses"]
+		#Default true
+		"Should corpses of the base forms have a shake animation applied to their head?" = true
+		#Default true
+		"Should corpses of the base forms have a chance to spawn after they get defeated?" = true
+		#Default true
+		"Should corpses make your screen shake when falling to the ground?" = true
+
+	["Mob Stuff"."Illager / Raider stuff"]
+		#Default 3
+		"The wave when the raider alliance will start their common enemy project, stopping all attacks pointed at the human side " = 3
+		#Default true
+		"Should Illager Forms STOP attacking iron golems or players or villagers when they reach a certain stage due to the potential danger that the flood represents?" = true
+
+	["Mob Stuff"."Brute Forms"]
+		#Default true
+		"Should Brute Forms use Gravity Hammers?" = true
+		#Default true
+		"Should Brute Forms make your screen tremble when they walk?" = true
+		#Default true
+		"Should Brute Forms regenerate?" = true
+		#Default true
+		"Should Brute Forms break blocks?" = false
+		#Default 5000
+		"Sets Brute's time before it should STOP despawning when it has seen a target for too long" = 5000
+		#Default true
+		"Should Brute Forms climb?" = true
+		#Default true
+		"Should Brute Forms use guns?" = true
+		#Default 90
+		#Range: 35.0 ~ 1.7976931348623157E308
+		"Sets Brute Form's Max health" = 90.0
+		#Default true
+		"Should Brute Forms NOT despawn after they have seen a target for too long?" = true
+		"Guns that can be used by the brute forms" = ["mangler", "cqs48_shotgun", "brute_shot"]
+		#Default 20
+		#Range: 10.0 ~ 1.7976931348623157E308
+		"Sets Brute Form's Damage" = 20.0
+
+["Items & Weapons"]
+
+	["Items & Weapons"."Energy Stave"]
+		#Default 20
+		#Range: 10.0 ~ 1.7976931348623157E308
+		Damage = 20.0
+
+	["Items & Weapons"."Gravity Hammer"]
+		#Default 18.5
+		#Range: 8.0 ~ 1.7976931348623157E308
+		Damage = 18.5
+		#Default 3.75
+		#Range: 1.3 ~ 1.7976931348623157E308
+		"Reach Distance" = 3.75
+
+	["Items & Weapons"."Energy Sword"]
+		#Default 16
+		#Range: 6.0 ~ 1.7976931348623157E308
+		Damage = 16.0
+		#Default 3.3
+		#Range: 1.0 ~ 1.7976931348623157E308
+		"Reach Distance" = 3.3
+
