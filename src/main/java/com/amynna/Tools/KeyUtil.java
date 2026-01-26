@@ -635,7 +635,7 @@ public final class KeyUtil {
             byte[] sigBytes = sig.sign();
 
             // Sauvegarder la signature dans un fichier (encodée en Base64)
-            Files.write(signFile.toPath(), Base64.getEncoder().encode(sigBytes));
+            Files.write(signFile.toPath(), sigBytes);
 
             Logger.log("Signature générée : " + signFilePath);
             return new SignedFile(file, signFile);
@@ -719,7 +719,7 @@ public final class KeyUtil {
             // data du fichier
             byte[] data = Files.readAllBytes(signedFile.file().toPath());
             // data de la signature
-            byte[] sigBytes = Base64.getDecoder().decode(Files.readAllBytes(signedFile.signature().toPath()));
+            byte[] sigBytes = Files.readAllBytes(signedFile.signature().toPath());
 
             Signature sig = Signature.getInstance(KEY_ALGORITHM);
             sig.initVerify(publicKey);

@@ -61,7 +61,19 @@ public final class App {
         if (args.length == 3) {
             signedFile = new SignedFile(new File(args[1]), new File(args[2]));
             signedFile.valid();
-        } else Logger.log("Le chemin du fichier et le chemin de la signature sont requis. Usage: verify <filePath> <signaturePath>");
+        } else if (args.length == 4) {
+            signedFile = new SignedFile(new File(args[1]), new File(args[2]));
+            String keyAlias = args[3];
+            PublicKey publicKey = KeyUtil.loadPublicKey(keyAlias, Asker.askPassword());
+            boolean ok = KeyUtil.verifyFile(signedFile, publicKey);
+            if (ok) {
+                Logger.log("La signature est valide avec la clé '" + keyAlias + "'.");
+            } else {
+                Logger.log("La signature n'est pas valide avec la clé '" + keyAlias + "'.");
+            }
+        }
+
+        else Logger.log("Le chemin du fichier et le chemin de la signature sont requis. Usage: verify <filePath> <signaturePath>");
     }
 
     /**
