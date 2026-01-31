@@ -1,161 +1,168 @@
 package com.amynna.OriginLauncher;
 
 import com.amynna.Tools.*;
-import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
-import fr.litarvan.openauth.microsoft.MicrosoftAuthenticationException;
-import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.lenni0451.commons.httpclient.HttpClient;
+import net.raphimc.minecraftauth.MinecraftAuth;
+import net.raphimc.minecraftauth.java.JavaAuthManager;
+import net.raphimc.minecraftauth.msa.model.MsaDeviceCode;
+import net.raphimc.minecraftauth.msa.service.impl.DeviceCodeMsaAuthService;
 
-import java.io.File;
-import java.time.LocalDate;
+import java.io.IOException;
+import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 /**
  * La classe {@code Auth} gère l'authentification avec Mojang / Microsoft.
  */
 public final class Auth {
 
-    /**
-     * Le jeton de rafraîchissement utilisé pour maintenir la session active.
-     */
-    private String token;
-    /**
-     * Le résultat de l'authentification avec Microsoft.
-     */
-    private MicrosoftAuthResult msAuthResult;
+    private HttpClient httpClient = null;
 
-    /**
-     * Méthode principale qui gère l'authentification avec Mojang / Microsoft.
-     */
+    private JavaAuthManager.Builder authManagerBuilder = null;
+
+    private JavaAuthManager authManager = null;
+
+    private static final String BASE_CLIENT_ID = "000000004C12AE29";
+
+
+    public Auth() {
+        String userAgent = AppProperties.APP_NAME + "/" + AppProperties.APP_VERSION +
+                " (" + System.getProperty("os.name") + " " + System.getProperty("os.version") + "; " +
+                System.getProperty("os.arch") + ") Java/" + System.getProperty("java.version");
+        httpClient = MinecraftAuth.createHttpClient(userAgent);
+
+        authManagerBuilder = JavaAuthManager.create(httpClient);
+
+
+
+    }
+
     public void authentifie() {
 
-        // Instanciation de l'authentificateur Microsoft
-        MicrosoftAuthenticator authenticator = new MicrosoftAuthenticator();
-        msAuthResult = null;
+        tryRestaureToken();
 
         try {
-            // Si un jeton de rafraîchissement est sauvegardé
-            if (haveSavedToken() && restaureToken()) {
-                // restaure le jeton de rafraîchissement sauvegardé
-                msAuthResult = authenticator.loginWithRefreshToken(token);
+
+            if (isAuthenticated()) {
+
+                System.out.println("✅ Authentifié en tant que " + authManager.getMinecraftProfile().getUpToDate().getName());
+
             } else {
-                // Procède au login avec JavaFX WebView
-                try {
-                    msAuthResult = authenticator.loginWithWebview();
-                } catch (Exception e) {
-                    Logger.error("Échec de l'authentification via WebView : " + e.getMessage());
-                    return;
-                }
 
-                // sauvegarde le jeton de rafraîchissement
-                saveToken(msAuthResult.getRefreshToken());
+                authManager = authManagerBuilder.login(DeviceCodeMsaAuthService::new, new Consumer<MsaDeviceCode>() {
+                    @Override
+                    public void accept(MsaDeviceCode deviceCode) {
+                        // Method to generate a verification URL and a code for the user to enter on that page
+                        //System.out.println("Go to " + deviceCode.getVerificationUri());
+                        //System.out.println("Enter code " + deviceCode.getUserCode());
+
+                        // There is also a method to generate a direct URL without needing the user to enter a code
+                        //System.out.println("Go to " + deviceCode.getDirectVerificationUri());
+                        Asker.openUrlInBrowser(deviceCode.getDirectVerificationUri());
+                    }
+                });
+                Logger.log("Username: " + authManager.getMinecraftProfile().getUpToDate().getName());
+                Logger.log("Access token: " + authManager.getMinecraftToken().getUpToDate().getToken());
+
             }
-        } catch (MicrosoftAuthenticationException e) {
-            Logger.error("Erreur d'authentification aux services de Microsoft : " + e.getMessage());
-            return;
+
+        } catch (Exception e) {
+            Logger.fatal("Erreur lors de la tentative de restauration du jeton : " + e.getMessage(), 0);
         }
 
-        // Affiche les informations de l'utilisateur connecté
-        Logger.log("Connecté en tant que " + msAuthResult.getProfile().getName() + " (UUID : " + msAuthResult.getProfile().getId() + ")");
-
+        saveToken();
     }
 
-    /**
-     * Vérifie si l'utilisateur est authentifié.
-     *
-     * @return {@code boolean} true si l'utilisateur est authentifié, false sinon.
-     */
-    public boolean isAuthenticated() {
-        return msAuthResult != null;
-    }
+    private void saveToken() {
+        JsonObject serializedAuthManager = JavaAuthManager.toJson(authManager);
+        String jsonString = serializedAuthManager.toString();
 
-    /**
-     * Récupère le résultat de l'authentification Microsoft.
-     *
-     * @return {@code MicrosoftAuthResult} Le résultat de l'authentification.
-     */
-    public MicrosoftAuthResult getMsAuthResult() {
-        return msAuthResult;
-    }
-
-
-    /**
-     * Vérifie si un jeton de rafraîchissement est déjà sauvegardé.
-     *
-     * @return {@code boolean} true si un jeton est trouvé, false sinon.
-     */
-    private boolean haveSavedToken() {
-
-        // Instancie le fichier de sauvegarde du jeton
-        File tokenFile = AppProperties.MS_AUTH_TOKEN;
-
-        // Vérifie l'existence du fichier
-        if (!tokenFile.exists()) return false;
-
-        // Vérifie que le fichier est lisible
-        if (!tokenFile.isFile() || !tokenFile.canRead()) {
-            Logger.error("Le fichier de jeton de rafraîchissement n'est pas lisible, suppression...");
-            FileManager.deleteFileIfExists(tokenFile);
-            return false;
-        }
-
-        // Atteste que le fichier est valide
-        return true;
-
-    }
-
-    /**
-     * Restaure le jeton de rafraîchissement depuis un fichier.
-     *
-     * @return {@code boolean} true si la restauration a réussi, false sinon.
-     */
-    private boolean restaureToken() {
-        // Récupère le mot de passe et l'alias pour le déchiffrement
         String password = getTokenPwd();
-        // Récupère l'alias du jeton
         String alias = AppProperties.MS_TOKEN_ALIAS;
 
-        // Tente de charger le jeton chiffré
-        token = Encrypter.loadToken(alias, password);
-        boolean result = token != null;
+        Encrypter.saveToken(alias, jsonString, password);
 
-        // Log le résultat de la restauration
-        if (result) {
-            Logger.log("🔐 Jeton de rafraîchissement restauré.");
-        } else {
-            Logger.log("❌ Échec de la restauration du jeton de rafraîchissement (probablement obselète).");
+    }
+
+    private void tryRestaureToken() {
+
+
+        String password = getTokenPwd();
+        String alias = AppProperties.MS_TOKEN_ALIAS;
+
+        String jsonTokenString = Encrypter.loadToken(alias, password);
+        if (jsonTokenString == null) return;
+        JsonObject serializedAuthManager = JsonParser.parseString(jsonTokenString).getAsJsonObject();
+
+        try {
+            authManager = JavaAuthManager.fromJson(httpClient, serializedAuthManager);
+        } catch (NoSuchElementException e) {
+            Logger.error("❌ Échec de la restauration du jeton de rafraîchissement (probablement obsolète).");
             try {
                 FileManager.deleteFileIfExists(AppProperties.MS_AUTH_TOKEN);
-            } catch (SecurityException e) {
-                Logger.error("Impossible de supprimer le fichier de jeton obselète.");
+            } catch (SecurityException ex) {
+                Logger.error("Impossible de supprimer le fichier de jeton obsolète.");
             }
         }
-
-        // Retourne le résultat de la tentative de restauration
-        return result;
     }
 
-    /**
-     * Sauvegarde le jeton de rafraîchissement dans un fichier.
-     *
-     * @param token Le jeton de rafraîchissement à sauvegarder.
-     */
-    private void saveToken(String token) {
-        // Récupère le mot de passe et l'alias pour le chiffrement
-        String password = getTokenPwd();
-        // Récupère l'alias du jeton
-        String alias = AppProperties.MS_TOKEN_ALIAS;
-
-        // Sauvegarde le jeton chiffré
-        Encrypter.saveToken(alias, token, password);
+    public boolean isAuthenticated() {
+        return authManager != null && authManager.getMinecraftToken() != null;
     }
 
-    /**
-     * Génère un mot de passe pour le stockage du jeton de rafraîchissement.
-     * Le mot de passe est basé sur des informations spécifiques à l'application et au système.
-     * (Permanant entre les sessions, mais unique pour chaque utilisateur et installation)
-     *
-     * @return {@code String} Le mot de passe généré.
-     */
-    private String getTokenPwd() {
+    public String getUsername() {
+        if (!isAuthenticated()) return "";
+        try {
+            return authManager.getMinecraftProfile().getUpToDate().getName();
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    public String getAccessToken() {
+        if (!isAuthenticated()) return "";
+        try {
+            return authManager.getMinecraftToken().getUpToDate().getToken();
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    public String getUUID() {
+        if (!isAuthenticated()) return "";
+        try {
+            return authManager.getMinecraftProfile().getUpToDate().getId().toString();
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    public String getClientId() {
+        // Je ne sais pas pourquoi mais ça fonctionne même avec une valeur statique
+        // TODO : Corriger cela pour utiliser un vrai client ID
+        return AppProperties.APP_NAME;
+    }
+
+    public String getXuid() {
+        // Je ne sais pas pourquoi mais ça fonctionne même avec une valeur statique
+        if (!isAuthenticated()) return "";
+        return "xuid";
+
+        /*
+        try {
+            // Le XUID est stocké dans les données du jeton Minecraft
+            return authManager.getMinecraftToken().getUpToDate().getXuid();
+
+        } catch (IOException e) {
+            return "";
+        }
+
+         */
+    }
+
+    private static String getTokenPwd() {
 
         String builder = AppProperties.APP_NAME +
                 AppProperties.APP_VERSION +
@@ -166,4 +173,5 @@ public final class Auth {
 
         return Encrypter.sha512(builder);
     }
+
 }

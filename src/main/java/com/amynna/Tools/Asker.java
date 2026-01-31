@@ -4,7 +4,11 @@ import com.amynna.OriginLauncher.setup.modpack.MpFilesManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.awt.Desktop;
 
 /**
  * Classe utilitaire pour afficher des boîtes de dialogue et demander des informations à l'utilisateur.
@@ -278,5 +282,32 @@ public class Asker {
             Logger.error("Impossible d'afficher la fenêtre des mods optionnels : " + ex.getMessage());
         }
     }
+
+    public static void openUrlInBrowser(String url) {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI(url));
+            } catch (IOException | URISyntaxException e) {
+                Logger.error("Impossible d'ouvrir le navigateur : " + e.getMessage());
+            }
+        } else {
+            // Alternative pour les systèmes où Desktop n'est pas supporté (certains Linux/serveurs)
+            Runtime runtime = Runtime.getRuntime();
+            try {
+                String os = AppProperties.getOsType();
+                if (os.contains("win")) {
+                    runtime.exec("rundll32 url.dll,FileProtocolHandler " + url);
+                } else if (os.contains("osx")) {
+                    runtime.exec("open " + url);
+                } else {
+                    runtime.exec("xdg-open " + url);
+                }
+            } catch (IOException e) {
+                Logger.error("Échec de l'ouverture manuelle de l'URL : " + e.getMessage());
+            }
+        }
+        Logger.log("Ouvrir : " + url);
+    }
+
 
 }

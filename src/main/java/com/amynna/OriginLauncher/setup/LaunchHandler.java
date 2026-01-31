@@ -160,15 +160,15 @@ public class LaunchHandler {
         output = output.replace("${launcher_version}", AppProperties.APP_VERSION);
 
         // MC
-        output = output.replace("${auth_player_name}", App.get().getAuth().getMsAuthResult().getProfile().getName());
+        output = output.replace("${auth_player_name}", App.get().getAuth().getUsername());
         output = output.replace("${version_name}", AppProperties.MINECRAFT_VERSION);
         output = output.replace("${game_directory}", AppProperties.MINECRAFT_DIR.getPath());
         output = output.replace("${assets_root}", AppProperties.MINECRAFT_ASSETS_DIR.getPath());
         output = output.replace("${assets_index_name}", assetIndexName);
-        output = output.replace("${auth_uuid}", App.get().getAuth().getMsAuthResult().getProfile().getId());
-        output = output.replace("${auth_access_token}", App.get().getAuth().getMsAuthResult().getAccessToken());
-        output = output.replace("${clientid}", App.get().getAuth().getMsAuthResult().getClientId());
-        output = output.replace("${auth_xuid}", App.get().getAuth().getMsAuthResult().getXuid());
+        output = output.replace("${auth_uuid}", App.get().getAuth().getUUID());
+        output = output.replace("${auth_access_token}", App.get().getAuth().getAccessToken());
+        output = output.replace("${clientid}", App.get().getAuth().getClientId());
+        output = output.replace("${auth_xuid}", App.get().getAuth().getXuid());
         output = output.replace("${user_type}", "msa"); // Toujours "msa" pour Microsoft
         output = output.replace("${version_type}", versionType);
         output = output.replace("${resolution_width}", Config.get().getCustom_width() + "");
@@ -284,6 +284,8 @@ public class LaunchHandler {
      */
     public void start() {
         List<String> command = buildLaunchCommand();
+
+        Logger.log("Commande de lancement : " + String.join(" ", command));
 
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(AppProperties.MINECRAFT_DIR);

@@ -41,7 +41,7 @@ public class AssetManager {
          */
         public String getDownloadUrl() {
             String hashPrefix = hash.substring(0, 2);
-            return ASSETS_URL_BASE + hashPrefix + File.separator + hash;
+            return ASSETS_URL_BASE + hashPrefix + "/" + hash;
         }
 
         /** Télécharge l'asset et vérifie son SHA-1 (hash). */
