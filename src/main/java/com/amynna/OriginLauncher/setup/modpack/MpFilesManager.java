@@ -42,7 +42,7 @@ public class MpFilesManager {
             // Initialise le fichier avec le répertoire Minecraft + le chemin donné
             this.file = new File(AppProperties.MINECRAFT_DIR + File.separator + path);
 
-            String[] pathParts = path.split(File.separator);
+            String[] pathParts = path.split("[/\\\\]");
             this.name = pathParts[pathParts.length - 1];
             this.description = "";
 
