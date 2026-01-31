@@ -24,7 +24,7 @@ public final class AppProperties {
     /** URL du serveur distant pour les mises à jour et la récupération des clés publiques. */
     public static final String REPO_SERVER_URL = "http://localhost:8000/v1/";
     /** Emplacement du côté serveur des signatures des fichiers. */
-    public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + "signatures" + File.separator;
+    public static final String SIGNATURE_LOCATION_ON_SERVER = REPO_SERVER_URL + "signatures/";
     /** Répertoire du modpack sur le serveur. */
     public static final String MODPACK_DIR_ON_SERVER = "modpack/";
     /** Répertoire admin du modpack sur le serveur. */

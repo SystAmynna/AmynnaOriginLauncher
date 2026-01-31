@@ -1,0 +1,5 @@
+# Garder les fichiers .json en format UNIX (LF) même sur Windows
+*.json text eol=lf
+
+# Traiter les fichiers de signature comme binaires (ne jamais toucher)
+*.sig binary

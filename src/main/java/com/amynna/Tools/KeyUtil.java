@@ -626,7 +626,7 @@ public final class KeyUtil {
         // Signer le fichier
         try {
             // Lire le contenu du fichier
-            byte[] data = Files.readAllBytes(file.toPath());
+            byte[] data = Encrypter.getFileBytesNormalized(file);
 
             // Signer les données
             Signature sig = Signature.getInstance(KEY_ALGORITHM);
@@ -717,9 +717,9 @@ public final class KeyUtil {
 
         try {
             // data du fichier
-            byte[] data = Files.readAllBytes(signedFile.file().toPath());
+            byte[] data = Encrypter.getFileBytesNormalized(signedFile.file());
             // data de la signature
-            byte[] sigBytes = Files.readAllBytes(signedFile.signature().toPath());
+            byte[] sigBytes = Encrypter.getFileBytesNormalized(signedFile.signature());
 
             Signature sig = Signature.getInstance(KEY_ALGORITHM);
             sig.initVerify(publicKey);

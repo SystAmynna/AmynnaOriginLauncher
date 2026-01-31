@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -12,6 +13,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 
 public class Encrypter {
+
+    private static final String [] FILE_FORMATS_TO_NORMALIZE = {".json", ".txt", ".xml", ".yml"};
 
     public static String hashString(String input, String algorithm) {
         try {
@@ -125,6 +128,27 @@ public class Encrypter {
             Logger.error("❌ Erreur lors de la récupération du token : " + e.getMessage());
             return null;
         }
+    }
+
+
+    public static byte[] getFileBytesNormalized(File file) throws Exception {
+        String name = file.getName().toLowerCase();
+
+        for (String ext : FILE_FORMATS_TO_NORMALIZE) {
+            if (name.endsWith(ext)) {
+                // Lecture en tant que String
+                String content = Files.readString(file.toPath());
+
+                // REMPLACEMENT MAGIQUE : On force le LF (\n) partout
+                // On remplace d'abord les CRLF (\r\n) par LF (\n) pour Windows
+                // On pourrait aussi remplacer les CR seuls (\r) si on voulait être puriste (Mac OS 9)
+                content = content.replace("\\R", "\n");
+
+                return content.getBytes(StandardCharsets.UTF_8);
+            }
+        }
+        return Files.readAllBytes(file.toPath());
+
     }
 
 
