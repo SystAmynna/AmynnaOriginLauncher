@@ -13,6 +13,7 @@ Ce projet est un lanceur personnalisé pour le client (Minecraft moddé) du serv
     - Reconnexion automatique (à Mojang / Microsoft)
     - Vérifier les fichiers du jeu (intégrité)
     - Supprimer / Désinstaller le Launcher
+    - Longueure du pool de threads de downloads (8 par défaut) 
 - Menu Mods optionnels
 - Mode Administrateur (pour les techniciens du serveur)
 - Interface Graphique améliorée

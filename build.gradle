@@ -5,20 +5,12 @@ plugins {
 }
 
 group = 'com.amynna'
-version = '0.3.1'
+version = '0.4.0'
 
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
-    //maven { url 'https://litarvan.github.io/maven' } // TODO : Supprimer OpenAuth
 }
-
-/*
-javafx {
-    version = "17"
-    modules = ['javafx.swing', 'javafx.web']
-}
-*/
 
 // Use extra properties with type-safe accessors
 def bootstrapName = 'OriginRP'
@@ -32,7 +24,6 @@ def globalDeps = [
 ]
 
 def launcherDeps = [
-        //'fr.litarvan:openauth:1.1.6', // TODO : Supprimer OpenAuth
         'com.google.code.gson:gson:2.10.1',
         'com.github.RaphiMC:MinecraftAuth:3eb6e3a913',
         'net.lenni0451.commons:httpclient:1.6.0',
@@ -134,17 +125,6 @@ tasks.register(launcherName, ShadowJar) { // <-- Changé en ShadowJar
         launcherDeps.each { depString ->
             include(dependency(depGA(depString)))
         }
-        /*
-        // TODO : SUPPRIMER JAVAFX QUAND OPENAUTH SERA MIS À JOUR
-        include(dependency('org.openjfx:javafx-swing'))
-        include(dependency('org.openjfx:javafx-web'))
-        include(dependency('org.openjfx:javafx-controls'))
-        include(dependency('org.openjfx:javafx-graphics'))
-        include(dependency('org.openjfx:javafx-base'))
-        include(dependency('org.openjfx:javafx-media'))
-        // TODO ------------------------------
-        */
-        // ShadowJar exclura automatiquement tout ce qui n'est pas inclus
     }
 
     // Exclure les fichiers de signature en conflit
