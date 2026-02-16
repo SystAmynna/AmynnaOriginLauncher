@@ -4,7 +4,6 @@ import com.amynna.Tools.AppProperties;
 import com.amynna.Tools.FileManager;
 import com.amynna.Tools.Logger;
 import com.amynna.Tools.SignedFile;
-import org.json.JSONObject;
 
 /** La classe {@code ModpackHandler} gère les opérations liées aux modpacks dans le lanceur. */
 public class ModpackHandler {

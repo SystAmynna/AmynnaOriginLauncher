@@ -50,6 +50,8 @@ public class MpFilesManager {
             }
         }
 
+        deleteNonAutorizedFiles(toDownload);
+
     }
 
     protected void checkAll() {
@@ -64,6 +66,8 @@ public class MpFilesManager {
                 mpFile.download();
             }
         }
+
+        deleteNonAutorizedFiles(toCheck);
 
     }
 
@@ -86,20 +90,6 @@ public class MpFilesManager {
             }
         }
 
-        // Vérifier les fichiers existants
-        File[] files = AppProperties.MINECRAFT_MODS_DIR.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                MpFile mpFile = toDownload.stream()
-                        .filter(f -> f.path.equals(file.getName()))
-                        .findFirst()
-                        .orElse(null);
-                if (mpFile == null) {
-                    FileManager.deleteFileIfExists(file);
-                }
-            }
-        }
-
         return toDownload;
     }
 
@@ -116,10 +106,31 @@ public class MpFilesManager {
 
     }
 
+    private void deleteNonAutorizedFiles(List<MpFile> mpFiles) {
 
+        if (AdminIdentificator.isAdmin()) {
+            Logger.log("Mode admin activé : aucun fichier du modpack ne sera supprimé.");
+            return;
+        }
 
+        // Vérifier les fichiers existants
+        File[] files = AppProperties.MINECRAFT_MODS_DIR.listFiles();
 
+        if (files == null) {
+            Logger.log("Impossible d'accéder au dossier des mods : " + AppProperties.MINECRAFT_MODS_DIR.getPath());
+            return;
+        }
 
+        for (File file : files) {
+            MpFile mpFile = mpFiles.stream()
+                    .filter(f -> f.path.equals(file.getName()))
+                    .findFirst()
+                    .orElse(null);
+            if (mpFile == null) {
+                FileManager.deleteFileIfExists(file);
+            }
+        }
 
+    }
 
 }
