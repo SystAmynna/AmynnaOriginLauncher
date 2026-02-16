@@ -11,7 +11,7 @@ import java.util.List;
 
 public class AdminIdentificator {
 
-    public static boolean admin = false;
+    private static boolean admin = false;
 
     private static final String ERROR_ADMIN_NOT_IDENTIFIED = "Échec de l'identification de l'administrateur";
 
@@ -65,8 +65,6 @@ public class AdminIdentificator {
         Logger.error(ERROR_ADMIN_NOT_IDENTIFIED + " : aucune clé valide trouvée.");
 
     }
-
-
 
 
 

@@ -30,6 +30,8 @@ def launcherDeps = [
         'net.lenni0451.commons:gson:1.4.0',
         'net.java.dev.jna:jna:5.13.0',
         'net.java.dev.jna:jna-platform:5.13.0',
+        'org.xerial:sqlite-jdbc:3.45.1.0',
+        'org.slf4j:slf4j-simple:2.0.9'
 ]
 
 dependencies {
