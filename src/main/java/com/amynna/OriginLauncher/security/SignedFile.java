@@ -11,7 +11,7 @@ public record SignedFile(File file, File signature) {
     }
 
     public boolean valid() {
-        return exists() && KeyUtil.validateSignature(this);
+        return exists() && KeyVerifier.validateSignature(this);
     }
 
     public void delete() {

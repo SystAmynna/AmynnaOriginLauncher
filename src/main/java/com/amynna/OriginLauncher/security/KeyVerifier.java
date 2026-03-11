@@ -1,6 +1,8 @@
 package com.amynna.OriginLauncher.security;
 
 import com.amynna.OriginLauncher.AppProperties;
+import com.amynna.OriginLauncher.FileManager;
+import com.amynna.OriginLauncher.download.DownloadHandler;
 import com.amynna.OriginLauncher.output.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,7 +13,7 @@ import java.security.Signature;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KeyVerifier {
+public final class KeyVerifier {
 
     /**
      * Liste des clés publiques de confiance pour valider les signatures des fichiers.
@@ -40,7 +42,7 @@ public class KeyVerifier {
 
         // Télécharger le fichier des clés publiques de confiance
         final String trustedKeysFileName = "trusted-keys.json";
-        SignedFile trustedKeysFile = FileManager.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
+        SignedFile trustedKeysFile = DownloadHandler.downloadAndValidateFile(trustedKeysFileName, AppProperties.TEMP_DIR.toPath() + File.separator + trustedKeysFileName);
         if (trustedKeysFile == null) {
             Logger.error(Logger.LOG_CANAL.KEYS, Logger.VERBOSE_LEVEL.STANDARD,"⚠️  Impossible de charger le fichier des clés publiques de confiance.");
             return;

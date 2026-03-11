@@ -29,7 +29,8 @@ public final class Logger {
         MAIN,
         GRAPHIC,
         FILES,
-        KEYS
+        KEYS,
+        DOWNLOAD
     }
     /** Niveau de Verbose par canal */
     private static final Map<LOG_CANAL, VERBOSE_LEVEL> CANAL_VERBOSE_LEVEL = new EnumMap<>(LOG_CANAL.class);
@@ -38,6 +39,7 @@ public final class Logger {
         CANAL_VERBOSE_LEVEL.put(LOG_CANAL.GRAPHIC, VERBOSE_LEVEL.VERY_VERBOSE);
         CANAL_VERBOSE_LEVEL.put(LOG_CANAL.FILES, VERBOSE_LEVEL.VERY_VERBOSE);
         CANAL_VERBOSE_LEVEL.put(LOG_CANAL.KEYS, VERBOSE_LEVEL.VERY_VERBOSE);
+        CANAL_VERBOSE_LEVEL.put(LOG_CANAL.DOWNLOAD, VERBOSE_LEVEL.VERY_VERBOSE);
     }
 
     public static final String RESET  = "\u001B[0m";

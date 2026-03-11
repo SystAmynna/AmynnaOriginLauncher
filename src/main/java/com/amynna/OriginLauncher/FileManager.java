@@ -1,9 +1,14 @@
 package com.amynna.OriginLauncher;
 
 import com.amynna.OriginLauncher.output.Logger;
+import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 public final class FileManager {
 
@@ -109,5 +114,44 @@ public final class FileManager {
 
         return null; // Fichier non trouvé
     }
+
+    /**
+     * Ouvre un fichier JSON et le charge dans un objet JSONObject.
+     *
+     * @param file Fichier JSON à ouvrir
+     * @return Un objet JSONObject contenant les données du fichier, ou null en cas d'erreur
+     */
+    public static JSONObject openJsonFile(File file) {
+
+        if (!file.exists()) {
+            Logger.error(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD,"Le fichier JSON n'existe pas : " + file.getPath());
+            return null;
+        }
+
+        try {
+            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+            return new JSONObject(content);
+        } catch (IOException e) {
+            Logger.error(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD,"Erreur lors de la lecture du fichier JSON : " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Sauvegarde un objet JSONObject dans un fichier JSON.
+     *
+     * @param jsonObject Objet JSONObject à sauvegarder
+     * @param file       Fichier de destination
+     */
+    public static File saveJsontoFile(JSONObject jsonObject, File file) {
+        try {
+            Files.writeString(file.toPath(), jsonObject.toString(4), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return file;
+        } catch (IOException e) {
+            Logger.error(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD,"Erreur lors de l'écriture du fichier JSON : " + e.getMessage());
+            return null;
+        }
+    }
+
 
 }

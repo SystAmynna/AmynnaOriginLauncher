@@ -20,7 +20,6 @@ def bouncyCastleVersion = '1.78'
 def globalDeps = [
         'org.bouncycastle:bcprov-jdk18on:' + bouncyCastleVersion,
         'org.bouncycastle:bcpkix-jdk18on:' + bouncyCastleVersion,
-        'org.json:json:20231013',
 ]
 
 def launcherDeps = [
