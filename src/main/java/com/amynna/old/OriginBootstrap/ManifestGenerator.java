@@ -1,7 +1,7 @@
-package com.amynna.OriginBootstrap;
+package com.amynna.old.OriginBootstrap;
 
-import com.amynna.Tools.FileManager;
-import com.amynna.Tools.Logger;
+import com.amynna.old.Tools.FileManager;
+import com.amynna.old.Tools.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

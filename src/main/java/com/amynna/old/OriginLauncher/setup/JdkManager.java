@@ -1,8 +1,8 @@
-package com.amynna.OriginLauncher.setup;
+package com.amynna.old.OriginLauncher.setup;
 
-import com.amynna.Tools.AppProperties;
-import com.amynna.Tools.FileManager;
-import com.amynna.Tools.Logger;
+import com.amynna.old.Tools.AppProperties;
+import com.amynna.old.Tools.FileManager;
+import com.amynna.old.Tools.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -14,7 +14,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 /** Gestionnaire du JDK pour le lanceur. */

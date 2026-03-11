@@ -1,7 +1,6 @@
-package com.amynna.Tools;
+package com.amynna.old.Tools;
 
-import com.amynna.OriginLauncher.setup.modpack.MpFilesManager;
-import com.amynna.OriginLauncher.setup.modpack.OptionalMpFile;
+import com.amynna.old.OriginLauncher.setup.modpack.OptionalMpFile;
 
 import javax.swing.*;
 import java.awt.*;

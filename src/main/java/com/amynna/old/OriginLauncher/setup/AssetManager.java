@@ -1,8 +1,8 @@
-package com.amynna.OriginLauncher.setup;
+package com.amynna.old.OriginLauncher.setup;
 
-import com.amynna.Tools.AppProperties;
-import com.amynna.Tools.FileManager;
-import com.amynna.Tools.Logger;
+import com.amynna.old.Tools.AppProperties;
+import com.amynna.old.Tools.FileManager;
+import com.amynna.old.Tools.Logger;
 import org.json.JSONObject;
 
 import java.io.File;

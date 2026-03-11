@@ -1,6 +1,7 @@
-package com.amynna.OriginLauncher;
+package com.amynna.old.OriginLauncher;
 
 import com.amynna.Tools.*;
+import com.amynna.old.Tools.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.lenni0451.commons.httpclient.HttpClient;

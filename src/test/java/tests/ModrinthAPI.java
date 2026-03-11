@@ -8,8 +8,8 @@ import java.net.http.HttpResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import com.amynna.Tools.AppProperties;
-import com.amynna.Tools.Logger;
+import com.amynna.old.Tools.AppProperties;
+import com.amynna.old.Tools.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

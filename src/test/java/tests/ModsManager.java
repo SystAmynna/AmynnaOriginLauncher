@@ -1,6 +1,9 @@
 package tests;
 
-import com.amynna.Tools.*;
+import com.amynna.old.Tools.AppProperties;
+import com.amynna.old.Tools.FileManager;
+import com.amynna.old.Tools.Logger;
+import com.amynna.old.Tools.SignedFile;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

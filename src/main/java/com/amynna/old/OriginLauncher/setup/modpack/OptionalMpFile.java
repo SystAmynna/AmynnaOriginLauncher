@@ -1,7 +1,7 @@
-package com.amynna.OriginLauncher.setup.modpack;
+package com.amynna.old.OriginLauncher.setup.modpack;
 
-import com.amynna.Tools.FileManager;
-import com.amynna.Tools.Logger;
+import com.amynna.old.Tools.FileManager;
+import com.amynna.old.Tools.Logger;
 
 import java.io.File;
 

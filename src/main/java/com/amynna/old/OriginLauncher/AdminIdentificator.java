@@ -1,6 +1,7 @@
-package com.amynna.OriginLauncher;
+package com.amynna.old.OriginLauncher;
 
 import com.amynna.Tools.*;
+import com.amynna.old.Tools.*;
 
 import java.io.File;
 import java.io.IOException;

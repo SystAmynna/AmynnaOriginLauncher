@@ -1,10 +1,8 @@
 package tests;
 
-import com.amynna.OriginLauncher.Auth;
-import com.amynna.OriginLauncher.setup.JdkManager;
-import com.amynna.OriginLauncher.setup.LibManager;
-import com.amynna.Tools.AppProperties;
-import com.amynna.Tools.Asker;
+import com.amynna.old.OriginLauncher.Auth;
+import com.amynna.old.Tools.AppProperties;
+import com.amynna.old.Tools.Asker;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
 import org.junit.jupiter.api.Test;

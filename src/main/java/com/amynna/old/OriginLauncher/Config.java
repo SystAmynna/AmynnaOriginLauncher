@@ -1,10 +1,8 @@
-package com.amynna.OriginLauncher;
+package com.amynna.old.OriginLauncher;
 
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
 
 
 // TODO : Implémenter cette classe pour gérer la configuration du launcher

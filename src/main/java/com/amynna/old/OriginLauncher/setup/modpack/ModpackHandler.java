@@ -1,9 +1,9 @@
-package com.amynna.OriginLauncher.setup.modpack;
+package com.amynna.old.OriginLauncher.setup.modpack;
 
-import com.amynna.Tools.AppProperties;
-import com.amynna.Tools.FileManager;
-import com.amynna.Tools.Logger;
-import com.amynna.Tools.SignedFile;
+import com.amynna.old.Tools.AppProperties;
+import com.amynna.old.Tools.FileManager;
+import com.amynna.old.Tools.Logger;
+import com.amynna.old.Tools.SignedFile;
 
 /** La classe {@code ModpackHandler} gère les opérations liées aux modpacks dans le lanceur. */
 public class ModpackHandler {

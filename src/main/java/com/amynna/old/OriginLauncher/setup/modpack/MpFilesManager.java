@@ -1,10 +1,10 @@
-package com.amynna.OriginLauncher.setup.modpack;
+package com.amynna.old.OriginLauncher.setup.modpack;
 
-import com.amynna.OriginLauncher.AdminIdentificator;
-import com.amynna.Tools.AppProperties;
-import com.amynna.Tools.Asker;
-import com.amynna.Tools.FileManager;
-import com.amynna.Tools.Logger;
+import com.amynna.old.OriginLauncher.AdminIdentificator;
+import com.amynna.old.Tools.AppProperties;
+import com.amynna.old.Tools.Asker;
+import com.amynna.old.Tools.FileManager;
+import com.amynna.old.Tools.Logger;
 
 import java.io.File;
 import java.util.List;

@@ -1,8 +1,8 @@
-package com.amynna.OriginLauncher.setup.modpack;
+package com.amynna.old.OriginLauncher.setup.modpack;
 
-import com.amynna.OriginLauncher.AdminIdentificator;
-import com.amynna.Tools.Logger;
-import com.amynna.Tools.SqLiteApi;
+import com.amynna.old.OriginLauncher.AdminIdentificator;
+import com.amynna.old.Tools.Logger;
+import com.amynna.old.Tools.SqLiteApi;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -1,10 +1,10 @@
 package tests;
 
 
-import com.amynna.Tools.AppProperties;
+import com.amynna.old.Tools.AppProperties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import com.amynna.OriginBootstrap.App;
+import com.amynna.old.OriginBootstrap.App;
 
 import java.io.File;
 

@@ -1,12 +1,14 @@
 package tests;
 
-import com.amynna.Tools.*;
+import com.amynna.old.Tools.AppProperties;
+import com.amynna.old.Tools.Encrypter;
+import com.amynna.old.Tools.FileManager;
+import com.amynna.old.Tools.Logger;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticationException;
 import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
 
 import java.io.File;
-import java.time.LocalDate;
 
 /**
  * La classe {@code Auth} gère l'authentification avec Mojang / Microsoft.

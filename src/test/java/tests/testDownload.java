@@ -1,6 +1,6 @@
 package tests;
 
-import com.amynna.Tools.FileManager;
+import com.amynna.old.Tools.FileManager;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;

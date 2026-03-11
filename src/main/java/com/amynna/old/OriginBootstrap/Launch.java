@@ -1,12 +1,12 @@
-package com.amynna.OriginBootstrap;
+package com.amynna.old.OriginBootstrap;
 
 import com.amynna.Tools.*;
+import com.amynna.old.Tools.*;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Classe principale pour le lancement du launcher.
