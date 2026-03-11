@@ -1,4 +1,113 @@
 package com.amynna.OriginLauncher;
 
-public class FileManager {
+import com.amynna.OriginLauncher.output.Logger;
+
+import java.io.File;
+import java.nio.file.Path;
+
+public final class FileManager {
+
+    /** Constructeur privé, n'est pas sensé être instancié. */
+    private FileManager() {
+        Logger.fatal("Impossible d'instancier FileManager. Cette classe est un utilitaire statique.");
+    }
+
+    /**
+     * Crée les répertoires spécifiés dans le chemin s'ils n'existent pas.
+     * Si un fichier existe déjà à cet emplacement, il est supprimé et remplacé par un répertoire.
+     * @param directoryPath Le chemin du répertoire à créer
+     */
+    public static void createDirectoriesIfNotExist(String directoryPath) {
+        File dir = new File(directoryPath);
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                Logger.fatal("Échec de la création du répertoire : ", directoryPath);
+            } else Logger.log(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD, "Répertoire créé : ", directoryPath);
+        } else if (!dir.isDirectory()) {
+            if (dir.delete() && dir.mkdirs()) {
+                Logger.log(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD, "Fichier remplacé par un répertoire : ", directoryPath);
+            } else {
+                Logger.fatal("Échec de la création du répertoire (un fichier existe déjà) : ", directoryPath);
+            }
+        } else Logger.log(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.VERBOSE, "Repertoire ", directoryPath, " déjà existant, rien à faire");
+    }
+    /**
+     * Crée les répertoires spécifiés dans le chemin s'ils n'existent pas.
+     * Si un fichier existe déjà à cet emplacement, il est supprimé et remplacé par un répertoire.
+     * @param directoryPath le chemin du répertoire à créer
+     */
+    public static void createDirectoriesIfNotExist(Path directoryPath) {
+        createDirectoriesIfNotExist(directoryPath.toString());
+    }
+    /**
+     * Crée les répertoires spécifiés dans le chemin s'ils n'existent pas.
+     * Si un fichier existe déjà à cet emplacement, il est supprimé et remplacé par un répertoire.
+     * @param directory le répertoire à créer
+     */
+    public static void createDirectoriesIfNotExist(File directory) {
+        createDirectoriesIfNotExist(directory.getPath());
+    }
+
+
+
+    /**
+     * Supprime un fichier ou un répertoire (et son contenu) s'il existe.
+     *
+     * @param file Fichier ou répertoire à supprimer
+     */
+    public static void deleteFileIfExists(File file) {
+        if (!file.exists()) {
+            Logger.log(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.VERBOSE, "Fichier ou répertoire non trouvé (rien à supprimer) : " + file.getPath());
+            return;
+        }
+
+        // Si c'est un répertoire, supprimer son contenu récursivement
+        if (file.isDirectory()) {
+            File[] contents = file.listFiles();
+            if (contents != null) {
+                for (File f : contents) {
+                    deleteFileIfExists(f);
+                }
+            }
+        }
+
+        // Supprimer le fichier ou le répertoire maintenant vide
+        if (!file.delete()) {
+            Logger.error(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD, "Impossible de supprimer : " + file.getPath());
+        } else Logger.log(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD, "Supprimé : " + file.getPath());
+    }
+
+    /**
+     * Recherche un fichier par nom dans un répertoire et ses sous-répertoires.
+     *
+     * @param directory Répertoire de départ pour la recherche
+     * @param fileName  Nom du fichier à rechercher
+     * @return Le fichier trouvé, ou null si non trouvé
+     */
+    public static File searchFileInDirectory(File directory, String fileName) {
+        if (!directory.isDirectory()) {
+            Logger.error(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD, "Le chemin spécifié n'est pas un répertoire : " + directory.getPath());
+            return null;
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            Logger.error(Logger.LOG_CANAL.FILES, Logger.VERBOSE_LEVEL.STANDARD,"Impossible de lister les fichiers dans le répertoire : " + directory.getPath());
+            return null;
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                File found = searchFileInDirectory(file, fileName);
+                if (found != null) {
+                    return found;
+                }
+            } else if (file.getName().equals(fileName)) {
+                return file;
+            }
+        }
+
+        return null; // Fichier non trouvé
+    }
+
 }
